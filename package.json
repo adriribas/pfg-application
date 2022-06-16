@@ -1,0 +1,28 @@
+{
+  "name": "pfg-application",
+  "version": "1.0.0",
+  "description": "pfg-application main",
+  "author": "Adrià Ribas Chico",
+  "homepage": "https://www.udg.edu/ca/eps",
+  "keywords": ["Node", "Express"],
+  "license": "BSD 3-Clause License",
+  "readme": "https://github.com/adriribas/pfg-application#readme",
+  "bugs": {
+    "url": "https://github.com/adriribas/pfg-application/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/adriribas/pfg-application"
+  },
+  "type": "module",
+  "workspaces": [
+    "./packages/client",
+    "./packages/server"
+  ],
+  "scripts": {
+    "start": "echo \"Use npm start:client or npm start:server\" && exit 1",
+    "start:client": "npm start --workspace=client",
+    "build:server": "babel ./packages/server/src --out-dir ./packages/server/dist --source-maps",
+    "start:server": "npm start --workspace=server"
+  }
+}

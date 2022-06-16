@@ -1,0 +1,11 @@
+{
+    "name": "PFG - Application Server",
+    "jwtPrivateKey": "jwtPrivateKey",
+    "userRoles": [
+        "Administrador",
+        "Coordinador",
+        "Director de departament",
+        "Responsable de docència",
+        "Professor"
+    ]
+}

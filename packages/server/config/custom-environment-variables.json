@@ -1,0 +1,9 @@
+{
+    "mail": {
+        "password": "pfgs_mailPassword"
+    },
+    "db": {
+        "secret": "pfgs_dbSecret"
+    },
+    "jwtPrivateKey": "pfgs_jwtPrivateKey"
+}
