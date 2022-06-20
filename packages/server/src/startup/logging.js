@@ -1,10 +1,11 @@
-import 'express-async-errors';
 import winston from 'winston';
+import 'express-async-errors';
 
-process.on('uncaughtException', ex => winston.error(ex.message, ex));
-process.on('unhandledRejection', ex => winston.error(ex.message, ex));
+const consoleTransport = new winston.transports.Console({ colorize: true, prettyPrint: true });
 
-winston.exceptions.handle(new winston.transports.File({ filename: './logs/unhandledExceptions.log' }));
-winston.rejections.handle(new winston.transports.File({ filename: './logs/unhandledRejections.log' }));
+winston.exceptions.handle(new winston.transports.File({ filename: './logs/unhandledExceptions.log' }), consoleTransport);
+//winston.rejections.handle(new winston.transports.File({ filename: './logs/unhandledRejections.log' }), consoleTransport);
 
 winston.add(new winston.transports.File({ filename: './logs/logfile.log' }));
+
+export default null;

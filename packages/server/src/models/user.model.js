@@ -5,7 +5,7 @@ import config from 'config';
 import jwt from 'jsonwebtoken';
 import _ from 'lodash';
 
-import { sequelize } from '../db';
+import { db as sequelize } from '../startup';
 
 const User = sequelize.define('User', {
     firstName: {
