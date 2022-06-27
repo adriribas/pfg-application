@@ -3,24 +3,14 @@
   "version": "1.0.0",
   "description": "pfg-application server",
   "author": "Adrià Ribas Chico",
-  "homepage": "https://www.udg.edu/ca/eps",
   "keywords": [
     "Node",
     "Express"
   ],
-  "license": "BSD 3-Clause License",
-  "readme": "https://github.com/adriribas/pfg-application#readme",
-  "bugs": {
-    "url": "https://github.com/adriribas/pfg-application/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/adriribas/pfg-application"
-  },
-  "main": "./serverApp.js",
+  "main": "./src/app.js",
   "type": "module",
   "scripts": {
-    "start": "nodemon --experimental-specifier-resolution=node serverApp.js"
+    "start": "nodemon --experimental-specifier-resolution=node ./src/app.js"
   },
   "dependencies": {
     "bcrypt": "^5.0.1",
@@ -37,7 +27,7 @@
     "lodash": "^4.17.21",
     "mysql2": "^2.3.3",
     "sequelize": "^6.17.0",
-    "winston": "^3.6.0"
+    "winston": "^3.7.2"
   },
   "devDependencies": {
     "@babel/cli": "^7.17.3",
