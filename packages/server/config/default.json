@@ -1,11 +1,27 @@
 {
-    "name": "PFG - Application Server",
-    "jwtPrivateKey": "jwtPrivateKey",
-    "userRoles": [
-        "Administrador",
-        "Coordinador",
-        "Director de departament",
-        "Responsable de docència",
-        "Professor"
-    ]
+  "name": "PFG - Application Server",
+  "jwtPrivateKey": "jwtPrivateKey",
+  "userRoles": [
+    {
+      "role": "Administrador",
+      "views": ["a_plansDocents", "a_assignAules", "a_gestCoordinadors", "a_gestDirectors"]
+    },
+    {
+      "role": "Coordinador",
+      "views": ["c_horarisGraus", "c_horarisProfessors", "c_horarisAules"]
+    },
+    {
+      "role": "Director de departament",
+      "views": ["dd_horarisProfessors", "dd_horarisGraus", "dd_gestResponsables"]
+    },
+    {
+      "role": "Responsable de docència",
+      "views": ["rd_horarisProfessors", "rd_assignProfessors", "rd_gestProfessors"]
+    },
+    {
+      "role": "Professor",
+      "views": ["p_horarisPropis", "p_horarisAssignatures", "p_horarisGraus"]
+    }
+  ],
+  "noAuthViews": ["login", "resetPassword"]
 }
