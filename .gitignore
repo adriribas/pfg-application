@@ -122,3 +122,6 @@ dist-ssr
 # Other
 .DS_Store
 *.local
+
+# Custom files
+notes.md
