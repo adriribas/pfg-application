@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import HomeView from '@/views/HomeView.vue';
 
-import { useAuthStore } from '@/stores/auth';
+import { useAuthStore } from '@/stores';
+import { authApi } from '@/api';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -9,7 +9,7 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: HomeView
+      component: () => import('@/views/HomeView.vue')
     },
     {
       path: '/about',
@@ -19,53 +19,108 @@ const router = createRouter({
     {
       path: '/login',
       name: 'login',
-      component: () => import('@/views/LoginView.vue'),
-      meta: {
-        requiresNoAuth: true
-      }
+      component: () => import('@/views/LoginView.vue')
     },
-    /*{
-      path: '/resetPassword',
+    {
+      path: '/reset-password',
       name: 'resetPassword',
-      component: () => import('@/views/ResetPasswordView'),
-      meta: {
-        requiresNoAuth: true
-      }
-    },*/
+      component: () => import('@/views/ResetPasswordView.vue')
+    },
     /*,{
       path: '/me',
       name: 'aboutMe',
-      component: () => import('@/views/AboutMe.vue'),
-      meta {
-        requiresAuth: true
-      }
+      component : () => import('@/views/AboutMe.vue'),
     },*/
     {
-      path: '/plansDocents',
-      name: 'plansDocents',
-      component: () => import('@/views/admins/PlansDocentsView.vue'),
-      meta: {
-        requiresAuth: true
-      }
+      path: '/plans-docents',
+      name: 'a_plansDocents',
+      component: () => import('@/views/administradors/PlansDocentsView.vue')
+    },
+    {
+      path: '/assignacio-aules',
+      name: 'a_assignAules',
+      component: () => import('@/views/administradors/AssignAulesView.vue')
+    },
+    {
+      path: '/gestio-coordinadors',
+      name: 'a_gestCoordinadors',
+      component: () => import('@/views/administradors/GestCoordinadorsView.vue')
+    },
+    {
+      path: '/gestio-directors-departament',
+      name: 'a_gestDirectors',
+      component: () => import('@/views/administradors/GestDirectorsView.vue')
+    },
+    {
+      path: '/horaris-graus',
+      name: 'c_horarisGraus',
+      component: () => import('@/views/coordinadors/HorarisGrausView.vue')
+    },
+    {
+      path: '/horaris-professors',
+      name: 'c_horarisProfessors',
+      component: () => import('@/views/coordinadors/HorarisProfessorsView.vue')
+    },
+    {
+      path: '/horaris-aules',
+      name: 'c_horarisAules',
+      component: () => import('@/views/coordinadors/HorarisAulesView.vue')
+    },
+    {
+      path: '/horaris-professors',
+      name: 'dd_horarisProfessors',
+      component: () => import('@/views/directors/HorarisProfessorsView.vue')
+    },
+    {
+      path: '/horaris-graus',
+      name: 'dd_horarisGraus',
+      component: () => import('@/views/directors/HorarisGrausView.vue')
+    },
+    {
+      path: '/gestio-responsables-docencia',
+      name: 'dd_gestResponsables',
+      component: () => import('@/views/directors/GestResponsablesView.vue')
+    },
+    {
+      path: '/horaris-professors',
+      name: 'rd_horarisProfessors',
+      component: () => import('@/views/responsables/HorarisProfessorsView.vue')
+    },
+    {
+      path: '/assignacio-professors',
+      name: 'rd_assignProfessors',
+      component: () => import('@/views/responsables/AssignProfessorsView.vue')
+    },
+    {
+      path: '/gestio-professors',
+      name: 'rd_gestProfessors',
+      component: () => import('@/views/responsables/GestProfessorsView.vue')
+    },
+    {
+      path: '/horaris-propis',
+      name: 'p_horarisPropis',
+      component: () => import('@/views/professors/HorarisPropisView.vue')
+    },
+    {
+      path: '/horaris-assignatures',
+      name: 'p_horarisAssignatures',
+      component: () => import('@/views/professors/HorarisAssignaturesView.vue')
+    },
+    {
+      path: '/horaris-graus',
+      name: 'p_horarisGraus',
+      component: () => import('@/views/professors/HorarisGrausView.vue')
     }
   ]
 });
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async to => {
   const authStore = useAuthStore();
-  const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
-  const requiresNoAuth = to.matched.some(record => record.meta.requiresNoAuth);
-  const isNotWhitelisted = to.matched.some(record => !authStore.isWhitelisted(record.name));
-
-  if (requiresAuth && !authStore.isLoggedIn) {
-    return next({ name: 'login' });
+  try {
+    await authApi.assertAccess(to.name);
+  } catch (e) {
+    return { name: authStore.isLoggedIn ? authStore.defaultView : 'login' };
   }
-
-  if ((requiresAuth && isNotWhitelisted) || (requiresNoAuth && authStore.isLoggedIn)) {
-    return next({ name: authStore.defaultView });
-  }
-
-  next();
 });
 
 export default router;
