@@ -1,6 +1,6 @@
 {
-    "name": "PFG - API Aplicattion <production>",
-    "mail": {
-        "host": "prod-mail-server"
-    }
+  "name": "PFG - API Aplicattion <production>",
+  "mail": {
+    "host": "prod-mail-server"
+  }
 }

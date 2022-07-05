@@ -1,5 +1,4 @@
 import { Op } from 'sequelize';
-import bcrypt from 'bcrypt';
 import _ from 'lodash';
 import createDebugger from 'debug';
 
@@ -22,19 +21,14 @@ export const getAll = async (_req, res) => {
 };
 
 export const create = async (req, res) => {
+  const user = _.pick(req.body, ['firstName', 'lastName', 'email', 'secret', 'role', 'activated']);
   try {
-    await Model.validate(req.body);
-    const user = _.pick(req.body, ['firstName', 'lastName', 'email', 'secret', 'role', 'activated']);
+    await Model.validate(user);
     await Model.validateSecret(user.secret);
   } catch (e) {
     return res.status(400).send(e.message);
   }
-
-  user.secret = await bcrypt.hash(user.secret, await bcrypt.genSalt(12));
-
-  await Model.create(user);
-
-  res.send(user);
+  res.send(await Model.create(user));
 };
 
 export const update = async (req, res) => {

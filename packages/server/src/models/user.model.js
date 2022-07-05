@@ -3,6 +3,7 @@ import Joi from 'joi';
 import passwordComplexity from 'joi-password-complexity';
 import config from 'config';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
 import _ from 'lodash';
 
 import { db as sequelize } from '../startup';
@@ -25,7 +26,10 @@ const User = sequelize.define(
     },
     secret: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
+      set(value) {
+        this.setDataValue('secret', bcrypt.hashSync(value, 12));
+      }
     },
     role: {
       type: DataTypes.ENUM(...config.get('userRoles').map(({ role }) => role)),
@@ -48,12 +52,10 @@ const validationSchema = Joi.object({
   role: Joi.string().min(3).max(255).required(),
   activated: Joi.bool()
 });
-
 const authValidationSchema = Joi.object({
   email: Joi.string().email().required(),
   secret: Joi.string().required()
 });
-
 const passwordComplexityOptions = {
   min: 10,
   max: 30,
@@ -64,14 +66,20 @@ const passwordComplexityOptions = {
   requirementCount: 3
 };
 
-const jwtPayloadData = ['id', 'firstName', 'lastName', 'email', 'role', 'activated'];
-
 User.validate = userData => validationSchema.validateAsync(userData);
 User.validateAuth = authData => authValidationSchema.validateAsync(authData);
-User.validateSecret = secret => passwordComplexity(passwordComplexityOptions).validateAsync(secret);
+User.validateSecret = (secret = '') => passwordComplexity(passwordComplexityOptions).validateAsync(secret);
 
-User.prototype.generateJsonWebToken = function () {
-  return jwt.sign(_.pick(this, jwtPayloadData), config.get('jwtPrivateKey'));
+const generateJsonWebToken = (user, type) =>
+  jwt.sign(_.pick(user, config.get(`jwt.${type}.fields`)), config.get('jwt.key'), {
+    expiresIn: config.get(`jwt.${type}.expiration`)
+  });
+
+User.prototype.generateAuthJwt = function () {
+  return generateJsonWebToken(this, 'auth');
+};
+User.prototype.generateResetPasswordJwt = function () {
+  return generateJsonWebToken(this, 'resetPassword');
 };
 
 export default User;

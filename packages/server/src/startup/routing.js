@@ -1,6 +1,6 @@
 import express from 'express';
 import morgan from 'morgan';
-import debug from 'debug';
+import createDebugger from 'debug';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
@@ -10,7 +10,7 @@ import config from 'config';
 import * as middlewares from '../middlewares';
 import * as routers from '../routers';
 
-const startupDebugger = debug('pfgs:startup');
+const debug = createDebugger('pfgs:routingStartup');
 
 export default app => {
   app.use(helmet());
@@ -25,7 +25,7 @@ export default app => {
 
   if (app.get('env') === 'development') {
     app.use(morgan('dev'));
-    startupDebugger('Morgan middleware for logging requests is enabled');
+    debug('Morgan middleware for logging requests is enabled');
   }
 
   app.use('/api/auth', routers.authRouter);

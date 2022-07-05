@@ -11,4 +11,8 @@ router.get('/current-user', middlewares.auth, controller.getCurrentUser);
 
 router.get('/access/:view', controller.assertAccessTo);
 
+router.post('/reset-password', controller.resetPassword);
+
+router.post('/new-password', controller.newPassword);
+
 export default router;

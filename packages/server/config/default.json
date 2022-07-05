@@ -1,6 +1,13 @@
 {
   "name": "PFG - Application Server",
-  "jwtPrivateKey": "jwtPrivateKey",
+  "jwt": {
+    "key": "jwtPrivateKey"
+  },
+  "db": {
+    "connection": {
+      "dialect": "mysql"
+    }
+  },
   "userRoles": [
     {
       "role": "Administrador",

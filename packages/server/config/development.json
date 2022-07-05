@@ -4,14 +4,33 @@
     "schema": "pfg_app_dev",
     "user": "pfg-app-server",
     "connection": {
-      "host": "localhost",
-      "dialect": "mysql"
+      "host": "localhost"
     }
   },
-  "mail": {
-    "host": "dev-mail-server"
+  "email": {
+    "server": {
+      "host": "smtp.ethereal.email",
+      "port": 587
+    },
+    "auth": {
+      "user": "Email test <test@email.com>",
+      "pass": "emailPassword"
+    },
+    "templates": {
+      "resetPassword": "resetPassword"
+    }
   },
   "clientDomain": ["http://localhost:3000"],
+  "jwt": {
+    "auth": {
+      "fields": ["id", "firstName", "lastName", "email", "role", "activated"],
+      "expiration": "14d"
+    },
+    "resetPassword": {
+      "fields": ["id"],
+      "expiration": "0.5 hrs"
+    }
+  },
   "administratorUsers": [
     {
       "firstName": "Admin 1",
