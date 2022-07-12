@@ -1,7 +1,7 @@
 <script setup>
 import { onBeforeMount } from 'vue';
-
 import { useAuthStore } from './stores';
+import TheNavigationTopBar from './components/TheNavigationTopBar.vue';
 
 const authStore = useAuthStore();
 
@@ -15,19 +15,36 @@ onBeforeMount(() => {
   });
 });
 </script>
-<template><RouterView /></template>
+
+<template>
+  <header v-if="authStore.isLoggedIn">
+    <TheNavigationTopBar />
+  </header>
+  <main>
+    <RouterView />
+  </main>
+</template>
+
 <style>
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+}
 body {
-  background: #2c3e50;
+  background: #30353b;
   color: white;
+  padding-top: 60px;
 }
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
 }
-a {
-  color: inherit;
+*,
+:before,
+:after {
+  box-sizing: border-box;
 }
 </style>

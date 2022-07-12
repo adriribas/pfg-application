@@ -3,26 +3,21 @@ import { ref } from 'vue';
 import { useRouter, RouterLink } from 'vue-router';
 
 import { useAuthStore } from '@/stores';
-import { authApi } from '../api';
+import { authApi } from '@/api';
 
 const router = useRouter();
 const authStore = useAuthStore();
 
 const form = ref({
-  email: '',
-  password: ''
+  email: ''
 });
 
-const logIn = async () => {
+const resetPassword = async () => {
   try {
-    const {
-      data: { userData, token }
-    } = await authApi.logIn({ email: form.value.email, secret: form.value.password });
-    authStore.$patch({ userData, authToken: token });
-    router.push({ name: authStore.defaultView });
+    authApi.resetPassword(form.value.email);
   } catch (e) {
-    // Tractament d'errors de login
-    console.error('Login error', e);
+    // Tractament d'errors
+    console.error('Error reset password', e);
     alert(e.message);
   }
 };
@@ -32,16 +27,14 @@ const logIn = async () => {
   <section>
     <div class="loginDiv">
       <div class="loginDivInner">
-        <h1>Autenticació</h1>
+        <h2>Restabliment</h2>
         <hr />
-        <form @submit.prevent="logIn">
+        <form @submit.prevent="resetPassword">
           <input type="email" placeholder="Correu electrònic" v-model="form.email" class="defInput" />
           <br />
-          <input type="password" placeholder="Contrasenya" v-model="form.password" class="defInput" />
-          <br />
-          <input type="submit" value="Entrar" class="button-3" />
-          <p>No recordes la contrasenya?</p>
-          <RouterLink :to="{ name: 'resetPassword' }">Restableix-la aquí</RouterLink>
+          <input type="submit" value="Enviar" class="button-3" />
+          <p>No vols restablir la contrasenya?</p>
+          <RouterLink :to="{ name: 'login' }">Autentica't aquí</RouterLink>
         </form>
       </div>
     </div>
@@ -89,8 +82,8 @@ section {
   padding: 50px;
   border-radius: 20px;
 }
-h1 {
-  font-size: 40pt;
+h2 {
+  font-size: 35pt;
   margin: unset;
   margin-bottom: 20px;
 }

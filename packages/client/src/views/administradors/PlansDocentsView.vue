@@ -15,8 +15,14 @@ const logout = () => {
 </script>
 
 <template>
-  <h2>Plans docents</h2>
-  <button @click="logout">Logout</button>
+  <div class="header">
+    <h2>Plans docents</h2>
+    <button @click="logout">Logout</button>
+  </div>
 </template>
 
-<style></style>
+<style>
+.header {
+  text-align: center;
+}
+</style>

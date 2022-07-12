@@ -1,5 +1,5 @@
 import { defineStore, acceptHMRUpdate } from 'pinia';
-
+import router from '@/router';
 import { authApi } from '@/api';
 
 export const useAuthStore = defineStore('auth', {
@@ -9,7 +9,18 @@ export const useAuthStore = defineStore('auth', {
   }),
   getters: {
     isLoggedIn: state => !!state.authToken,
-    defaultView: state => state.userData.defaultView
+    defaultView: state => state.userData.defaultView,
+    fullName: state => `${state.userData.firstName} ${state.userData.lastName}`,
+    role: state => state.userData.role,
+    tabs() {
+      return router
+        .getRoutes()
+        .reduce(
+          (accum, route) =>
+            route.meta?.role === this.role ? [...accum, { title: route.meta?.title, routeName: route.name }] : accum,
+          []
+        );
+    }
   },
   actions: {
     async refreshUserData() {
