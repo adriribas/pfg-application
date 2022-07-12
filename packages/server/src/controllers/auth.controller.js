@@ -77,7 +77,7 @@ export const resetPassword = async (req, res) => {
 };
 
 export const newPassword = async (req, res) => {
-  const { token, secret, newSecret } = req.body;
+  const { token, secret } = req.body;
   let userId;
 
   try {
@@ -87,19 +87,16 @@ export const newPassword = async (req, res) => {
     return res.status(400).send('Invalid token.');
   }
 
-  if (secret !== newSecret) {
-    return res.status(400).send('Passwords do not match.');
-  }
-
   try {
-    await UserModel.validateSecret(secret);
+    console.log('Result validation:', await UserModel.validateSecret(secret));
   } catch (e) {
     debug('Reset password complexity error: %s', e.message);
     return res.status(400).send(e.message);
   }
 
   if (!(await UserModel.update({ secret }, { where: { id: userId } }))[0]) {
-    res.status(400).send('User not found.');
+    return res.status(400).send('User not found.');
   }
+
   res.send(true);
 };
