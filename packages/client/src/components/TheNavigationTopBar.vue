@@ -6,7 +6,19 @@ const authStore = useAuthStore();
 </script>
 
 <template>
-  <div class="nav">
+  <q-toolbar>
+    <q-toolbar-title>
+      <q-avatar>
+        <img src="https://cdn.quasar.dev/logo-v2/svg/logo-mono-white.svg" />
+      </q-avatar>
+      Horaris PFG
+    </q-toolbar-title>
+  </q-toolbar>
+
+  <q-tabs v-if="authStore.isLoggedIn" align="left">
+    <q-route-tab v-for="tab in authStore.tabs" :key="tab.routeName" :to="{ name: tab.routeName }" :label="tab.title" />
+  </q-tabs>
+  <!-- <div class="nav">
     <div class="tabs">
       <RouterLink
         v-for="tab in authStore.tabs"
@@ -27,7 +39,7 @@ const authStore = useAuthStore();
         <span class="role">{{ `${authStore.role}` }}</span>
       </p>
     </div>
-  </div>
+  </div> -->
 </template>
 
 <style scoped>

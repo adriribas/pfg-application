@@ -17,10 +17,13 @@
     "test:e2e:ci": "start-server-and-test preview http://127.0.0.1:4173/ 'cypress run --e2e'"
   },
   "dependencies": {
+    "@quasar/extras": "^1.14.3",
+    "@quasar/vite-plugin": "^1.0.10",
     "axios": "^0.27.2",
     "lodash": "^4.17.21",
     "normalize.css": "^8.0.1",
     "pinia": "^2.0.14",
+    "sass": "^1.32.12",
     "vue": "^3.2.37",
     "vue-router": "^4.0.16"
   },

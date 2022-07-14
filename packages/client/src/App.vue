@@ -2,6 +2,7 @@
 import { onBeforeMount } from 'vue';
 import { useAuthStore } from './stores';
 import TheNavigationTopBar from './components/TheNavigationTopBar.vue';
+import TheFooter from './components/TheFooter.vue';
 
 const authStore = useAuthStore();
 
@@ -17,25 +18,34 @@ onBeforeMount(() => {
 </script>
 
 <template>
-  <header v-if="authStore.isLoggedIn">
+  <!-- <header v-if="authStore.isLoggedIn">
     <TheNavigationTopBar />
   </header>
   <main>
     <RouterView />
-  </main>
+  </main> -->
+  <q-layout view="hHh LpR fff">
+    <q-header elevated class="bg-grey-10 text-white">
+      <TheNavigationTopBar />
+    </q-header>
+
+    <q-page-container>
+      <q-page padding>
+        <router-view />
+      </q-page>
+    </q-page-container>
+
+    <q-footer elevated class="bg-grey-8 text-white">
+      <TheFooter />
+    </q-footer>
+  </q-layout>
 </template>
 
 <style>
-header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-}
 body {
   background: #30353b;
   color: white;
-  padding-top: 60px;
+  /* padding-top: 60px; */
 }
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
