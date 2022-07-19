@@ -30,5 +30,5 @@
       "views": ["p_horarisPropis", "p_horarisAssignatures", "p_horarisGraus"]
     }
   ],
-  "noAuthViews": ["login", "resetPassword"]
+  "noAuthViews": ["login", "resetPassword", "newPassword"]
 }

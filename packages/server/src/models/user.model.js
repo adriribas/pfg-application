@@ -62,7 +62,6 @@ const passwordComplexityOptions = {
   lowerCase: 1,
   upperCase: 1,
   numeric: 1,
-  symbol: 1,
   requirementCount: 3
 };
 
@@ -71,7 +70,7 @@ User.validateAuth = authData => authValidationSchema.validateAsync(authData);
 User.validateSecret = (secret = '') => passwordComplexity(passwordComplexityOptions).validateAsync(secret);
 
 const generateJsonWebToken = (user, type) =>
-  jwt.sign(_.pick(user, config.get(`jwt.${type}.fields`)), config.get('jwt.key'), {
+  jwt.sign(_.pick(user, config.get(`jwt.${type}.fields`)), config.get(`jwt.${type}.key`), {
     expiresIn: config.get(`jwt.${type}.expiration`)
   });
 

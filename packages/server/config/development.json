@@ -9,12 +9,12 @@
   },
   "email": {
     "server": {
-      "host": "smtp.ethereal.email",
-      "port": 587
+      "host": "smtp.gmail.com",
+      "port": 465
     },
     "auth": {
-      "user": "Email test <test@email.com>",
-      "pass": "emailPassword"
+      "user": "test.pfghoraris@gmail.com",
+      "pwd": "emailPelPfg092022"
     },
     "templates": {
       "resetPassword": "resetPassword"

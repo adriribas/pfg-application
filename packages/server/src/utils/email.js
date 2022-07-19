@@ -14,16 +14,17 @@ const mapParams = (msg, params) =>
   Object.entries(params).reduce((accum, [key, value]) => accum.replaceAll(`%${key}%`, value), msg);
 
 export const sendEmail = (to, { subject, text, html }, params) => {
+  to = 'ribasadria00@gmail.com';
   debug('Sending an email to %s', to);
   debug('Subject: %s', subject);
   debug('Text body: %s', text && mapParams(text, params));
   debug('HTML body: %s', html && mapParams(html, params));
 
-  /*transporter.sendMail({
-    from: config.get('email.user'),
+  /* transporter.sendMail({
+    from: config.get('email.auth.user'),
     to,
     subject,
-    text: mapParams(text, params),
-    html: mapParams(html, params)
-  });*/
+    text: (text || '') && mapParams(text, params),
+    html: (html || '') && mapParams(html, params)
+  }); */
 };

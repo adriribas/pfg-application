@@ -46,7 +46,7 @@ export const getCurrentUser = (req, res) => res.json(getToSendUserData(req.user)
 export const assertAccessTo = (req, res) => {
   let views = [];
   try {
-    const { role: userRole } = jwt.verify(req.header('X-auth-token'), config.get('jwt.key'));
+    const { role: userRole } = jwt.verify(req.header('X-auth-token'), config.get('jwt.auth.key'));
     views = config.get('userRoles').find(({ role }) => role === userRole).views;
   } catch (e) {
     views = config.get('noAuthViews');
@@ -67,11 +67,17 @@ export const resetPassword = async (req, res) => {
     res.status(400).send('Invalid email.');
   }
 
-  emailUtil.sendEmail(
+  const sendingResults = await emailUtil.sendEmail(
     user.email,
     await jsonfile.readFile(`resources/emailTemplates/${config.get('email.templates.resetPassword')}.json`),
-    { token: user.generateResetPasswordJwt(), firstName: user.firstName, lastName: user.lastName }
+    {
+      link: `${req.headers.origin}/new-password?token=${user.generateResetPasswordJwt()}`,
+      firstName: user.firstName,
+      lastName: user.lastName
+    }
   );
+
+  debug('Sending results: %o', sendingResults);
 
   res.json(user.generateResetPasswordJwt());
 };
@@ -81,21 +87,26 @@ export const newPassword = async (req, res) => {
   let userId;
 
   try {
-    userId = jwt.verify(token, config.get('jwt.key')).id;
+    userId = jwt.verify(token, config.get('jwt.resetPassword.key')).id;
   } catch (e) {
     debug('Reset password invalid token: %s', e.message);
-    return res.status(400).send('Invalid token.');
+    return res.status(400).json({ code: 'ERR_TOKEN', desc: 'Invalid token' });
   }
 
   try {
-    console.log('Result validation:', await UserModel.validateSecret(secret));
+    await UserModel.validateSecret(secret);
   } catch (e) {
     debug('Reset password complexity error: %s', e.message);
-    return res.status(400).send(e.message);
+    const isLengthError = e.details.some(({ type }) => type.includes('tooShort') || type.includes('tooLong'));
+    return res.status(400).json({
+      code: isLengthError ? 'ERR_PWD_LENGTH' : 'ERR_PWD_COMPLEXITY',
+      desc: isLengthError ? 'Length error' : 'Complexity error'
+    });
   }
 
   if (!(await UserModel.update({ secret }, { where: { id: userId } }))[0]) {
-    return res.status(400).send('User not found.');
+    debug('User with id %s not found', userId);
+    return res.status(400).json({ code: 'ERR_USER', desc: 'User not found' });
   }
 
   res.send(true);

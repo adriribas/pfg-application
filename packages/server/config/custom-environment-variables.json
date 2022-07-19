@@ -1,13 +1,18 @@
 {
   "jwt": {
-    "key": "pfgs_jwtPrivateKey"
+    "auth": {
+      "key": "pfgs_authJwtPrivateKey"
+    },
+    "resetPassword": {
+      "key": "pfgs_resetPasswordJwtPrivateKey"
+    }
   },
   "db": {
     "secret": "pfgs_dbSecret"
   },
   "email": {
     "auth": {
-      "pass": "pfgs_emailSecret"
+      "pwd": "pfgs_emailSecret"
     }
   }
 }

@@ -7,7 +7,7 @@ export const auth = (req, res, next) => {
     return res.status(401).send('Access denied. No token provided.');
   }
   try {
-    req.user = jwt.verify(token, config.get('jwt.key'));
+    req.user = jwt.verify(token, config.get('jwt.auth.key'));
     next();
   } catch (e) {
     res.status(400).send('Invalid token.');
