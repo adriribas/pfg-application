@@ -9,11 +9,11 @@ const value = ref('');
     v-model="value"
     lazy-rules
     :rules="[val => !!val]"
-    error-message="El camp no pot estar buit"
+    error-message="Aquest camp és obligatori"
     no-error-icon
     dark
     filled
-    color="teal-14"
+    color="m14"
     autocorrect="off"
     autocapitalize="off"
     autocomplete="off"

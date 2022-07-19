@@ -12,11 +12,6 @@ const router = createRouter({
       component: () => import('@/views/HomeView.vue')
     },
     {
-      path: '/about',
-      name: 'about',
-      component: () => import('@/views/AboutView.vue')
-    },
-    {
       path: '/error',
       name: 'error',
       component: () => import('@/views/ErrorView.vue')
@@ -31,11 +26,12 @@ const router = createRouter({
       name: 'resetPassword',
       component: () => import('@/views/auth/ResetPasswordView.vue')
     },
-    /*,{
-      path: '/me',
-      name: 'aboutMe',
-      component : () => import('@/views/AboutMe.vue'),
-    },*/
+    {
+      path: '/new-password',
+      name: 'newPassword',
+      component: () => import('@/views/auth/NewPasswordView.vue'),
+      props: route => ({ token: route.query.token })
+    },
     {
       path: '/plans-docents',
       name: 'a_plansDocents',

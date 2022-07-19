@@ -46,7 +46,7 @@ const resetPassword = async () => {
 
     <div v-else>
       <p>S'ha enviat un correu electrònic de restabliment a</p>
-      <p class="text-teal-5 text-weight-bold">{{ email }}</p>
+      <p class="text-m5 text-weight-bold">{{ email }}</p>
     </div>
   </AuthContainer>
 </template>

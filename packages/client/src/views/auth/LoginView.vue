@@ -52,7 +52,7 @@ const logIn = async () => {
 
     <AuthForm submit-text="Entrar" ref="authForm" @submit="logIn">
       <EmailInput v-model="email" />
-      <PasswordInput v-model="password" :toggle-icon="true" />
+      <PasswordInput v-model="password" toggle-icon />
     </AuthForm>
   </AuthContainer>
 </template>
