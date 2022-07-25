@@ -1,4 +1,4 @@
-import { DataTypes, QueryError } from 'sequelize';
+import { DataTypes } from 'sequelize';
 import Joi from 'joi';
 import passwordComplexity from 'joi-password-complexity';
 import config from 'config';
@@ -12,15 +12,15 @@ const User = sequelize.define(
   'User',
   {
     firstName: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(30),
       allowNull: false
     },
     lastName: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(80),
       allowNull: false
     },
     email: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(40),
       allowNull: false,
       unique: true
     },
@@ -43,6 +43,10 @@ const User = sequelize.define(
   },
   { paranoid: true }
 );
+
+User.associate = ({ AcademicCourse }) => {
+  User.belongsToMany(AcademicCourse, { through: 'UserAcademicCourse' });
+};
 
 const validationSchema = Joi.object({
   firstName: Joi.string().min(3).max(255).required(),

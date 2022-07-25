@@ -8,7 +8,7 @@ import config from 'config';
 // express-stormpath, passport
 
 import * as middlewares from '../middlewares';
-import * as routers from '../routers';
+import apiRouter from '../routers';
 
 const debug = createDebugger('pfgs:routingStartup');
 
@@ -22,14 +22,13 @@ export default app => {
     })
   );
   app.use(cookieParser());
-
   if (app.get('env') === 'development') {
     app.use(morgan('dev'));
     debug('Morgan middleware for logging requests is enabled');
   }
+  app.use(middlewares.requestFormatter);
 
-  app.use('/api/auth', routers.authRouter);
-  app.use(middlewares.auth);
-  app.use('/api/users', routers.userRouter);
+  app.use('/api', apiRouter);
+
   app.use(middlewares.error);
 };

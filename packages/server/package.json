@@ -7,10 +7,10 @@
     "Node",
     "Express"
   ],
-  "main": "./src/app.js",
+  "main": "./src/main.js",
   "type": "module",
   "scripts": {
-    "start": "nodemon --experimental-specifier-resolution=node ./src/app.js"
+    "start": "nodemon --experimental-specifier-resolution=node ./src/main.js"
   },
   "dependencies": {
     "bcrypt": "^5.0.1",

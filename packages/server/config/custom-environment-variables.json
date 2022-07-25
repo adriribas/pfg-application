@@ -1,4 +1,5 @@
 {
+  "np": "pfgs_nodePath",
   "jwt": {
     "auth": {
       "key": "pfgs_authJwtPrivateKey"

@@ -1,0 +1,11 @@
+import express from 'express';
+
+import { areaController as controller } from '../../../../controllers';
+
+const router = express.Router({ mergeParams: true });
+
+router.get('/:id', controller.validateRequest, controller.get);
+router.get('/', controller.validateRequest, controller.queryGet);
+router.post('/', controller.create);
+
+export default router;
