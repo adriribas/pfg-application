@@ -3,6 +3,7 @@ import { ref } from 'vue';
 
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores';
+import AcademicCourseSelector from '../../components/AcademicCourseSelector.vue';
 
 const authStore = useAuthStore();
 const router = useRouter();
@@ -16,8 +17,8 @@ const logout = () => {
 
 <template>
   <div class="header">
-    <h2>Plans docents</h2>
     <button @click="logout">Logout</button>
+    <AcademicCourseSelector />
   </div>
 </template>
 

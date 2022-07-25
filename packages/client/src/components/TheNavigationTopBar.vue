@@ -30,9 +30,13 @@ const authStore = useAuthStore();
     indicator-color="m14">
     <q-route-tab v-for="tab in authStore.tabs" :key="tab.routeName" :to="{ name: tab.routeName }" :label="tab.title" />
     <q-space />
-    <q-tab icon="person" disable :label="authStore.fullName" />
-    <q-tab label="-" disable content-class="text-m5" />
-    <q-tab :label="authStore.role" disable content-class="text-g4" />
+    <span class="q-tab q-tab--no-caps relative-position self-stretch flex flex-center text-center">
+      {{ authStore.fullName }}
+    </span>
+    <span class="q-tab q-tab--no-caps relative-position self-stretch flex flex-center text-center text-m13"> | </span>
+    <span class="q-tab q-tab--no-caps relative-position self-stretch flex flex-center text-center text-g6">
+      {{ authStore.role }}
+    </span>
   </q-tabs>
 </template>
 

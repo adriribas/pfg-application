@@ -223,8 +223,14 @@
   background: #424242 !important;
 }
 .text-g11 {
-  color: #212121 !important;
+  color: #303030 !important;
 }
 .bg-g11 {
+  background: #303030 !important;
+}
+.text-g12 {
+  color: #212121 !important;
+}
+.bg-g12 {
   background: #212121 !important;
 }

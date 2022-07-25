@@ -20,7 +20,7 @@ onBeforeMount(() => {
 
 <template>
   <q-layout view="hHh LpR fff">
-    <q-header elevated class="bg-g11 text-white">
+    <q-header elevated class="bg-g12 text-white">
       <TheNavigationTopBar />
     </q-header>
 

@@ -28,7 +28,8 @@ export const useAuthStore = defineStore('auth', {
         return (this.userData = {});
       }
       try {
-        this.userData = (await authApi.getCurrentUser()).data;
+        const { data: user } = await authApi.getCurrentUser();
+        this.userData = user;
       } catch (e) {
         this.userData = {};
       }
