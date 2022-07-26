@@ -2,7 +2,6 @@
   "name": "PFG - API Application <development>",
   "db": {
     "schema": "pfg_app_dev",
-    "user": "pfg-app-server",
     "connection": {
       "host": "localhost"
     }
@@ -13,8 +12,7 @@
       "port": 465
     },
     "auth": {
-      "user": "test.pfghoraris@gmail.com",
-      "pwd": "emailPelPfg092022"
+      "user": "test.pfghoraris@gmail.com"
     },
     "templates": {
       "resetPassword": "resetPassword"

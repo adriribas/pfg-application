@@ -1,6 +1,6 @@
 import express from 'express';
 
-import { academicCourseController as controller } from '../../controllers';
+import { academicCourseController as controller } from '#r/controllers';
 import departmentRouter from './department';
 import studyRouter from './study';
 import subjectRouter from './subject';

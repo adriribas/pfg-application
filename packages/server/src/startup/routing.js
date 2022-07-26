@@ -7,8 +7,8 @@ import cors from 'cors';
 import config from 'config';
 // express-stormpath, passport
 
-import * as middlewares from '../middlewares';
-import apiRouter from '../routers';
+import * as middlewares from '#r/middlewares';
+import apiRouter from '#r/routes';
 
 const debug = createDebugger('pfgs:routingStartup');
 

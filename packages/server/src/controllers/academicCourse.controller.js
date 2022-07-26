@@ -2,8 +2,8 @@ import { Op, col } from 'sequelize';
 import _ from 'lodash';
 import createDebugger from 'debug';
 
-import { AcademicCourse as Model } from '../models';
-import { reqValidationUtil } from '../utils';
+import { AcademicCourse as Model } from '#r/models';
+import { reqValidationUtil } from '#r/utils';
 
 const debug = createDebugger('pfgs:academicCourseController');
 

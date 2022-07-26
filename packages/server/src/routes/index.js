@@ -3,7 +3,7 @@ import express from 'express';
 import authRouter from './auth';
 import userRouter from './user';
 import academicCourseRouter from './academicCourse';
-import * as middlewares from '../middlewares';
+import * as middlewares from '#r/middlewares';
 
 const router = express.Router();
 

@@ -2,7 +2,7 @@ import config from 'config';
 import createDebugger from 'debug';
 import _ from 'lodash';
 
-import { User as UserModel } from '../models';
+import { User as UserModel } from '#r/models';
 
 const debug = createDebugger('pfgs:testAdmins');
 

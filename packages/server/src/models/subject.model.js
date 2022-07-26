@@ -1,7 +1,7 @@
 import { DataTypes } from 'sequelize';
 import Joi from 'joi';
 
-import { db as sequelize } from '../startup';
+import { db as sequelize } from '#r/startup';
 
 const Subject = sequelize.define(
   'Subject',

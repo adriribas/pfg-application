@@ -5,8 +5,8 @@ import config from 'config';
 import jsonfile from 'jsonfile';
 import createDebugger from 'debug';
 
-import { User as UserModel } from '../models';
-import { emailUtil } from '../utils';
+import { User as UserModel } from '#r/models';
+import { emailUtil } from '#r/utils';
 
 const debug = createDebugger('pfgs:auth');
 

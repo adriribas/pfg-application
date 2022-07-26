@@ -1,8 +1,5 @@
 {
   "name": "PFG - Application Server",
-  "jwt": {
-    "key": "jwtPrivateKey"
-  },
   "db": {
     "connection": {
       "dialect": "mysql"

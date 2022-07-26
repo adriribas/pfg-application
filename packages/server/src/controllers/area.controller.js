@@ -1,8 +1,8 @@
 import _ from 'lodash';
 import createDebugger from 'debug';
 
-import { Area as Model } from '../models';
-import { reqValidationUtil } from '../utils';
+import { Area as Model } from '#r/models';
+import { reqValidationUtil } from '#r/utils';
 
 const debug = createDebugger('pfgs:departmentController');
 

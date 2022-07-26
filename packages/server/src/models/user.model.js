@@ -6,7 +6,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import _ from 'lodash';
 
-import { db as sequelize } from '../startup';
+import { db as sequelize } from '#r/startup';
 
 const User = sequelize.define(
   'User',

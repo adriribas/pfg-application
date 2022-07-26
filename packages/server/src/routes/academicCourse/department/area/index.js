@@ -1,6 +1,6 @@
 import express from 'express';
 
-import { studyController as controller } from '../../../controllers';
+import { areaController as controller } from '#r/controllers';
 
 const router = express.Router({ mergeParams: true });
 

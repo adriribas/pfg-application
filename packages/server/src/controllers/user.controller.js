@@ -2,7 +2,7 @@ import { Op } from 'sequelize';
 import _ from 'lodash';
 import createDebugger from 'debug';
 
-import { User as Model } from '../models';
+import { User as Model } from '#r/models';
 
 const debug = createDebugger('pfgs:userController');
 

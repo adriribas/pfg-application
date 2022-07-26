@@ -1,13 +1,16 @@
-import config from 'config';
+import { config as dotenvConfig } from 'dotenv';
 
-const np = config.get('np');
-if (!np) {
-  throw new Error('App source root path is not defined');
-}
-global.np = np;
+dotenvConfig();
 
-if (!config.get('jwt.key')) {
-  throw new Error('Json Web Token private key is not defined');
-}
+(async () => {
+  const { default: config } = await import('config');
+
+  if (!config.has('jwt.auth.key')) {
+    throw new Error('[Auth] Json Web Token private key is not defined');
+  }
+  if (!config.has('jwt.resetPassword.key')) {
+    throw new Error('[Reset password] Json Web Token private key is not defined');
+  }
+})();
 
 export default {};

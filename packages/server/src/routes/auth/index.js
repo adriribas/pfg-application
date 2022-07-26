@@ -1,7 +1,7 @@
 import express from 'express';
 
-import { authController as controller } from '../../controllers';
-import * as middlewares from '../../middlewares';
+import { authController as controller } from '#r/controllers';
+import * as middlewares from '#r/middlewares';
 
 const router = express.Router();
 
