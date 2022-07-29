@@ -72,6 +72,13 @@ const passwordComplexityOptions = {
 User.validate = userData => validationSchema.validateAsync(userData);
 User.validateAuth = authData => authValidationSchema.validateAsync(authData);
 User.validateSecret = (secret = '') => passwordComplexity(passwordComplexityOptions).validateAsync(secret);
+User.verifyAuthToken = bearerToken => {
+  const [type, token] = bearerToken.split(' ');
+  if (type !== 'Bearer' || !token) {
+    throw new Error('Invalid token type');
+  }
+  return jwt.verify(token, config.get('jwt.auth.key'));
+};
 
 const generateJsonWebToken = (user, type) =>
   jwt.sign(_.pick(user, config.get(`jwt.${type}.fields`)), config.get(`jwt.${type}.key`), {

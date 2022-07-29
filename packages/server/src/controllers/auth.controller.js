@@ -44,11 +44,16 @@ export const logIn = async (req, res) => {
 export const getCurrentUser = (req, res) => res.json(getToSendUserData(req.user));
 
 export const assertAccessTo = (req, res) => {
-  let views = [];
+  let views = config.get('noAuthViews');
   try {
-    const { role: userRole } = jwt.verify(req.header('X-auth-token'), config.get('jwt.auth.key'));
-    views = config.get('userRoles').find(({ role }) => role === userRole).views;
+    const token = req.header('Authorization');
+    debug({ token });
+    if (token) {
+      const { role: userRole } = UserModel.verifyAuthToken(token);
+      views = config.get('userRoles').find(({ role }) => role === userRole).views;
+    }
   } catch (e) {
+    debug('Error', e);
     views = config.get('noAuthViews');
   }
 
