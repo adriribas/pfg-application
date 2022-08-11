@@ -1,20 +1,24 @@
-import jwt from 'jsonwebtoken';
-import config from 'config';
+import createDebugger from 'debug';
 
 import { User as UserModel } from '#r/models';
+import { reqProcessing } from '#r/utils';
+
+const { resError } = reqProcessing;
+const debug = createDebugger('pfgs:authMiddleware');
 
 export const auth = (req, res, next) => {
-  //const token = req.header('X-auth-token');
   const token = req.header('Authorization');
   if (!token) {
-    return res.status(401).json({ code: 'ERR_NO_TOKEN' });
+    debug('Token not provided');
+    return resError(res, 401, 'TOKEN_NOT_PROVIDED', 'Authorization token has not been provided.');
   }
+
   try {
-    //req.user = jwt.verify(token, config.get('jwt.auth.key'));
     req.user = UserModel.verifyAuthToken(token);
-    next();
   } catch (e) {
-    console.log('Invaild token', e);
-    res.status(400).json({ code: 'ERR_INVALID_TOKEN' });
+    debug('Invaild token', token, e.message);
+    return resError(res, 400, 'INVALID_TOKEN', 'Authorization token is invalid or has expired.');
   }
+
+  next();
 };

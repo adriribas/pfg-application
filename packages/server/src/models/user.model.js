@@ -44,8 +44,11 @@ const User = sequelize.define(
   { paranoid: true }
 );
 
-User.associate = ({ AcademicCourse }) => {
-  User.belongsToMany(AcademicCourse, { through: 'UserAcademicCourse' });
+User.associate = ({ Department, Area, Study }) => {
+  User.hasOne(Department, { foreignKey: 'director' }); // Director departament
+  User.hasOne(Area, { foreignKey: 'responsable' }); // Responsable de docència
+  User.belongsTo(Area, { foreignKey: 'area' }); // Professor
+  User.hasOne(Study, { foreignKey: 'coordinador' }); // Coordinador
 };
 
 const validationSchema = Joi.object({
@@ -69,7 +72,7 @@ const passwordComplexityOptions = {
   requirementCount: 3
 };
 
-User.validate = userData => validationSchema.validateAsync(userData);
+User.validate = data => validationSchema.validateAsync(data);
 User.validateAuth = authData => authValidationSchema.validateAsync(authData);
 User.validateSecret = (secret = '') => passwordComplexity(passwordComplexityOptions).validateAsync(secret);
 User.verifyAuthToken = bearerToken => {

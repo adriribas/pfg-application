@@ -2,35 +2,51 @@ import { DataTypes } from 'sequelize';
 import Joi from 'joi';
 
 import { db as sequelize } from '#r/startup';
+import { hardDataUtil } from '#r/utils';
 
 const Study = sequelize.define(
   'Study',
   {
-    id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true
-    },
     abv: {
-      type: DataTypes.STRING(10),
-      allowNull: false,
-      unique: true
+      type: DataTypes.STRING(8),
+      primaryKey: true
     },
     name: {
-      type: DataTypes.STRING(100),
-      allowNull: false,
-      unique: true
+      type: DataTypes.VIRTUAL,
+      get() {
+        return hardDataUtil.getValue('studies', this.abv) || null;
+      } /* ,
+      set(abv) {
+        this.setDataValue('name', hardDataUtil.getValue('studies', abv) || abv);
+      } */
     }
   },
   { paranoid: true }
 );
 
-Study.associate = ({ AcademicCourse, Subject }) => {
-  Study.belongsTo(AcademicCourse);
-  Study.belongsToMany(Subject, { through: 'StudiesSubjects' });
+Study.associate = ({ User, AcademicCourse, StudyAcademicCourse, Subject, StudySubject }) => {
+  Study.belongsTo(User, { foreignKey: 'coordinador' });
+
+  Study.belongsToMany(AcademicCourse, {
+    through: StudyAcademicCourse,
+    foreignKey: 'study',
+    otherKey: 'academicCourse'
+  });
+  Study.hasMany(StudyAcademicCourse, { foreignKey: 'study' });
+
+  Study.belongsToMany(Subject, {
+    through: StudySubject,
+    foreignKey: 'study',
+    otherKey: 'subject'
+  });
+  Study.hasMany(StudySubject, { foreignKey: 'study' });
 };
 
-const validationSchema = Joi.object({});
-Study.validate = studyData => validationSchema.validate(studyData);
+Study.requiredFilterFields = ['academicCourse'];
+
+const validationSchema = Joi.object({
+  abv: Joi.string().min(2).max(8).required()
+});
+Study.validate = data => validationSchema.validate(data);
 
 export default Study;

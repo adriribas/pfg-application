@@ -2,52 +2,32 @@ import _ from 'lodash';
 import createDebugger from 'debug';
 
 import { Area as Model } from '#r/models';
-import { reqValidationUtil } from '#r/utils';
+import { reqProcessing } from '#r/utils';
 
-const debug = createDebugger('pfgs:departmentController');
-
-export const validateRequest = (req, res, next) => {
-  if (reqValidationUtil.validateReq(req, Model, res)) {
-    next();
-  }
-};
-
-/** Handlers **/
+const { buildWhere, resError } = reqProcessing;
+const debug = createDebugger('pfgs:areaController');
 
 export const get = async (req, res) => {
-  const { departmentId, id } = req.params;
-  const area = await Model.findOne({
-    where: { DepartmentId: departmentId, id },
-    attributes: req.query.fields
-  });
+  const { abv } = req.params;
+  if (!abv) {
+    return resError(res, 400, 'KEY_NOT_PROVIDED', 'Area key not provided.');
+  }
 
+  const area = await Model.findByPk(abv, { attributes: req.query.fields });
   if (!area) {
-    res.status(404).send();
+    return resError(res, 404);
   }
 
   res.json(area);
 };
 
-export const queryGet = async (req, res) => {
-  res.json(await Model.findAll({ attributes: req.query.fields }));
-};
+export const filter = async (req, res) => {
+  const { data: filterData } = req.body;
 
-export const create = async (req, res) => {
-  const { academicCourseId: AcademicCourseId, departmentId: DepartmentId } = req.params;
-  const data = { ..._.pick(req.body, ['abv', 'name']), AcademicCourseId, DepartmentId };
-  debug('Creation data', data);
-  try {
-    await Model.validate(data);
-  } catch (e) {
-    return res.status(400).json({ code: 'ERR_INVALID_DATA', desc: e.message });
-  }
-
-  try {
-    res.status(201).json(await Model.create(data));
-  } catch (e) {
-    if (reqValidationUtil.isDuplicationError(e)) {
-      return res.status(400).json({ code: 'ERR_DUPLICATED_ENTRY' });
-    }
-    throw e;
-  }
+  res.json(
+    await Model.findAll({
+      where: buildWhere(filterData),
+      attributes: req.query.fields
+    })
+  );
 };

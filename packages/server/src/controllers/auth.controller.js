@@ -6,8 +6,9 @@ import jsonfile from 'jsonfile';
 import createDebugger from 'debug';
 
 import { User as UserModel } from '#r/models';
-import { emailUtil } from '#r/utils';
+import { reqProcessing, emailUtil } from '#r/utils';
 
+const { resError } = reqProcessing;
 const debug = createDebugger('pfgs:auth');
 
 const getToSendUserData = user => ({
@@ -19,20 +20,20 @@ export const logIn = async (req, res) => {
   try {
     await UserModel.validateAuth(req.body);
   } catch (e) {
-    return res.status(400).send(e.message);
+    return resError(res, 400, 'INVALID_DATA', e.message);
   }
 
   const user = await UserModel.findOne({
     where: { email: req.body.email }
   });
   if (!user) {
-    return res.status(400).send('Invalid email or password');
+    return resError(res, 400, 'INVALID_CREDENTIALS', 'Invalid email or password.');
   }
 
   const validSecret = await bcrypt.compare(req.body.secret, user.secret);
 
   if (!validSecret) {
-    return res.status(400).send('Invalid email or password');
+    return resError(res, 400, 'INVALID_CREDENTIALS', 'Invalid email or password.');
   }
 
   res.json({
@@ -58,7 +59,7 @@ export const assertAccessTo = (req, res) => {
   }
 
   if (!views.includes(req.params.view)) {
-    return res.status(403).send('The view is forbidden.');
+    return resError(res, 403, 'FORBIDDEN_VIEW', `View ${req.params.view} is forbidden.`);
   }
 
   res.json(true);
@@ -69,7 +70,7 @@ export const resetPassword = async (req, res) => {
     where: { email: req.body.email }
   });
   if (!user) {
-    res.status(400).send('Invalid email.');
+    return resError(res, 400, 'INVALID_DATA', `User with email ${req.body.email} does not exist.`);
   }
 
   const sendingResults = await emailUtil.sendEmail(
@@ -95,7 +96,7 @@ export const newPassword = async (req, res) => {
     userId = jwt.verify(token, config.get('jwt.resetPassword.key')).id;
   } catch (e) {
     debug('Reset password invalid token: %s', e.message);
-    return res.status(400).json({ code: 'ERR_TOKEN', desc: 'Invalid token' });
+    return resError(res, 400, 'INVALID_TOKEN', 'Provided token is invalid or has expired.');
   }
 
   try {
@@ -103,15 +104,17 @@ export const newPassword = async (req, res) => {
   } catch (e) {
     debug('Reset password complexity error: %s', e.message);
     const isLengthError = e.details.some(({ type }) => type.includes('tooShort') || type.includes('tooLong'));
-    return res.status(400).json({
-      code: isLengthError ? 'ERR_PWD_LENGTH' : 'ERR_PWD_COMPLEXITY',
-      desc: isLengthError ? 'Length error' : 'Complexity error'
-    });
+    return resError(
+      res,
+      400,
+      isLengthError ? 'PWD_LENGTH' : 'PWD_COMPLEXITY',
+      isLengthError ? 'Invalid password length.' : 'Password complexity is too low.'
+    );
   }
 
   if (!(await UserModel.update({ secret }, { where: { id: userId } }))[0]) {
     debug('User with id %s not found', userId);
-    return res.status(400).json({ code: 'ERR_USER', desc: 'User not found' });
+    return resError(res, 400, 'INVALID_TOKEN', 'The user encrypted in provided token does not exist.');
   }
 
   res.send(true);

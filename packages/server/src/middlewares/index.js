@@ -1,3 +1,3 @@
-export * from './auth.middleware';
-export * from './error.middleware';
-export * from './reqFormatter.middleware';
+export * as authorization from './auth.middleware';
+export * as reqProcessing from './reqProcessing.middleware';
+export * as errorHandling from './error.middleware';

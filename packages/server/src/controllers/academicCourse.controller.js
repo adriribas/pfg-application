@@ -1,45 +1,73 @@
-import { Op, col } from 'sequelize';
+import { Op } from 'sequelize';
 import _ from 'lodash';
 import createDebugger from 'debug';
 
 import { AcademicCourse as Model } from '#r/models';
-import { reqValidationUtil } from '#r/utils';
+import { reqProcessing } from '#r/utils';
 
+const { buildWhere, resError, isDuplicationError } = reqProcessing;
 const debug = createDebugger('pfgs:academicCourseController');
 
-export const validateRequest = (req, res, next) => {
-  if (reqValidationUtil.validateReq(req, Model, res)) {
-    next();
-  }
-};
-
-export const validateExistance = async (req, res, next) => {
-  if (!(await Model.count({ where: { id: req.params.academicCourseId } }))) {
-    return res.status(404).send();
-  }
-
-  next();
-};
-
-/** Handlers **/
-
 export const get = async (req, res) => {
-  const academicCourse = await Model.findByPk(req.params.id, { attributes: req.query.fields });
+  const { startYear } = req.params;
+  if (!startYear) {
+    return resError(res, 400, 'KEY_NOT_PROVIDED', 'Academic course key not provided.');
+  }
 
+  const academicCourse = await Model.findByPk(startYear, { attributes: req.query.fields });
   if (!academicCourse) {
-    return res.status(404).send();
+    return resError(res, 404);
   }
 
   res.json(academicCourse);
 };
 
-export const queryGet = async (req, res) => {
-  res.json(await Model.findAll({ attributes: req.query.fields, order: col('startYear') }));
+export const filter = async (req, res) => {
+  const { data: filterData } = req.body;
+  const academicCourses = await Model.findAll({
+    where: buildWhere(filterData),
+    attributes: req.query.fields,
+    order: [['startYear']]
+  });
+
+  res.json(
+    req.user.role !== 'Administrador' && !academicCourses.at(-1).active
+      ? academicCourses.slice(0, -1)
+      : academicCourses
+  );
 };
 
 export const create = async (req, res) => {
-  const lastAcademicCourse = (await Model.findAll({ order: col('startYear') })).at(-1);
-  const startYear = lastAcademicCourse ? lastAcademicCourse.startYear + 1 : new Date().getFullYear();
+  const data = _.pick(req.body, ['startYear']);
+  try {
+    await Model.validate(data);
+  } catch (e) {
+    return resError(res, 400, 'INVALID_DATA', e.message);
+  }
 
-  res.status(201).json(await Model.create({ startYear }));
+  try {
+    res.status(201).json(await Model.create(data));
+  } catch (e) {
+    if (isDuplicationError(e)) {
+      return resError(res, 400, 'DUPLICATION', 'This academic course does already exist.');
+    }
+    throw e;
+  }
+};
+
+export const update = async (req, res) => {
+  const startYear = req.params.startYear;
+  if (!startYear) {
+    return resError(res, 404);
+  }
+
+  const academicCourse = await Model.findByPk(startYear);
+  if (!academicCourse) {
+    return resError(res, 404);
+  }
+
+  Object.entries(_.pick(req.body, ['active'])).forEach(([field, value]) => (academicCourse[field] = value));
+  await academicCourse.save();
+
+  res.json(academicCourse);
 };

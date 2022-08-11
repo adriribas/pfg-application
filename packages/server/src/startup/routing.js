@@ -7,7 +7,7 @@ import cors from 'cors';
 import config from 'config';
 // express-stormpath, passport
 
-import * as middlewares from '#r/middlewares';
+import { reqProcessing, errorHandling } from '#r/middlewares';
 import apiRouter from '#r/routes';
 
 const debug = createDebugger('pfgs:routingStartup');
@@ -26,9 +26,9 @@ export default app => {
     app.use(morgan('dev'));
     debug('Morgan middleware for logging requests is enabled');
   }
-  app.use(middlewares.requestFormatter);
+  app.use(reqProcessing.requestFormatter);
 
   app.use('/api', apiRouter);
 
-  app.use(middlewares.error);
+  app.use(errorHandling.handler);
 };

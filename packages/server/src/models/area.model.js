@@ -6,31 +6,33 @@ import { db as sequelize } from '#r/startup';
 const Area = sequelize.define(
   'Area',
   {
-    id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true
-    },
     abv: {
       type: DataTypes.STRING(10),
-      allowNull: false,
-      unique: true
+      primaryKey: true
     },
     name: {
-      type: DataTypes.STRING(100),
-      allowNull: false,
-      unique: true
+      type: DataTypes.VIRTUAL,
+      set(abv) {
+        this.setDataValue('name', hardDataUtil.getValue('areas', abv) || abv);
+      }
     }
   },
   { paranoid: true }
 );
 
-Area.associate = ({ Department, Subject }) => {
-  Area.belongsTo(Department);
-  Area.hasMany(Subject);
+Area.associate = ({ User, Department, Subject, AreaSubject }) => {
+  Area.belongsTo(User, { foreignKey: 'responsable' }); // Responsable de docència
+  Area.hasMany(User, { foreignKey: 'area' }); // Professors
+
+  Area.belongsTo(Department, { foreignKey: 'department' });
+
+  Area.belongsToMany(Subject, { through: AreaSubject, foreignKey: 'area', otherKey: 'subject' });
+  Area.hasMany(AreaSubject, { foreignKey: 'area' });
 };
 
-const validationSchema = Joi.object({});
-Area.validate = areaData => validationSchema.validate(areaData);
+const validationSchema = Joi.object({
+  abv: Joi.string().min(2).max(10).required()
+});
+Area.validate = data => validationSchema.validate(data);
 
 export default Area;

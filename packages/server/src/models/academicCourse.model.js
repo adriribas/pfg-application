@@ -8,8 +8,7 @@ const AcademicCourse = sequelize.define(
   {
     startYear: {
       type: DataTypes.SMALLINT,
-      allowNull: false,
-      unique: true
+      primaryKey: true
     },
     endYear: {
       type: DataTypes.VIRTUAL,
@@ -17,20 +16,38 @@ const AcademicCourse = sequelize.define(
         return this.startYear + 1;
       },
       set() {
-        this.setDataValue('endYear', this.startYear + 1);
+        throw new Error('End year cannot be set');
       }
+    },
+    active: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
     }
   },
   { paranoid: true }
 );
 
-AcademicCourse.associate = ({ User, Study, Department }) => {
-  AcademicCourse.belongsToMany(User, { through: 'UserAcademicCourse' });
-  AcademicCourse.hasMany(Study);
-  AcademicCourse.hasMany(Department);
+AcademicCourse.associate = ({ Study, StudyAcademicCourse, Department, DepartmentAcademicCourse, Group }) => {
+  AcademicCourse.belongsToMany(Study, {
+    through: StudyAcademicCourse,
+    foreignKey: 'academicCourse',
+    otherKey: 'study'
+  });
+  AcademicCourse.hasMany(StudyAcademicCourse, { foreignKey: 'academicCourse' });
+
+  AcademicCourse.belongsToMany(Department, {
+    through: DepartmentAcademicCourse,
+    foreignKey: 'academicCourse',
+    otherKey: 'department'
+  });
+  AcademicCourse.hasMany(DepartmentAcademicCourse, { foreignKey: 'academicCourse' });
+
+  AcademicCourse.hasMany(Group, { foreignKey: 'academicCourse' });
 };
 
-const validationSchema = Joi.object({});
-AcademicCourse.validate = academicCourseData => validationSchema.validate(academicCourseData);
+const validationSchema = Joi.object({
+  startYear: Joi.number().min(2022).max(3022)
+});
+AcademicCourse.validate = data => validationSchema.validate(data);
 
 export default AcademicCourse;

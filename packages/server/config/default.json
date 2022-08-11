@@ -5,6 +5,14 @@
       "dialect": "mysql"
     }
   },
+  "email": {
+    "templates": {
+      "resetPassword": "resetPassword"
+    }
+  },
+  "hardData": {
+    "studies": "studies"
+  },
   "userRoles": [
     {
       "role": "Administrador",
@@ -27,5 +35,6 @@
       "views": ["p_horarisPropis", "p_horarisAssignatures", "p_horarisGraus"]
     }
   ],
-  "noAuthViews": ["login", "resetPassword", "newPassword"]
+  "noAuthViews": ["login", "resetPassword", "newPassword"],
+  "groupTypes": ["little", "medium", "big"]
 }

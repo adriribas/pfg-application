@@ -2,35 +2,41 @@ import { DataTypes } from 'sequelize';
 import Joi from 'joi';
 
 import { db as sequelize } from '#r/startup';
+import { hardDataUtil } from '#r/utils';
 
 const Department = sequelize.define(
   'Department',
   {
-    id: {
-      type: DataTypes.INTEGER,
-      primaryKey: true,
-      autoIncrement: true
-    },
     abv: {
       type: DataTypes.STRING(10),
-      allowNull: false,
-      unique: true
+      primaryKey: true
     },
     name: {
-      type: DataTypes.STRING(100),
-      allowNull: false,
-      unique: true
+      type: DataTypes.VIRTUAL,
+      set(abv) {
+        this.setDataValue('name', hardDataUtil.getValue('departments', abv) || abv);
+      }
     }
   },
   { paranoid: true }
 );
 
-Department.associate = ({ AcademicCourse, Area }) => {
-  Department.belongsTo(AcademicCourse);
-  Department.hasMany(Area);
+Department.associate = ({ User, AcademicCourse, DepartmentAcademicCourse, Area }) => {
+  Department.belongsTo(User, { foreignKey: 'director' });
+
+  Department.belongsToMany(AcademicCourse, {
+    through: DepartmentAcademicCourse,
+    foreignKey: 'department',
+    otherKey: 'academicCourse'
+  });
+  Department.hasMany(DepartmentAcademicCourse, { foreignKey: 'department' });
+
+  Department.hasMany(Area, { foreignKey: 'department' });
 };
 
-const validationSchema = Joi.object({});
-Department.validate = departmentData => validationSchema.validate(departmentData);
+const validationSchema = Joi.object({
+  abv: Joi.string().min(2).max(8).required()
+});
+Department.validate = data => validationSchema.validate(data);
 
 export default Department;

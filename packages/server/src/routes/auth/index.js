@@ -1,13 +1,13 @@
 import express from 'express';
 
 import { authController as controller } from '#r/controllers';
-import * as middlewares from '#r/middlewares';
+import { authorization } from '#r/middlewares';
 
 const router = express.Router();
 
 router.post('/', controller.logIn);
 
-router.get('/current-user', middlewares.auth, controller.getCurrentUser);
+router.get('/current-user', authorization.auth, controller.getCurrentUser);
 
 router.get('/access/:view', controller.assertAccessTo);
 
