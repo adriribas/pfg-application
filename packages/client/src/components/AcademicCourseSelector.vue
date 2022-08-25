@@ -3,28 +3,35 @@ import { ref, watch } from 'vue';
 
 import { useAcademicCoursesStore } from '@/stores';
 
+const props = defineProps({
+  selected: String
+});
+const emit = defineEmits(['update:selected']);
+
 const academicCoursesStore = useAcademicCoursesStore();
 academicCoursesStore.load();
 
-const selected = ref('current');
-const pastSelectedLabel = ref('Cursos anteriors');
+const selectedPastLabel = ref('Cursos anteriors');
 
-watch(selected, selection => {
-  if (selection) {
-    academicCoursesStore.setActive(academicCoursesStore[selection]);
+watch(
+  () => props.selected,
+  selection => {
+    if (selection) {
+      academicCoursesStore.setSelected(academicCoursesStore[selection]?.startYear);
+    }
   }
-});
+);
 
 const formatter = (startYear, endYear) => `${startYear} - ${endYear}`;
 const selectPast = academicCourse => {
-  pastSelectedLabel.value = formatter(academicCourse.startYear, academicCourse.endYear);
-  selected.value = '';
-  academicCoursesStore.setActive(academicCourse);
+  selectedPastLabel.value = formatter(academicCourse.startYear, academicCourse.endYear);
+  academicCoursesStore.setSelected(academicCourse.startYear);
+  emit('update:selected');
 };
 </script>
 
 <template>
-  <div class="wrapper bg-b4">
+  <div class="bg-b4 shadow-5 wrapper tabs">
     <q-tabs
       v-if="academicCoursesStore.loaded"
       v-model="selected"
@@ -33,10 +40,13 @@ const selectPast = academicCourse => {
       outside-arrows
       inline-label
       indicator-color="m5"
-      active-color="m5">
+      active-color="m5"
+      @update:model-value="$emit('update:selected', selected)"
+      class="tabs">
       <q-btn-dropdown
         v-if="academicCoursesStore.hasPast"
-        :label="pastSelectedLabel"
+        :label="selectedPastLabel"
+        :loading="academicCoursesStore.loading"
         auto-close
         no-caps
         stretch
@@ -55,15 +65,20 @@ const selectPast = academicCourse => {
       </q-btn-dropdown>
       <q-tab
         :label="formatter(academicCoursesStore.current.startYear, academicCoursesStore.current.endYear)"
-        name="current" />
-      <q-tab :label="formatter(academicCoursesStore.next.startYear, academicCoursesStore.next.endYear)" name="next" />
+        name="current"
+        :disable="academicCoursesStore.loading" />
+      <q-tab
+        v-if="academicCoursesStore.hasNext"
+        :label="formatter(academicCoursesStore.next.startYear, academicCoursesStore.next.endYear)"
+        name="next"
+        :disable="academicCoursesStore.loading" />
     </q-tabs>
   </div>
 </template>
 
 <style lang="sass" scoped>
 .wrapper
-    max-width: 380px
-    border-radius: 8px
-    box-shadow: 3px 5px 8px 0px rgba(30, 30, 30, 10)
+  width: fit-content
+.tabs
+  border-radius: 8px 8px 0px 0px
 </style>

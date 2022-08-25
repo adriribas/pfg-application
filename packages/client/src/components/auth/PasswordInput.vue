@@ -23,6 +23,10 @@ defineProps({
     autocapitalize="off"
     autocomplete="off"
     spellcheck="false">
+    <template #prepend>
+      <q-icon name="key" size="28px" />
+    </template>
+
     <template #append v-if="toggleIcon">
       <q-icon
         :name="isVisiblePassword ? 'visibility' : 'visibility_off'"

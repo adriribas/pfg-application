@@ -17,7 +17,9 @@ export const useAuthStore = defineStore('auth', {
         .getRoutes()
         .reduce(
           (accum, route) =>
-            route.meta?.role === this.role ? [...accum, { title: route.meta?.title, routeName: route.name }] : accum,
+            route.meta?.role === this.role
+              ? [...accum, { title: route.meta?.title, routeName: route.name }]
+              : accum,
           []
         );
     }
@@ -32,6 +34,7 @@ export const useAuthStore = defineStore('auth', {
         this.userData = user;
       } catch (e) {
         this.userData = {};
+        this.authToken = '';
       }
     }
   }

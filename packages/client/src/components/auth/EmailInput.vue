@@ -17,5 +17,9 @@ const value = ref('');
     autocorrect="off"
     autocapitalize="off"
     autocomplete="off"
-    spellcheck="false" />
+    spellcheck="false">
+    <template #prepend>
+      <q-icon name="email" size="28px" />
+    </template>
+  </q-input>
 </template>

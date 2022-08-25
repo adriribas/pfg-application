@@ -5,5 +5,5 @@ defineProps({
 </script>
 
 <template>
-  <p class="text-negative">{{ message }}</p>
+  <span class="text-negative">{{ message }}</span>
 </template>
