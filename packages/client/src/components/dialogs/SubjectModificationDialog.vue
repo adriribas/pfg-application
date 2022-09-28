@@ -1,12 +1,15 @@
 <script setup>
 import { ref } from 'vue';
 import { useQuasar, useDialogPluginComponent } from 'quasar';
+import _ from 'lodash';
 
+import DataTableModificationDialogSection from '@/components/dialogs/DataTableModificationDialogSection.vue';
 import AddAreasDialog from '@/components/dialogs/AddAreasDialog.vue';
 
 const props = defineProps({
   subject: Object,
-  departments: Array
+  departments: Array,
+  labTypes: Array
 });
 defineEmits([...useDialogPluginComponent.emits]);
 
@@ -26,16 +29,28 @@ const areas = ref(
     departmentName
   }))
 );
+const labType = ref(props.subject.labTypes.map(({ name }) => name));
 
 const openAddAreas = () =>
   $q
     .dialog({
       component: AddAreasDialog,
-      componentProps: {}
+      componentProps: { departments: props.departments, currentAreas: areas.value }
     })
-    .onOk(() => console.log('Ok'))
-    .onCancel(() => console.log('Cancel'))
-    .onDismiss(() => console.log('Ok or cancel'));
+    .onOk(({ areaAbv, departmentAbv }) => {
+      if (!areaAbv || !departmentAbv) {
+        return;
+      }
+      const department = props.departments.find(({ abv }) => abv === departmentAbv);
+      if (!department || !department.areas) {
+        return;
+      }
+      const area = department.areas.find(({ abv }) => abv === areaAbv);
+      if (!area) {
+        return;
+      }
+      areas.value.push({ abv: areaAbv, name: area.name, departmentAbv, departmentName: department.name });
+    });
 const removeArea = areaAbv => (areas.value = areas.value.filter(({ abv }) => abv !== areaAbv));
 </script>
 
@@ -50,86 +65,95 @@ const removeArea = areaAbv => (areas.value = areas.value.filter(({ abv }) => abv
     <q-card dark class="dialog-size">
       <q-card-section>
         <q-card-section>
-          <span class="q-mr-xl text-m8">{{ subject.code }}</span>
-          <span class="text-h6">{{ subject.name }}</span>
+          <span class="text-h6 q-mr-md">{{ subject.name }}</span>
+          <q-badge outline align="top" color="m13">{{ subject.code }}</q-badge>
         </q-card-section>
 
-        <q-card-section class="row items-center">
-          <div class="col-4">
-            <q-icon name="settings" size="sm" />
-            <span class="q-ml-md text-bold">Nombre de grups</span>
+        <DataTableModificationDialogSection title="Nombre de grups">
+          <div class="row justify-around">
+            <StepInput v-model="groups.big" title="Grans" :min="0" :max="99" />
+            <StepInput v-model="groups.medium" title="Mitjans" :min="0" :max="99" />
+            <StepInput v-model="groups.small" title="Petits" :min="0" :max="99" />
           </div>
-          <div class="row col justify-center">
-            <div class="column col-3 items-center">
-              <span class="col q-mb-sm">Grans</span>
-              <span class="col">8</span>
-            </div>
-            <div class="column col-3 items-center">
-              <span class="col q-mb-sm">Mitjans</span>
-              <span class="col">8</span>
-            </div>
-            <div class="column col-3 items-center">
-              <span class="col q-mb-sm">Petits</span>
-              <span class="col">8</span>
-            </div>
-          </div>
-        </q-card-section>
+        </DataTableModificationDialogSection>
 
-        <q-card-section class="row items-center">
-          <div class="col-4">
-            <q-icon name="settings" size="sm" />
-            <span class="q-ml-md text-bold">Àrees</span>
-          </div>
+        <DataTableModificationDialogSection title="Àrees">
+          <q-list bordered dark class="rounded-borders">
+            <q-item v-for="{ abv, name, departmentAbv, departmentName } in areas" :key="abv">
+              <q-item-section side center>
+                <q-btn icon="close" size="sm" round unelevated @click="removeArea(abv)" />
+              </q-item-section>
 
-          <div class="col">
-            <q-list bordered dark class="rounded-borders">
-              <q-item v-for="{ abv, name, departmentAbv, departmentName } in areas" :key="abv">
-                <q-item-section side center>
-                  <q-btn icon="close" size="sm" round unelevated @click="removeArea(abv)" />
-                </q-item-section>
+              <q-item-section>
+                <q-item-label>{{ abv }}</q-item-label>
+                <q-item-label caption :class="[!name && 'text-warning']">
+                  {{ name || 'Nom no especificat' }}
+                </q-item-label>
+              </q-item-section>
 
-                <q-item-section>
-                  <q-item-label>{{ abv }}</q-item-label>
-                  <q-item-label caption :class="[!name && 'text-warning']">
-                    {{ name || 'Nom no especificat' }}
-                  </q-item-label>
-                </q-item-section>
+              <q-item-section side>
+                <q-badge color="m8" class="q-py-xs q-px-sm">
+                  <span>{{ departmentAbv }}</span>
 
-                <q-item-section side>
-                  <q-badge color="m8" class="q-py-xs q-px-sm">
-                    <span>{{ departmentAbv }}</span>
+                  <q-tooltip
+                    anchor="center left"
+                    self="center end"
+                    transition-show="jump-left"
+                    transition-hide="jump-right"
+                    class="text-m12 bg-b4">
+                    <span :class="[!departmentName && 'text-warning']">
+                      {{ departmentName || 'Nom no especificat' }}
+                    </span>
+                  </q-tooltip>
+                </q-badge>
+              </q-item-section>
+            </q-item>
 
-                    <q-tooltip
-                      anchor="center left"
-                      self="center end"
-                      transition-show="jump-left"
-                      transition-hide="jump-right"
-                      class="text-m12 bg-b4">
-                      <span :class="[!departmentName && 'text-warning']">
-                        {{ departmentName || 'Nom no especificat' }}
-                      </span>
-                    </q-tooltip>
-                  </q-badge>
-                </q-item-section>
-              </q-item>
+            <q-item>
+              <q-item-section class="row">
+                <div class="col">
+                  <q-btn icon="add" unelevated @click="openAddAreas" class="full-width dotted-border" />
+                </div>
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </DataTableModificationDialogSection>
 
-              <q-item dark>
-                <q-item-section class="row">
-                  <div class="col">
-                    <q-btn icon="add" unelevated @click="openAddAreas" class="full-width dotted-border" />
-                  </div>
-                </q-item-section>
-              </q-item>
-            </q-list>
-          </div>
-        </q-card-section>
+        <DataTableModificationDialogSection title="Tipus de laboratori">
+          <q-select
+            label="Seleccionar tipus de laboratori"
+            v-model="labType"
+            :options="labTypes"
+            multiple
+            clearable
+            stack-label
+            use-chips
+            filled
+            dark
+            color="m6">
+          </q-select>
+        </DataTableModificationDialogSection>
       </q-card-section>
 
-      <q-separator color="g10" />
-
-      <q-card-actions align="right">
-        <q-btn label="Guardar" color="m6" no-caps @click="onDialogOK" />
+      <q-card-actions align="right" class="q-mb-sm q-mr-xs">
         <q-btn label="Cancel·lar" flat no-caps @click="onDialogCancel" />
+        <q-btn
+          label="Guardar"
+          color="m6"
+          no-caps
+          @click="
+            onDialogOK({
+              code: subject.code,
+              data: {
+                bigGroups: groups.big,
+                mediumGroups: groups.medium,
+                smallGroups: groups.small,
+                areas: areas?.map(({ abv }) => abv) || [],
+                labTypes: labType?.map(name => name) || []
+              }
+            })
+          "
+          class="q-mr-sm save-btn" />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -139,8 +163,13 @@ const removeArea = areaAbv => (areas.value = areas.value.filter(({ abv }) => abv
 .dialog-size
   width: 700px
   max-width: 90vw
-.select-size
-  min-width: 260px
 .dotted-border
   border: dashed 0.5px
+.save-btn
+  width: 80px
+</style>
+
+<style lang="sass">
+.group-input input
+  text-align: center
 </style>

@@ -1,10 +1,10 @@
 <script setup>
 import { ref } from 'vue';
 
-import { useAcademicCoursesStore } from '@/stores';
+import { useSchoolsStore } from '@/stores';
 import { departmentsApi, areasApi } from '@/api';
 
-const academicCoursesStore = useAcademicCoursesStore();
+const schoolsStore = useSchoolsStore();
 
 const departmentColumns = [
   { name: 'abv', label: 'Abreviació', field: 'abv', align: 'left' },
@@ -23,14 +23,14 @@ const error = ref(false);
 
   try {
     const { data: departments } = await departmentsApi.list({
-      associations: { academicCourse: academicCoursesStore.selected.startYear }
+      associations: { school: schoolsStore.school.abv }
     });
     const { data: areas } = await areasApi.list({
       filterData: {
         department: departments.map(({ abv }) => abv)
       },
       associations: {
-        academicCourse: academicCoursesStore.selected.startYear
+        academicCourse: { school: schoolsStore.school.abv }
       }
     });
 
@@ -107,8 +107,11 @@ const error = ref(false);
             size="sm"
             color="m8" />
         </q-td>
-        <q-td v-for="col in props.cols" :key="col.name" :props="props">
-          {{ col.value }}
+        <q-td key="abv" :props="props">
+          {{ props.row.abv }}
+        </q-td>
+        <q-td key="name" :props="props" :class="!props.row.name && 'text-warning'">
+          {{ props.row.name || '-' }}
         </q-td>
       </q-tr>
 
@@ -131,6 +134,17 @@ const error = ref(false);
                 <q-th v-for="col in props.cols" :key="col.name" :props="props" class="table-header">
                   {{ col.label }}
                 </q-th>
+              </q-tr>
+            </template>
+
+            <template #body="props">
+              <q-tr :props="props">
+                <q-td key="abv" :props="props">
+                  {{ props.row.abv }}
+                </q-td>
+                <q-td key="name" :props="props" :class="!props.row.name && 'text-warning'">
+                  {{ props.row.name || '-' }}
+                </q-td>
               </q-tr>
             </template>
 

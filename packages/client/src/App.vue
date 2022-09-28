@@ -1,14 +1,16 @@
 <script setup>
 import { onBeforeMount } from 'vue';
 
-import { useAuthStore } from './stores';
+import { useAuthStore, useSchoolsStore } from './stores';
 import TheNavigationTopBar from './components/TheNavigationTopBar.vue';
 import TheFooter from './components/TheFooter.vue';
 
 const authStore = useAuthStore();
+const schoolStore = useSchoolsStore();
 
-onBeforeMount(() => {
-  authStore.refreshUserData();
+onBeforeMount(async () => {
+  await authStore.refreshUserData();
+  await schoolStore.refreshSchoolData();
   authStore.$subscribe((_mutation, state) => {
     if (!state.authToken) {
       return localStorage.removeItem('authToken');

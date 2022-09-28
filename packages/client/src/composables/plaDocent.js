@@ -2,12 +2,10 @@ import { ref, isRef, unref, watchEffect } from 'vue';
 import { read } from 'xlsx';
 import _ from 'lodash';
 
-import { useAcademicCoursesStore } from '@/stores';
-import { studiesApi, academicCoursesApi } from '@/api';
+import { useSchoolsStore } from '@/stores';
+import { schoolsApi, studiesApi } from '@/api';
 
-const academicCoursesStore = useAcademicCoursesStore();
-
-const NO_AREA = 'EN BLANC';
+const schoolsStore = useSchoolsStore();
 
 const columnsToPeek = {
   Codi: 'code',
@@ -21,7 +19,7 @@ const columnsToPeek = {
   'Cr.': 'credits',
   NGG: 'bigGroups',
   NGM: 'mediumGroups',
-  NGP: 'littleGroups',
+  NGP: 'smallGroups',
   Labs: 'labType',
   nLabs: 'labTypeCapacity'
 };
@@ -198,16 +196,44 @@ const processSharedSubjects = plaDocentData => {
   return studies;
 };
 
+const splitLabTypes = (labTypes, capacity) => {
+  if (!labTypes) {
+    return null;
+  }
+  return labTypes.split('/').map(name => ({ name, capacity }));
+};
+
+const mergeSubjects = plaDocentData => {
+  return plaDocentData.map(study => ({
+    ...study,
+    subjects: study.subjects.reduce((accum, subject) => {
+      const areas = subject.area ? [{ abv: subject.area, department: { abv: subject.department } }] : [];
+      const labTypes = subject.labType ? splitLabTypes(subject.labType, subject.labTypeCapacity) : [];
+      const existingSubject = accum.find(({ code }) => code === subject.code);
+
+      if (!existingSubject) {
+        delete subject.area;
+        delete subject.department;
+        delete subject.labType;
+        delete subject.labTypeCapacity;
+        return [...accum, { ...subject, areas, labTypes }];
+      }
+
+      existingSubject.areas.push(...areas);
+      existingSubject.labTypes.push(...labTypes);
+
+      return accum;
+    }, [])
+  }));
+};
+
 const uploadStudy = (studyName, subjects) => {
   console.log('Uploading', studyName);
   console.log('Subjects', subjects);
-  return studiesApi.create(
-    {
-      abv: studyName,
-      subjects
-    },
-    academicCoursesStore.selected.startYear
-  );
+  return studiesApi.create({
+    abv: studyName,
+    subjects
+  });
 };
 
 const uploadPlaDocent = async (plaDocentData, percentage) => {
@@ -217,25 +243,20 @@ const uploadPlaDocent = async (plaDocentData, percentage) => {
     percentage.value = (++i / plaDocentData.length) * 100;
   }
 
-  if (academicCoursesStore.hasPast) {
-    await academicCoursesApi.update(academicCoursesStore.current.startYear, { active: false });
-  }
-  const activeStartYear = academicCoursesStore.selected.startYear;
-  await academicCoursesApi.update(activeStartYear, { active: true });
-  await academicCoursesApi.create({ startYear: activeStartYear + 1 });
+  await schoolsApi.update(schoolsStore.school.abv, { currentStartYear: schoolsStore.nextStartYear });
 };
 
 const processData = async (file, uploading, percentage, error) => {
   try {
     const { Sheets: sheets } = await readFile(file);
     console.log('Raw', sheets);
-    const plaDocentData = processSharedSubjects(formatData(makeColumns(sheets)));
+    const plaDocentData = mergeSubjects(processSharedSubjects(formatData(makeColumns(sheets))));
     console.log('Pla Docent data', plaDocentData);
 
     await uploadPlaDocent(plaDocentData, percentage);
     finishWithSuccess(uploading);
   } catch (e) {
-    console.log('Error', e);
+    console.error('Error', e);
     return finishWithError(uploading, error, e.message);
   }
 };
@@ -246,9 +267,10 @@ export const usePlaDocent = file => {
   const error = ref('');
 
   const doProcessData = () => {
-    if (!file.value) {
+    if (!file || (isRef(file) && !file.value)) {
       return;
     }
+
     uploading.value = true;
     percentage.value = 0;
     error.value = '';

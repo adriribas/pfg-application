@@ -11,6 +11,7 @@ export const useAuthStore = defineStore('auth', {
     isLoggedIn: state => !!state.authToken,
     defaultView: state => state.userData.defaultView,
     fullName: state => `${state.userData.firstName} ${state.userData.lastName}`,
+    school: state => state.userData.school,
     role: state => state.userData.role,
     tabs() {
       return router

@@ -1,2 +1,3 @@
-export { useAuthStore } from './auth';
-export { useAcademicCoursesStore } from './academicCourses';
+export { useAuthStore } from './auth.js';
+export { useAcademicCoursesStore } from './academicCourses.js';
+export { useSchoolsStore } from './school.js';
