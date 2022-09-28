@@ -12,7 +12,7 @@ const { resError } = reqProcessing;
 const debug = createDebugger('pfgs:auth');
 
 const getToSendUserData = user => ({
-  ..._.pick(user, 'firstName', 'lastName', 'email', 'role'),
+  ..._.pick(user, 'firstName', 'lastName', 'email', 'school', 'role'),
   defaultView: config.get('userRoles').find(({ role }) => role === user.role).views[0]
 });
 
@@ -42,7 +42,7 @@ export const logIn = async (req, res) => {
   });
 };
 
-export const getCurrentUser = (req, res) => res.json(getToSendUserData(req.user));
+export const getCurrentUser = (req, res) => res.json(getToSendUserData(req.user)); // TO-DO: Comprovar que l'usuari existeixi a la base de dades (per si s'ha eliminat o ha canviat)
 
 export const assertAccessTo = (req, res) => {
   let views = config.get('noAuthViews');

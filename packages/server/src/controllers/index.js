@@ -1,7 +1,9 @@
-export * as authController from './auth.controller';
-export * as userController from './user.controller';
-export * as academicCourseController from './academicCourse.controller';
-export * as departmentController from './department.controller';
-export * as areaController from './area.controller';
-export * as studyController from './study.controller';
-export * as subjectController from './subject.controller';
+export * as authController from './auth.controller.js';
+export * as userController from './user.controller.js';
+export * as academicCourseController from './academicCourse.controller.js';
+export * as schoolController from './school.controller.js';
+export * as departmentController from './department.controller.js';
+export * as areaController from './area.controller.js';
+export * as studyController from './study.controller.js';
+export * as subjectController from './subject.controller.js';
+export * as labTypeController from './labType.controller.js';

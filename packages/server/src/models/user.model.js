@@ -44,7 +44,8 @@ const User = sequelize.define(
   { paranoid: true }
 );
 
-User.associate = ({ Department, Area, Study }) => {
+User.associate = ({ School, Department, Area, Study }) => {
+  User.belongsTo(School, { foreignKey: 'school' });
   User.hasOne(Department, { foreignKey: 'director' }); // Director departament
   User.hasOne(Area, { foreignKey: 'responsable' }); // Responsable de docència
   User.belongsTo(Area, { foreignKey: 'area' }); // Professor

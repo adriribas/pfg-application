@@ -7,6 +7,7 @@ const { resError } = reqProcessing;
 const debug = createDebugger('pfgs:authMiddleware');
 
 export const auth = (req, res, next) => {
+  debug('Processing authorization');
   const token = req.header('Authorization');
   if (!token) {
     debug('Token not provided');

@@ -21,7 +21,7 @@
   "clientDomain": ["http://localhost:3000"],
   "jwt": {
     "auth": {
-      "fields": ["id", "firstName", "lastName", "email", "role", "activated"],
+      "fields": ["id", "firstName", "lastName", "email", "school", "role", "activated"],
       "expiration": "14d"
     },
     "resetPassword": {
@@ -29,26 +29,19 @@
       "expiration": "0.5 hrs"
     }
   },
+  "schools": [
+    {
+      "abv": "EPS",
+      "name": "Escola Politècnica Superior"
+    }
+  ],
   "administratorUsers": [
     {
-      "firstName": "Admin 1",
-      "lastName": "Test",
-      "email": "admin1@test.com",
-      "secret": "admin1",
-      "role": "Administrador"
-    },
-    {
-      "firstName": "Admin 2",
-      "lastName": "Test",
-      "email": "admin2@test.com",
-      "secret": "admin2",
-      "role": "Administrador"
-    },
-    {
-      "firstName": "Admin 3",
-      "lastName": "Test",
-      "email": "admin3@test.com",
-      "secret": "admin3",
+      "firstName": "Adrià",
+      "lastName": "Ribas Chico",
+      "email": "admin@test.com",
+      "secret": "admin",
+      "school": "EPS",
       "role": "Administrador"
     }
   ]

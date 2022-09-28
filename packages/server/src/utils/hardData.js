@@ -9,7 +9,7 @@ export const getValue = (resource, key) => {
     const data = jsonfile.readFileSync(`resources/hardData/${config.get(`hardData.${resource}`)}.json`);
     return data[key] || null;
   } catch (e) {
-    debug('Error getting value from a JSON resource', e);
+    debug(`Error getting value ${key} from ${resource} JSON resource`, e);
     return null;
   }
 };

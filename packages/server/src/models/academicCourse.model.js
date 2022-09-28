@@ -28,7 +28,7 @@ const AcademicCourse = sequelize.define(
 );
 
 AcademicCourse.associate = ({ Study, StudyAcademicCourse, Department, DepartmentAcademicCourse, Group }) => {
-  AcademicCourse.belongsToMany(Study, {
+  /* AcademicCourse.belongsToMany(Study, {
     through: StudyAcademicCourse,
     foreignKey: 'academicCourse',
     otherKey: 'study'
@@ -42,7 +42,7 @@ AcademicCourse.associate = ({ Study, StudyAcademicCourse, Department, Department
   });
   AcademicCourse.hasMany(DepartmentAcademicCourse, { foreignKey: 'academicCourse' });
 
-  AcademicCourse.hasMany(Group, { foreignKey: 'academicCourse' });
+  AcademicCourse.hasMany(Group, { foreignKey: 'academicCourse' }); */
 };
 
 const validationSchema = Joi.object({

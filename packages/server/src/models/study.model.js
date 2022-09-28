@@ -24,15 +24,16 @@ const Study = sequelize.define(
   { paranoid: true }
 );
 
-Study.associate = ({ User, AcademicCourse, StudyAcademicCourse, Subject, StudySubject }) => {
+Study.associate = ({ User, School, SchoolStudy, Subject, StudySubject }) => {
   Study.belongsTo(User, { foreignKey: 'coordinador' });
 
-  Study.belongsToMany(AcademicCourse, {
-    through: StudyAcademicCourse,
+  Study.belongsTo(School, { foreignKey: 'school' });
+  /* Study.belongsToMany(School, {
+    through: SchoolStudy,
     foreignKey: 'study',
-    otherKey: 'academicCourse'
+    otherKey: 'school'
   });
-  Study.hasMany(StudyAcademicCourse, { foreignKey: 'study' });
+  Study.hasMany(SchoolStudy, { foreignKey: 'study' }); */
 
   Study.belongsToMany(Subject, {
     through: StudySubject,
@@ -42,7 +43,7 @@ Study.associate = ({ User, AcademicCourse, StudyAcademicCourse, Subject, StudySu
   Study.hasMany(StudySubject, { foreignKey: 'study' });
 };
 
-Study.requiredFilterFields = ['academicCourse'];
+Study.requiredFilterFields = ['school'];
 
 const validationSchema = Joi.object({
   abv: Joi.string().min(2).max(8).required()

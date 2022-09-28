@@ -1,36 +1,68 @@
 import _ from 'lodash';
+import createDebugger from 'debug';
 
 import { reqProcessing } from '#r/utils';
+import { db as sequelize } from '#r/startup';
 
 const { resError } = reqProcessing;
+const debug = createDebugger('pfgs:reqProcessingMiddleware');
+
+const splitBy = (values, splitter = ',') => {
+  if (!values) {
+    return null;
+  }
+  return values.split(splitter);
+};
 
 export const requestFormatter = (req, _res, next) => {
-  const query = req.query;
+  const { query } = req;
 
-  if (query.fields) {
-    query.fields = query.fields.split(',');
-  }
+  query.fields = splitBy(query.fields);
+  query.include =
+    splitBy(query.include)?.reduce((accum, modelName) => {
+      try {
+        const upperFstModelName = _.upperFirst(modelName);
+        accum[upperFstModelName] = sequelize.model(upperFstModelName);
+      } catch (e) {
+        debug('Invalid include', e.message);
+      }
+      return accum;
+    }, {}) || {};
+
+  debug('Fields', query.fields);
+  debug('Include', query.include);
 
   next();
 };
 
 const validateFieldsMatching = (fields, Model) => {
-  if (!fields) {
+  if (!fields || fields.length === 0) {
     return true;
-  }
-  if (!fields instanceof Array) {
-    return false;
   }
   const attributes = Object.keys(Model.getAttributes());
   return fields.every(field => attributes.includes(field));
 };
 
-export const requestValidator = Model => (req, res, next) => {
-  const query = req.query;
+const validateIncludeMatching = (include, Model) => {
+  if (Object.keys(include).length === 0) {
+    return true;
+  }
+  if (!Model.allowedInclusions) {
+    return false;
+  }
+  return Object.values(include).every(IncludedModel => Model.allowedInclusions.includes(IncludedModel));
+};
 
-  if (!validateFieldsMatching(query.fields, Model)) {
-    res?.status(400).json({ code: 'ERR_BAD_QUERY_FIELDS' });
-    return;
+export const requestValidator = Model => (req, res, next) => {
+  const {
+    query: { fields, include }
+  } = req;
+
+  if (!validateFieldsMatching(fields, Model)) {
+    return resError(res, 400, 'BAD_QUERY_FIELDS', 'Some query fields are invalid.');
+  }
+  if (!validateIncludeMatching(include, Model)) {
+    return resError(res, 400, 'BAD_QUERY_INCLUDE', 'Query include is invalid.');
   }
 
   next();

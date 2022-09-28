@@ -9,12 +9,15 @@ const { buildWhere, resError } = reqProcessing;
 const debug = createDebugger('pfgs:departmentController');
 
 export const get = async (req, res) => {
-  const { abv } = req.params;
+  const {
+    params: { abv },
+    query: { fields }
+  } = req;
   if (!abv) {
     return resError(res, 400, 'KEY_NOT_PROVIDED', 'Department key not provided.');
   }
 
-  const department = await Model.findByPk(abv, { attributes: req.query.fields });
+  const department = await Model.findByPk(abv, { attributes: fields });
   if (!department) {
     return resError(res, 404);
   }
@@ -23,12 +26,15 @@ export const get = async (req, res) => {
 };
 
 export const filter = async (req, res) => {
-  const { data: filterData } = req.body;
+  const {
+    query: { fields },
+    body: { data: filterData }
+  } = req;
 
   res.json(
     await Model.findAll({
       where: buildWhere(filterData),
-      attributes: req.query.fields
+      attributes: fields
     })
   );
 };

@@ -3,18 +3,18 @@ import _ from 'lodash';
 import createDebugger from 'debug';
 
 import { db as sequelize } from '#r/startup';
-import { reqProcessing } from '#r/utils';
+import { reqProcessing, groupsUtil } from '#r/utils';
 import {
   Study as Model,
-  AcademicCourse as AcademicCourseModel,
+  School as SchoolModel,
   Department as DepartmentModel,
   Area as AreaModel,
   Subject as SubjectModel,
-  LabType as LabTypeModel,
-  Group as GroupModel
+  LabType as LabTypeModel
 } from '#r/models';
 
-const { buildWhere, findOrCreate, resError } = reqProcessing;
+const { buildWhere, createOrUpdate, resError } = reqProcessing;
+const { syncSubjectGroups } = groupsUtil;
 const debug = createDebugger('pfgs:studyController');
 
 export const get = async (req, res) => {
@@ -33,108 +33,91 @@ export const get = async (req, res) => {
 
 export const filter = async (req, res) => {
   const {
-    data: filterData,
-    associations: { academicCourse }
-  } = req.body;
+    query: { fields },
+    body: { data: filterData }
+  } = req;
 
   res.json(
     await Model.findAll({
       where: buildWhere(filterData),
-      include: {
-        model: AcademicCourseModel,
-        where: { startYear: academicCourse },
-        through: { attributes: [] },
-        attributes: []
-      },
-      attributes: req.query.fields
+      attributes: fields
     })
   );
 };
 
-const createGroup = async (subject, academicCourse, groupData, transaction) => {
-  await GroupModel.validate(groupData);
-  const group = await GroupModel.create(groupData, { transaction });
-  await subject.addGroup(group, { transaction });
-  return academicCourse.addGroup(group, { transaction });
-};
-
-const createGroups = (subject, academicCourse, type, amount, transaction) => {
-  const creationPromises = [];
-
-  for (let i = 1; i <= amount; i++) {
-    const groupData = { type, number: i };
-    creationPromises.push(createGroup(subject, academicCourse, groupData, transaction));
-  }
-
-  return Promise.all(creationPromises);
-};
-
 export const create = async (req, res) => {
-  const academicCourseStartYear = req.body.academicCourse;
-  if (!academicCourseStartYear) {
-    return resError(res, 400, 'INVALID_DATA', 'Academic course not provided.');
+  const schoolAbv = req.user.school;
+  if (!schoolAbv) {
+    return resError(res, 400, 'INVALID_USER', 'User is not assigned to any school.');
   }
-  const academicCourse = await AcademicCourseModel.findByPk(academicCourseStartYear);
-  if (!academicCourse) {
-    return resError(res, 400, 'INVALID_DATA', `Academic course ${academicCourseStartYear} does not exist.`);
+
+  const school = await SchoolModel.findByPk(schoolAbv);
+  if (!school) {
+    return resError(res, 400, 'INVALID_DATA', `School ${schoolAbv} does not exist.`);
   }
+
   try {
     const study = await sequelize.transaction(async transaction => {
-      const data = { ..._.pick(req.body, ['abv']), name: req.body.abv };
-      const [study] = await findOrCreate(Model, { abv: data.abv }, data, transaction);
+      const data = _.pick(req.body, ['abv']);
+      const [study] = await createOrUpdate(Model, { abv: data.abv }, data, transaction);
 
-      await academicCourse.addStudy(study, { transaction });
+      await study.setSchool(school, { transaction });
 
-      for (const subjectWholeData of req.body?.subjects) {
-        const departamentData = { abv: subjectWholeData.department };
-        const [department] = await findOrCreate(
-          DepartmentModel,
-          { abv: departamentData.abv },
-          departamentData,
-          transaction
-        );
-
-        const areaData = { abv: subjectWholeData.area };
-        const [area] = await findOrCreate(AreaModel, { abv: areaData.abv }, areaData, transaction);
-
-        const subjectData = _.pick(subjectWholeData, [
+      for (const rawSubjectData of req.body.subjects) {
+        const subjectData = _.pick(rawSubjectData, [
           'code',
           'name',
           'semester',
           'credits',
           'bigGroups',
           'mediumGroups',
-          'littleGroups'
+          'smallGroups'
         ]);
-        debug('Trying to create subject', subjectData);
-        const [subject] = await findOrCreate(
+        debug('Attempting to create subject', subjectData);
+        const [subject] = await createOrUpdate(
           SubjectModel,
           { code: subjectData.code },
           subjectData,
           transaction
         );
 
-        const labTypeData = {
-          name: subjectWholeData.labType,
-          capacity: subjectWholeData.labTypeCapacity || 0
-        };
-        if (labTypeData.name) {
-          const [labType] = await findOrCreate(
-            LabTypeModel,
-            { name: labTypeData.name },
-            labTypeData,
-            transaction
-          );
-          await subject.addLabType(labType, { transaction });
+        await syncSubjectGroups(subject, transaction);
+
+        const { areas, labTypes } = rawSubjectData;
+        if (areas instanceof Array) {
+          const areaInstances = [];
+          for (const { department: departmentData, ...areaData } of areas) {
+            const [department] = await createOrUpdate(
+              DepartmentModel,
+              { abv: departmentData.abv },
+              departmentData,
+              transaction
+            );
+            const [area] = await createOrUpdate(AreaModel, { abv: areaData.abv }, areaData, transaction);
+            await area.setDepartment(department, { transaction });
+            if (!areaInstances.find(({ abv }) => abv === area.abv)) {
+              areaInstances.push(area);
+            }
+          }
+          await subject.setAreas(areaInstances, { transaction });
+        }
+        if (labTypes instanceof Array) {
+          const labTypeInstances = [];
+          for (const labTypeData of labTypes) {
+            const [labType] = await createOrUpdate(
+              LabTypeModel,
+              { name: labTypeData.name },
+              labTypeData,
+              transaction
+            );
+            if (!labTypeInstances.find(({ name }) => name === labType.name)) {
+              labTypeInstances.push(labType);
+            }
+          }
+          await subject.setLabTypes(labTypeInstances, { transaction });
         }
 
-        await area.setDepartment(department, { transaction });
-        await area.addSubject(subject, { transaction });
-        await study.addSubject(subject, { transaction, through: { course: subjectWholeData.course } });
-
-        await createGroups(subject, academicCourse, 'little', subjectWholeData.littleGroups, transaction);
-        await createGroups(subject, academicCourse, 'medium', subjectWholeData.mediumGroups, transaction);
-        await createGroups(subject, academicCourse, 'big', subjectWholeData.bigGroups, transaction);
+        await study.addSubject(subject, { through: { course: rawSubjectData.course }, transaction });
       }
 
       return study;

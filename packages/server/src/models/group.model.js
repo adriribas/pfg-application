@@ -21,7 +21,7 @@ const Group = sequelize.define(
 
 Group.associate = ({ Subject, AcademicCourse }) => {
   Group.belongsTo(Subject, { foreignKey: 'subject' });
-  Group.belongsTo(AcademicCourse, { foreignKey: 'academicCourse' });
+  //Group.belongsTo(AcademicCourse, { foreignKey: 'academicCourse' });
 };
 
 const validationSchema = Joi.object({

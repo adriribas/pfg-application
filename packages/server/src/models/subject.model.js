@@ -30,7 +30,7 @@ const Subject = sequelize.define(
       type: DataTypes.TINYINT,
       defaultValue: 0
     },
-    littleGroups: {
+    smallGroups: {
       type: DataTypes.TINYINT,
       defaultValue: 0
     }
@@ -49,9 +49,12 @@ Subject.associate = ({ Area, AreaSubject, Study, StudySubject, LabType, SubjectL
   Subject.hasMany(SubjectLabType, { foreignKey: 'subject' });
 
   Subject.hasMany(Group, { foreignKey: 'subject' });
+
+  Subject.allowedInclusions = [Area, LabType];
 };
 
 Subject.requiredFilterFields = ['study'];
+Subject.updatableFields = ['bigGroups', 'mediumGroups', 'smallGroups', 'areas', 'labTypes'];
 
 const validationSchema = Joi.object({
   code: Joi.string().alphanum().max(10).required(),
@@ -60,7 +63,7 @@ const validationSchema = Joi.object({
   credits: Joi.number().min(0).max(60).required(),
   bigGroups: Joi.number().min(0).max(20),
   mediumGroups: Joi.number().min(0).max(20),
-  littleGroups: Joi.number().min(0).max(20)
+  smallGroups: Joi.number().min(0).max(20)
 });
 Subject.validate = data => validationSchema.validate(data);
 

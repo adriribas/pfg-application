@@ -25,6 +25,8 @@ LabType.associate = ({ Subject, SubjectLabType }) => {
   LabType.hasMany(SubjectLabType, { foreignKey: 'labType' });
 };
 
+LabType.updatableFields = ['capacity'];
+
 const validationSchema = Joi.object({
   name: Joi.string().alphanum().min(1).max(50).required(),
   capacity: Joi.number().min(0)

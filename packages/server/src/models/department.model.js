@@ -13,23 +13,26 @@ const Department = sequelize.define(
     },
     name: {
       type: DataTypes.VIRTUAL,
+      get() {
+        return hardDataUtil.getValue('departments', this.abv) || null;
+      } /* ,
       set(abv) {
         this.setDataValue('name', hardDataUtil.getValue('departments', abv) || abv);
-      }
+      } */
     }
   },
   { paranoid: true }
 );
 
-Department.associate = ({ User, AcademicCourse, DepartmentAcademicCourse, Area }) => {
+Department.associate = ({ User, School, SchoolDepartment, Area }) => {
   Department.belongsTo(User, { foreignKey: 'director' });
 
-  Department.belongsToMany(AcademicCourse, {
-    through: DepartmentAcademicCourse,
+  Department.belongsToMany(School, {
+    through: SchoolDepartment,
     foreignKey: 'department',
-    otherKey: 'academicCourse'
+    otherKey: 'school'
   });
-  Department.hasMany(DepartmentAcademicCourse, { foreignKey: 'department' });
+  Department.hasMany(SchoolDepartment, { foreignKey: 'department' });
 
   Department.hasMany(Area, { foreignKey: 'department' });
 };

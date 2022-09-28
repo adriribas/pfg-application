@@ -2,6 +2,7 @@ import { DataTypes } from 'sequelize';
 import Joi from 'joi';
 
 import { db as sequelize } from '#r/startup';
+import { hardDataUtil } from '#r/utils';
 
 const Area = sequelize.define(
   'Area',
@@ -12,8 +13,8 @@ const Area = sequelize.define(
     },
     name: {
       type: DataTypes.VIRTUAL,
-      set(abv) {
-        this.setDataValue('name', hardDataUtil.getValue('areas', abv) || abv);
+      get() {
+        return hardDataUtil.getValue('areas', this.abv) || null;
       }
     }
   },

@@ -11,7 +11,9 @@
     }
   },
   "hardData": {
-    "studies": "studies"
+    "studies": "studies",
+    "departments": "departments",
+    "areas": "areas"
   },
   "userRoles": [
     {
@@ -36,5 +38,5 @@
     }
   ],
   "noAuthViews": ["login", "resetPassword", "newPassword"],
-  "groupTypes": ["little", "medium", "big"]
+  "groupTypes": ["small", "medium", "big"]
 }
