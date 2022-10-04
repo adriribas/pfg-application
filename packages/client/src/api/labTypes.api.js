@@ -1,6 +1,5 @@
 import axios from './axiosConfig';
-
-const formatFilter = (filterData = {}, associations = {}) => ({ data: filterData, associations });
+import { formatFilter } from './apiUtil.js';
 
 export const get = name => axios.get(`/labTypes/${name}`);
 

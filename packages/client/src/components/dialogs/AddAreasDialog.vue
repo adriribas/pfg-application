@@ -41,8 +41,8 @@ watch(department, newDepartment => {
             option-label="name"
             option-value="abv"
             map-options
-            dark
             filled
+            dark
             color="m13"
             class="select-size">
             <template #option="{ itemProps, opt: { abv, name } }">
@@ -91,11 +91,12 @@ watch(department, newDepartment => {
 
       <q-card-actions align="right">
         <q-btn label="Cancel·lar" flat no-caps @click="onDialogCancel" />
+
         <q-btn
           :disable="!department || !area"
           label="Afegir"
-          color="m6"
           no-caps
+          color="m6"
           @click="onDialogOK({ areaAbv: area.abv, departmentAbv: department.abv })"
           class="q-mr-sm" />
       </q-card-actions>
