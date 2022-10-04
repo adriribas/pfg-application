@@ -44,7 +44,7 @@ const validateFieldsMatching = (fields, Model) => {
 };
 
 const validateIncludeMatching = (include, Model) => {
-  if (Object.keys(include).length === 0) {
+  if (!Object.keys(include).length) {
     return true;
   }
   if (!Model.allowedInclusions) {

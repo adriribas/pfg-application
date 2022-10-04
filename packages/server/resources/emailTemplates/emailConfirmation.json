@@ -1,0 +1,4 @@
+{
+  "subject": "Email confirmation",
+  "text": "%createdByName% %createdByLastName% %role% %firstName% %lastName% %link%"
+}

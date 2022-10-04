@@ -19,6 +19,12 @@ const User = sequelize.define(
       type: DataTypes.STRING(80),
       allowNull: false
     },
+    fullName: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        return `${this.firstName} ${this.lastName}`;
+      }
+    },
     email: {
       type: DataTypes.STRING(40),
       allowNull: false,
@@ -26,7 +32,6 @@ const User = sequelize.define(
     },
     secret: {
       type: DataTypes.STRING,
-      allowNull: false,
       set(value) {
         this.setDataValue('secret', bcrypt.hashSync(value, 12));
       }
@@ -56,9 +61,9 @@ const validationSchema = Joi.object({
   firstName: Joi.string().min(3).max(255).required(),
   lastName: Joi.string().min(3).max(255).required(),
   email: Joi.string().email().required(),
-  secret: Joi.string().required(),
-  role: Joi.string().min(3).max(255).required(),
-  activated: Joi.bool()
+  /* secret: Joi.string(), */
+  role: Joi.string().min(3).max(255).required()
+  /* activated: Joi.bool() */
 });
 const authValidationSchema = Joi.object({
   email: Joi.string().email().required(),
@@ -94,6 +99,9 @@ User.prototype.generateAuthJwt = function () {
 };
 User.prototype.generateResetPasswordJwt = function () {
   return generateJsonWebToken(this, 'resetPassword');
+};
+User.prototype.generateEmailConfirmationJwt = function () {
+  return generateJsonWebToken(this, 'emailConfirmation');
 };
 
 export default User;

@@ -7,13 +7,15 @@ import { reqProcessing, groupsUtil } from '#r/utils';
 import {
   Study as Model,
   School as SchoolModel,
+  User as UserModel,
   Department as DepartmentModel,
   Area as AreaModel,
   Subject as SubjectModel,
   LabType as LabTypeModel
 } from '#r/models';
 
-const { buildWhere, createOrUpdate, resError } = reqProcessing;
+const { buildWhere, createOrUpdate, isValidUpdateData, updateFields, updateRelation, resError } =
+  reqProcessing;
 const { syncSubjectGroups } = groupsUtil;
 const debug = createDebugger('pfgs:studyController');
 
@@ -128,4 +130,37 @@ export const create = async (req, res) => {
     debug('Error during study creation transaction', e);
     resError(res, 400, 'INVALID_DATA', e.message);
   }
+};
+
+export const update = async (req, res) => {
+  const {
+    params: { abv },
+    body: data
+  } = req;
+  if (!abv) {
+    return resError(res, 400, 'KEY_NOT_PROVIDED', 'Study key not provided.');
+  }
+
+  if (!isValidUpdateData(Model, data)) {
+    return resError(res, 400, 'INVALID_DATA', 'The data to update is not valid.');
+  }
+
+  const study = await Model.findByPk(abv);
+  if (!study) {
+    return resError(res, 404);
+  }
+
+  const { coordinador: userId, ...attributes } = data;
+  await updateFields(study, attributes);
+  if (userId) {
+    const user = await UserModel.findByPk(userId);
+    if (!user) {
+      return resError(res, 400, 'DATA_NOT_FOUND', 'Coordinador user not found.');
+    }
+    await study.setUser(user);
+  } else {
+    await study.setUser(null);
+  }
+
+  res.json(study);
 };

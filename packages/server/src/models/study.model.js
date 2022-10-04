@@ -15,25 +15,16 @@ const Study = sequelize.define(
       type: DataTypes.VIRTUAL,
       get() {
         return hardDataUtil.getValue('studies', this.abv) || null;
-      } /* ,
-      set(abv) {
-        this.setDataValue('name', hardDataUtil.getValue('studies', abv) || abv);
-      } */
+      }
     }
   },
   { paranoid: true }
 );
 
-Study.associate = ({ User, School, SchoolStudy, Subject, StudySubject }) => {
+Study.associate = ({ User, School, Subject, StudySubject }) => {
   Study.belongsTo(User, { foreignKey: 'coordinador' });
 
   Study.belongsTo(School, { foreignKey: 'school' });
-  /* Study.belongsToMany(School, {
-    through: SchoolStudy,
-    foreignKey: 'study',
-    otherKey: 'school'
-  });
-  Study.hasMany(SchoolStudy, { foreignKey: 'study' }); */
 
   Study.belongsToMany(Subject, {
     through: StudySubject,
@@ -44,6 +35,7 @@ Study.associate = ({ User, School, SchoolStudy, Subject, StudySubject }) => {
 };
 
 Study.requiredFilterFields = ['school'];
+Study.updatableFields = ['coordinador'];
 
 const validationSchema = Joi.object({
   abv: Joi.string().min(2).max(8).required()

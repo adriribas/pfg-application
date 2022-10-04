@@ -1,35 +1,109 @@
 import { Op } from 'sequelize';
 import _ from 'lodash';
 import createDebugger from 'debug';
+import jsonfile from 'jsonfile';
+import config from 'config';
 
-import { User as Model } from '#r/models';
+import { reqProcessing, emailUtil } from '#r/utils';
+import { User as Model, School as SchoolModel } from '#r/models';
 
+const { buildWhere, resError, isDuplicationError } = reqProcessing;
+const { sendEmail } = emailUtil;
 const debug = createDebugger('pfgs:userController');
 
 export const get = async (req, res) => {
-  const user = await Model.findByPk(req.params.id);
-
-  if (!user) {
-    return res.status(404).send(`[ERROR]: User with id "${req.params.id}" does not exist`);
+  const {
+    params: { id },
+    query: { fields }
+  } = req;
+  if (!id) {
+    return resError(res, 400, 'KEY_NOT_PROVIDED', 'User key not provided.');
   }
 
-  res.send(user);
+  const user = await Model.findByPk(id, { attributes: fields });
+
+  if (!user) {
+    return resError(res, 404);
+  }
+
+  res.json(user);
 };
 
-export const getAll = async (_req, res) => {
-  res.send(await Model.findAll());
+export const filter = async (req, res) => {
+  const {
+    query: { fields },
+    body: { data: filterData }
+  } = req;
+
+  res.json(await Model.findAll({ where: buildWhere(filterData), attributes: fields }));
+};
+
+//************************ */
+const permissions = {
+  Administrador: ['Coordinador', 'Director de departament'],
+  Coordinador: [],
+  'Director de departament': ['Responsable de docencia'],
+  'Responsable de docencia': ['Professor'],
+  Professor: []
+};
+
+const hasPermissions = (currentUserData, newUserData) => {
+  return permissions[currentUserData.role]?.includes(newUserData.role);
 };
 
 export const create = async (req, res) => {
-  const user = _.pick(req.body, ['firstName', 'lastName', 'email', 'secret', 'role', 'activated']);
-  try {
-    await Model.validate(user);
-    await Model.validateSecret(user.secret);
-  } catch (e) {
-    return res.status(400).send(e.message);
+  const {
+    headers: { origin },
+    user: currentUserData,
+    body: data
+  } = req;
+  debug({ currentUserData });
+
+  if (!hasPermissions(currentUserData, data)) {
+    resError(res, 403, 'NO_PERMISSIONS', 'Current user can not create a user with this data.');
   }
-  res.send(await Model.create(user));
+
+  const userData = _.pick(data, ['firstName', 'lastName', 'email', 'role']);
+  try {
+    await Model.validate(userData);
+  } catch (e) {
+    debug('Error user creation', e);
+    return resError(res, 400, 'INVALID_DATA', e.message);
+  }
+
+  let user;
+  try {
+    user = await Model.create(userData);
+  } catch (e) {
+    if (!isDuplicationError(e)) {
+      throw e;
+    }
+    return resError(res, 400, 'DUPLICATION', 'This user does already exist.');
+  }
+
+  const school = await SchoolModel.findByPk(currentUserData.school);
+  await user.setSchool(school);
+
+  await sendEmail(
+    user.email,
+    await jsonfile.readFile(
+      `resources/emailTemplates/${config.get('email.templates.emailConfirmation')}.json`
+    ),
+    {
+      link: `${origin}/new-password?token=${user.generateEmailConfirmationJwt()}`,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: user.role,
+      createdByName: currentUserData.firstName,
+      createdByLastName: currentUserData.lastName,
+      school: school.name
+    }
+  );
+
+  res.status(201).json(user);
 };
+
+//************************ */
 
 export const update = async (req, res) => {
   try {

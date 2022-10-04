@@ -5,6 +5,9 @@
     },
     "resetPassword": {
       "key": "pfgs_resetPasswordJwtPrivateKey"
+    },
+    "emailConfirmation": {
+      "key": "pfgs_emailConfirmationJwtPrivateKey"
     }
   },
   "db": {

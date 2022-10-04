@@ -32,6 +32,9 @@ export const createOrUpdate = async (Model, primaryKey, data, transaction) => {
 };
 
 export const updateFields = async (entity, data) => {
+  if (_.isEmpty(data)) {
+    return;
+  }
   Object.entries(data).forEach(([field, value]) => (entity[field] = value));
   await entity.save();
 };

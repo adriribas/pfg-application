@@ -4,7 +4,7 @@ import { studyController as controller } from '#r/controllers';
 import { Study as Model } from '#r/models';
 import { reqProcessing } from '#r/middlewares';
 
-const { get, filter, create } = controller;
+const { get, filter, create, update } = controller;
 const validateRequest = reqProcessing.requestValidator(Model);
 const validateFilter = reqProcessing.filterValidator(Model);
 
@@ -13,5 +13,6 @@ const router = express.Router({ mergeParams: true });
 router.get('/:abv', validateRequest, get);
 router.post('/filter', validateRequest, validateFilter, filter);
 router.post('/', create);
+router.patch('/:abv', update);
 
 export default router;

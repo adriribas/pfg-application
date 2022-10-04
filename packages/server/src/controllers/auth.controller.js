@@ -117,5 +117,5 @@ export const newPassword = async (req, res) => {
     return resError(res, 400, 'INVALID_TOKEN', 'The user encrypted in provided token does not exist.');
   }
 
-  res.send(true);
+  res.json(true);
 };

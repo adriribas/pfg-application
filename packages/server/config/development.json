@@ -15,7 +15,8 @@
       "user": "test.pfghoraris@gmail.com"
     },
     "templates": {
-      "resetPassword": "resetPassword"
+      "resetPassword": "resetPassword",
+      "emailConfirmation": "emailConfirmation"
     }
   },
   "clientDomain": ["http://localhost:3000"],
@@ -27,6 +28,10 @@
     "resetPassword": {
       "fields": ["id"],
       "expiration": "0.5 hrs"
+    },
+    "emailConfirmation": {
+      "fields": ["id"],
+      "expiration": "30d"
     }
   },
   "schools": [
