@@ -2,7 +2,6 @@
 import { ref } from 'vue';
 import { useQuasar } from 'quasar';
 
-import {} from '@/stores';
 import { labTypesApi } from '@/api';
 import LabTypeModificationDialog from '@/components/dialogs/LabTypeModificationDialog.vue';
 
@@ -46,8 +45,11 @@ const openLabTypeMod = labType =>
 (async () => {
   loading.value = true;
   try {
-    const { data: labTypes } = await labTypesApi.list();
-    data.value = labTypes.map(({ name, capacity }) => ({ name, capacity }));
+    const { data: labTypes } = await labTypesApi.list({
+      params: { fields: 'name,capacity' }
+    });
+
+    data.value = labTypes;
   } catch (e) {
     error.value = true;
   }

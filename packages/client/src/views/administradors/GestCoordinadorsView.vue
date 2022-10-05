@@ -3,12 +3,10 @@ import { ref } from 'vue';
 import { useQuasar } from 'quasar';
 import _ from 'lodash';
 
-import { useSchoolsStore } from '@/stores';
 import { studiesApi, usersApi } from '@/api';
 import UserManagementDialog from '@/components/dialogs/UserManagementDialog.vue';
 
 const $q = useQuasar();
-const schoolsStore = useSchoolsStore();
 
 const columns = [
   { name: 'abv', label: 'Abreviació', field: 'abv', align: 'center' },
@@ -96,13 +94,12 @@ const loadData = async () => {
   try {
     const { data: users } = await usersApi.list({
       params: { fields: 'id,firstName,lastName,fullName,email,activated' },
-      filterData: { school: schoolsStore.school.abv, role: 'Coordinador' }
+      filterData: { role: 'Coordinador' }
     });
     usersData.value = users;
 
     const { data: studies } = await studiesApi.list({
-      params: { fields: 'abv,name,coordinador' },
-      filterData: { school: schoolsStore.school.abv } //Potser s'hauria d'agafar la del currentUser al servidor.
+      params: { fields: 'abv,name,coordinador' }
     });
     data.value = studies.map(({ coordinador: coordinadorId, ...study }) => ({
       ...study,

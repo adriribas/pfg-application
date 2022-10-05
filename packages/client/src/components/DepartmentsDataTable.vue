@@ -1,10 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 
-import { useSchoolsStore } from '@/stores';
 import { departmentsApi, areasApi } from '@/api';
-
-const schoolsStore = useSchoolsStore();
 
 const departmentColumns = [
   { name: 'abv', label: 'Abreviació', field: 'abv', align: 'left' },
@@ -23,29 +20,33 @@ const error = ref(false);
 
   try {
     const { data: departments } = await departmentsApi.list({
-      associations: { school: schoolsStore.school.abv }
+      params: { fields: 'abv,name' }
     });
     const { data: areas } = await areasApi.list({
+      params: { fields: 'abv,name,department' },
       filterData: {
         department: departments.map(({ abv }) => abv)
-      },
-      associations: {
-        academicCourse: { school: schoolsStore.school.abv }
       }
     });
 
-    data.value = areas.reduce((accum, { abv, name, department: departmentAbv }) => {
-      const department = accum.find(({ abv }) => abv === departmentAbv);
-      if (department) {
-        const area = { abv, name };
-        if (department.areas) {
-          department.areas.push(area);
-        } else {
-          department.areas = [area];
+    data.value = areas.reduce(
+      (accum, { department: departmentAbv, ...areaData }) => {
+        const department = accum.find(({ abv }) => abv === departmentAbv);
+
+        if (department) {
+          const area = areaData;
+
+          if (department.areas) {
+            department.areas.push(area);
+          } else {
+            department.areas = [area];
+          }
         }
-      }
-      return accum;
-    }, departments);
+
+        return accum;
+      },
+      [...departments]
+    );
   } catch (e) {
     error.value = true;
     data.value = [];

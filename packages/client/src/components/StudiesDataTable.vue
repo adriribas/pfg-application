@@ -2,13 +2,11 @@
 import { ref } from 'vue';
 import { useQuasar } from 'quasar';
 
-import { useSchoolsStore } from '@/stores';
 import { studiesApi, subjectsApi, departmentsApi, areasApi, labTypesApi } from '@/api';
 import AreaDepartmentInline from '@/components/AreaDepartmentInline.vue';
 import SubjectModificationDialog from '@/components/dialogs/SubjectModificationDialog.vue';
 
 const $q = useQuasar();
-const schoolsStore = useSchoolsStore();
 
 const studyColumns = [
   { name: 'abv', label: 'Abreviació', field: 'abv', align: 'left' },
@@ -26,6 +24,7 @@ const subjectColumns = [
   { name: 'smallGroups', label: 'Grups petits', field: 'smallGroups', align: 'center' }
 ];
 const courseNames = ['Primer', 'Segon', 'Tercer', 'Quart', 'Cinquè', 'Sisè', 'Setè', 'Vuitè'];
+
 const data = ref([]);
 const loading = ref(false);
 const error = ref(false);
@@ -83,10 +82,13 @@ const openSubjectMod = subject =>
   loading.value = true;
   try {
     const { data: studies } = await studiesApi.list({
-      filterData: { school: schoolsStore.school.abv }
+      params: { fields: 'abv,name' }
     });
     const { data: subjects } = await subjectsApi.list({
-      params: { include: 'Area,LabType' },
+      params: {
+        fields: 'code,name,semester,credits,bigGroups,mediumGroups,smallGroups',
+        include: 'Area,LabType'
+      },
       associations: {
         study: studies.map(({ abv }) => abv)
       }
@@ -94,35 +96,12 @@ const openSubjectMod = subject =>
 
     data.value = subjects
       .reduce(
-        (
-          accum,
-          {
-            code,
-            name,
-            semester,
-            credits,
-            bigGroups,
-            mediumGroups,
-            smallGroups,
-            Studies,
-            Areas: areas,
-            LabTypes: labTypes
-          }
-        ) => {
+        (accum, { Studies, Areas, LabTypes, ...subjectData }) => {
           Studies.forEach(({ abv: studyAbv, StudySubject: { course } }) => {
             const study = accum.find(({ abv }) => abv === studyAbv);
+
             if (study) {
-              const subject = {
-                code,
-                name,
-                semester,
-                credits,
-                areas: areas || [],
-                labTypes: labTypes || [],
-                bigGroups: bigGroups || 0,
-                mediumGroups: mediumGroups || 0,
-                smallGroups: smallGroups || 0
-              };
+              const subject = { ...subjectData, areas: Areas || [], labTypes: LabTypes || [] };
 
               if (!study.subjects) {
                 study.subjects = [];
@@ -134,6 +113,7 @@ const openSubjectMod = subject =>
               }
             }
           });
+
           return accum;
         },
         [...studies]
@@ -158,17 +138,21 @@ const openSubjectMod = subject =>
   loading.value = false;
 
   const { data: departments } = await departmentsApi.list({
-    associations: { school: schoolsStore.school.abv }
+    params: { fields: 'abv,name' }
   });
   const { data: areas } = await areasApi.list({
+    params: { fields: 'abv,name,department' },
     filterData: { department: departments.map(({ abv }) => abv) }
   });
-  const { data: labTypes } = await labTypesApi.list();
+  const { data: labTypes } = await labTypesApi.list({
+    params: { fields: 'name' }
+  });
 
-  departmentsData.value = areas.reduce((accum, { abv, name, department: departmentAbv }) => {
+  departmentsData.value = areas.reduce((accum, { department: departmentAbv, ...areaData }) => {
     const department = accum.find(({ abv }) => abv === departmentAbv);
+
     if (department) {
-      const area = { abv, name };
+      const area = areaData;
 
       if (department.areas) {
         department.areas.push(area);
@@ -176,10 +160,11 @@ const openSubjectMod = subject =>
         department.areas = [area];
       }
     }
+
     return accum;
   }, departments);
 
-  labTypesData.value = labTypes.map(({ name }) => name);
+  labTypesData.value = [...labTypes];
 })();
 </script>
 
@@ -211,22 +196,14 @@ const openSubjectMod = subject =>
     </template>
 
     <template #no-data>
-      <div
-        :class="!loading && (error ? 'text-negative' : 'text-warning')"
-        class="row flex-center q-gutter-sm">
-        <q-spinner-hourglass v-if="loading" size="xs" class="on-left" />
+      <div v-if="!loading" :class="error ? 'text-negative' : 'text-warning'" class="row">
+        <q-icon :name="error ? 'error' : 'warning'" size="xs" />
 
-        <q-icon v-else :name="error ? 'error' : 'warning'" size="xs" />
-
-        <span>
-          {{
-            loading
-              ? 'Carregant les dades dels estudis...'
-              : error
-              ? "La informació sobre els estudis no s'ha pogut carregar correctament."
-              : 'No hi ha dades sobre els estudis.'
-          }}
-        </span>
+        {{
+          error
+            ? "La informació sobre els estudis no s'ha pogut carregar correctament."
+            : 'No hi ha dades sobre els estudis.'
+        }}
       </div>
     </template>
 
@@ -268,6 +245,7 @@ const openSubjectMod = subject =>
                 <q-th v-for="col in props.cols" :key="col.name" :props="props" class="table-header">
                   {{ col.label }}
                 </q-th>
+
                 <q-th auto-width />
               </q-tr>
             </template>
@@ -277,19 +255,24 @@ const openSubjectMod = subject =>
                 <q-td key="code" :props="props">
                   {{ props.row.code }}
                 </q-td>
+
                 <q-td key="name" :props="props">
                   {{ props.row.name }}
                 </q-td>
+
                 <q-td key="semester" :props="props">
                   {{ props.row.semester }}
                 </q-td>
+
                 <q-td key="credits" :props="props">
                   {{ props.row.credits }}
                 </q-td>
+
                 <q-td key="areas" :props="props">
                   <span v-if="!props.row.areas || props.row.areas.length === 0" class="text-warning">
                     -
                   </span>
+
                   <div v-else>
                     <AreaDepartmentInline
                       v-for="{ abv, name, Department } in props.row.areas"
@@ -298,27 +281,33 @@ const openSubjectMod = subject =>
                       :class="[props.row.areas.length > 1 && 'q-my-sm']" />
                   </div>
                 </q-td>
+
                 <q-td key="labTypes" :props="props">
                   <span v-if="!props.row.labTypes || props.row.labTypes.length === 0" class="text-warning">
                     -
                   </span>
+
                   <div v-else>
                     <div
                       v-for="{ name } in props.row.labTypes"
                       :class="[props.row.labTypes.length > 1 && 'q-my-sm']">
-                      <span>{{ name }}</span>
+                      {{ name }}
                     </div>
                   </div>
                 </q-td>
+
                 <q-td key="bigGroups" :props="props">
                   {{ props.row.bigGroups }}
                 </q-td>
+
                 <q-td key="mediumGroups" :props="props">
                   {{ props.row.mediumGroups }}
                 </q-td>
+
                 <q-td key="smallGroups" :props="props">
                   {{ props.row.smallGroups }}
                 </q-td>
+
                 <q-td auto-width>
                   <q-btn icon="edit" size="sm" color="m8" @click="openSubjectMod(props.row)" />
                 </q-td>
