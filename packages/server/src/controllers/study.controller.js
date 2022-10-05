@@ -19,13 +19,19 @@ const { buildWhere, createOrUpdate, isValidUpdateData, updateFields, updateRelat
 const { syncSubjectGroups } = groupsUtil;
 const debug = createDebugger('pfgs:studyController');
 
+const schoolScope = ({ school: schoolAbv }) => Model.scope({ method: ['school', schoolAbv] });
+
 export const get = async (req, res) => {
-  const { abv } = req.params;
+  const {
+    user: currentUserData,
+    params: { abv },
+    query: { fields }
+  } = req;
   if (!abv) {
     return resError(res, 400, 'KEY_NOT_PROVIDED', 'Study key not provided.');
   }
 
-  const study = await Model.findByPk(abv, { attributes: req.query.fields });
+  const study = await schoolScope(currentUserData).findByPk(abv, { attributes: fields });
   if (!study) {
     return resError(res, 404);
   }
@@ -35,12 +41,13 @@ export const get = async (req, res) => {
 
 export const filter = async (req, res) => {
   const {
+    user: currentUserData,
     query: { fields },
     body: { data: filterData }
   } = req;
 
   res.json(
-    await Model.findAll({
+    await schoolScope(currentUserData).findAll({
       where: buildWhere(filterData),
       attributes: fields
     })
@@ -48,7 +55,9 @@ export const filter = async (req, res) => {
 };
 
 export const create = async (req, res) => {
-  const schoolAbv = req.user.school;
+  const {
+    user: { school: schoolAbv }
+  } = req;
   if (!schoolAbv) {
     return resError(res, 400, 'INVALID_USER', 'User is not assigned to any school.');
   }
@@ -64,6 +73,8 @@ export const create = async (req, res) => {
       const [study] = await createOrUpdate(Model, { abv: data.abv }, data, transaction);
 
       await study.setSchool(school, { transaction });
+
+      const departmentInstances = [];
 
       for (const rawSubjectData of req.body.subjects) {
         const subjectData = _.pick(rawSubjectData, [
@@ -95,6 +106,10 @@ export const create = async (req, res) => {
               departmentData,
               transaction
             );
+            if (!departmentInstances.find(({ abv }) => abv === department.abv)) {
+              departmentInstances.push(department);
+            }
+
             const [area] = await createOrUpdate(AreaModel, { abv: areaData.abv }, areaData, transaction);
             await area.setDepartment(department, { transaction });
             if (!areaInstances.find(({ abv }) => abv === area.abv)) {
@@ -121,6 +136,15 @@ export const create = async (req, res) => {
 
         await study.addSubject(subject, { through: { course: rawSubjectData.course }, transaction });
       }
+
+      await school.addDepartments(
+        await Promise.all(
+          departmentInstances.filter(
+            async department => !(await school.hasDepartment(department, { transaction }))
+          )
+        ),
+        { transaction }
+      );
 
       return study;
     });

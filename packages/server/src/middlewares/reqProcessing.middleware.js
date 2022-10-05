@@ -36,11 +36,21 @@ export const requestFormatter = (req, _res, next) => {
 };
 
 const validateFieldsMatching = (fields, Model) => {
-  if (!fields || fields.length === 0) {
+  if (!fields?.length) {
     return true;
   }
   const attributes = Object.keys(Model.getAttributes());
   return fields.every(field => attributes.includes(field));
+};
+
+const validateFieldsRestriction = (fields, Model) => {
+  const restrictedFields = Model.restrictedFilterFields;
+
+  if (!fields?.length || !restrictedFields?.length) {
+    return true;
+  }
+
+  return !fields.some(field => restrictedFields.includes(field));
 };
 
 const validateIncludeMatching = (include, Model) => {
@@ -61,6 +71,9 @@ export const requestValidator = Model => (req, res, next) => {
   if (!validateFieldsMatching(fields, Model)) {
     return resError(res, 400, 'BAD_QUERY_FIELDS', 'Some query fields are invalid.');
   }
+  if (!validateFieldsRestriction(fields, Model)) {
+    return resError(res, 400, 'BAD_QUERY_FIELDS', 'Some query fields are restricted.');
+  }
   if (!validateIncludeMatching(include, Model)) {
     return resError(res, 400, 'BAD_QUERY_INCLUDE', 'Query include is invalid.');
   }
@@ -68,12 +81,14 @@ export const requestValidator = Model => (req, res, next) => {
   next();
 };
 
-export const checkRequired = (filterData, requiredFields) => {
+const checkRequired = (filterData, requiredFields) => {
   return requiredFields.every(field => filterData[field]);
 };
 
 export const validateFilterData = (filterData, Model) => {
-  return validateFieldsMatching(Object.keys(filterData), Model);
+  const filterDataKeys = Object.keys(filterData);
+
+  return validateFieldsMatching(filterData, Model) && validateFieldsRestriction(filterDataKeys, Model);
 };
 
 export const filterValidator = Model => (req, res, next) => {
@@ -85,7 +100,7 @@ export const filterValidator = Model => (req, res, next) => {
   }
 
   if (!validateFilterData(data, Model)) {
-    return resError(res, 400, 'BAD_FIELDS', 'Some fields do not match data model.');
+    return resError(res, 400, 'BAD_FIELDS', 'Some fields do not match data model or are restricted.');
   }
 
   next();

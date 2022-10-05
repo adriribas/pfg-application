@@ -18,7 +18,14 @@ const Study = sequelize.define(
       }
     }
   },
-  { paranoid: true }
+  {
+    paranoid: true,
+    scopes: {
+      school(schoolAbv) {
+        return { where: { school: schoolAbv } };
+      }
+    }
+  }
 );
 
 Study.associate = ({ User, School, Subject, StudySubject }) => {
@@ -34,7 +41,6 @@ Study.associate = ({ User, School, Subject, StudySubject }) => {
   Study.hasMany(StudySubject, { foreignKey: 'study' });
 };
 
-Study.requiredFilterFields = ['school'];
 Study.updatableFields = ['coordinador'];
 
 const validationSchema = Joi.object({

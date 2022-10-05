@@ -5,7 +5,7 @@ import { User as Model } from '#r/models';
 
 const debug = createDebugger('pfgs:userMiddleware');
 
-const restrictedFields = ['secret'];
+const restrictedFields = Model.restrictedFields;
 
 const getAllowedFields = () => _.difference(Object.keys(Model.getAttributes()), restrictedFields);
 
@@ -19,16 +19,4 @@ export const applyFieldRestrictions = (req, _res, next) => {
   }
 
   next();
-};
-
-const permissions = {
-  Administrador: ['Coordinador', 'Director de departament'],
-  Coordinador: [],
-  'Director de departament': ['Responsable de docencia'],
-  'Responsable de docencia': ['Professor'],
-  Professor: []
-};
-
-export const hasPermissions = (currentUserData, newUserData) => {
-  return permissions[currentUserData.role]?.includes(newUserData.role);
 };

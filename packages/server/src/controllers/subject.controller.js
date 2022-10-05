@@ -60,7 +60,7 @@ export const filter = async (req, res) => {
     query: { fields, include },
     body: {
       data: filterData,
-      associations: { study }
+      associations: { study: studyAbv }
     }
   } = req;
 
@@ -70,7 +70,7 @@ export const filter = async (req, res) => {
       include: [
         {
           model: StudyModel,
-          where: buildWhere({ abv: study }),
+          where: buildWhere({ abv: studyAbv }),
           through: { attributes: ['course'] },
           attributes: ['abv']
         },

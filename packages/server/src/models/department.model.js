@@ -15,10 +15,7 @@ const Department = sequelize.define(
       type: DataTypes.VIRTUAL,
       get() {
         return hardDataUtil.getValue('departments', this.abv) || null;
-      } /* ,
-      set(abv) {
-        this.setDataValue('name', hardDataUtil.getValue('departments', abv) || abv);
-      } */
+      }
     }
   },
   { paranoid: true }

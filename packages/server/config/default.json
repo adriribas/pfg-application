@@ -37,6 +37,13 @@
       "views": ["p_horarisPropis", "p_horarisAssignatures", "p_horarisGraus"]
     }
   ],
+  "userCreationPermissions": {
+    "Administrador": ["Coordinador", "Director de departament"],
+    "Coordinador": [],
+    "Director de departament": ["Responsable de docencia"],
+    "Responsable de docencia": ["Professor"],
+    "Professor": []
+  },
   "noAuthViews": ["login", "resetPassword", "newPassword"],
   "groupTypes": ["small", "medium", "big"]
 }

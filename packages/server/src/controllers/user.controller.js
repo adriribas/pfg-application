@@ -4,15 +4,19 @@ import createDebugger from 'debug';
 import jsonfile from 'jsonfile';
 import config from 'config';
 
-import { reqProcessing, emailUtil } from '#r/utils';
+import { reqProcessing, usersUtil, emailUtil } from '#r/utils';
 import { User as Model, School as SchoolModel } from '#r/models';
 
 const { buildWhere, resError, isDuplicationError } = reqProcessing;
+const { hasCreationPermissions } = usersUtil;
 const { sendEmail } = emailUtil;
 const debug = createDebugger('pfgs:userController');
 
+const schoolScope = ({ school: schoolAbv }) => Model.scope({ method: ['school', schoolAbv] });
+
 export const get = async (req, res) => {
   const {
+    user: currentUserData,
     params: { id },
     query: { fields }
   } = req;
@@ -20,7 +24,7 @@ export const get = async (req, res) => {
     return resError(res, 400, 'KEY_NOT_PROVIDED', 'User key not provided.');
   }
 
-  const user = await Model.findByPk(id, { attributes: fields });
+  const user = await schoolScope(currentUserData).findByPk(id, { attributes: fields });
 
   if (!user) {
     return resError(res, 404);
@@ -31,24 +35,17 @@ export const get = async (req, res) => {
 
 export const filter = async (req, res) => {
   const {
+    user: currentUserData,
     query: { fields },
     body: { data: filterData }
   } = req;
 
-  res.json(await Model.findAll({ where: buildWhere(filterData), attributes: fields }));
-};
-
-//************************ */
-const permissions = {
-  Administrador: ['Coordinador', 'Director de departament'],
-  Coordinador: [],
-  'Director de departament': ['Responsable de docencia'],
-  'Responsable de docencia': ['Professor'],
-  Professor: []
-};
-
-const hasPermissions = (currentUserData, newUserData) => {
-  return permissions[currentUserData.role]?.includes(newUserData.role);
+  res.json(
+    await schoolScope(currentUserData).findAll({
+      where: buildWhere(filterData),
+      attributes: fields
+    })
+  );
 };
 
 export const create = async (req, res) => {
@@ -57,9 +54,8 @@ export const create = async (req, res) => {
     user: currentUserData,
     body: data
   } = req;
-  debug({ currentUserData });
 
-  if (!hasPermissions(currentUserData, data)) {
+  if (!hasCreationPermissions(currentUserData.role, data.role)) {
     resError(res, 403, 'NO_PERMISSIONS', 'Current user can not create a user with this data.');
   }
 
@@ -103,7 +99,7 @@ export const create = async (req, res) => {
   res.status(201).json(user);
 };
 
-//************************ */
+//********************************************************************/
 
 export const update = async (req, res) => {
   try {

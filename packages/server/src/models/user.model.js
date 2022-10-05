@@ -46,24 +46,36 @@ const User = sequelize.define(
       defaultValue: false
     }
   },
-  { paranoid: true }
+  {
+    paranoid: true,
+    scopes: {
+      school(schoolAbv) {
+        return { where: { school: schoolAbv } };
+      }
+    }
+  }
 );
 
 User.associate = ({ School, Department, Area, Study }) => {
   User.belongsTo(School, { foreignKey: 'school' });
+
   User.hasOne(Department, { foreignKey: 'director' }); // Director departament
+
   User.hasOne(Area, { foreignKey: 'responsable' }); // Responsable de docència
+
   User.belongsTo(Area, { foreignKey: 'area' }); // Professor
+
   User.hasOne(Study, { foreignKey: 'coordinador' }); // Coordinador
 };
+
+User.restrictedFields = ['secret'];
+User.restrictedFilterFields = ['school', 'secret'];
 
 const validationSchema = Joi.object({
   firstName: Joi.string().min(3).max(255).required(),
   lastName: Joi.string().min(3).max(255).required(),
   email: Joi.string().email().required(),
-  /* secret: Joi.string(), */
   role: Joi.string().min(3).max(255).required()
-  /* activated: Joi.bool() */
 });
 const authValidationSchema = Joi.object({
   email: Joi.string().email().required(),
