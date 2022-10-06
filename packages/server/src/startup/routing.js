@@ -17,7 +17,7 @@ export default app => {
   app.use(express.json());
   app.use(
     cors({
-      origin: config.get('clientDomain'),
+      origin: config.get('clientHost'),
       optionsSuccessStatus: 200
     })
   );

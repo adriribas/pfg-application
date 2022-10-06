@@ -20,19 +20,27 @@ const Subject = sequelize.define(
     },
     credits: {
       type: DataTypes.TINYINT,
-      defaultValue: 0
+      set(value) {
+        this.setDataValue('credits', value || 0);
+      }
     },
     bigGroups: {
       type: DataTypes.TINYINT,
-      defaultValue: 0
+      set(value) {
+        this.setDataValue('bigGroups', value || 0);
+      }
     },
     mediumGroups: {
       type: DataTypes.TINYINT,
-      defaultValue: 0
+      set(value) {
+        this.setDataValue('mediumGroups', value || 0);
+      }
     },
     smallGroups: {
       type: DataTypes.TINYINT,
-      defaultValue: 0
+      set(value) {
+        this.setDataValue('smallGroups', value || 0);
+      }
     }
   },
   { paranoid: true, indexes: [{ fields: ['semester'] }] }
