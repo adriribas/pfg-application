@@ -4,7 +4,11 @@
   "description": "pfg-application main",
   "author": "Adrià Ribas Chico",
   "private": "true",
-  "keywords": ["Node", "Express", "Vue"],
+  "keywords": [
+    "Node",
+    "Express",
+    "Vue"
+  ],
   "license": "BSD 3-Clause License",
   "readme": "https://github.com/adriribas/pfg-application#readme",
   "bugs": {

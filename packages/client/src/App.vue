@@ -26,17 +26,18 @@ onBeforeMount(async () => {
       <q-header elevated class="bg-g12">
         <TheNavigationTopBar />
       </q-header>
+
       <q-page-container class="absolute-full">
-        <!-- <div class="fit scroll"> -->
         <q-scroll-area dark class="fit">
-          <router-view #default="{ Component }">
+          <router-view />
+          <!-- <router-view #default="{ Component }">
             <transition name="fade" mode="out-in">
               <component :is="Component" />
             </transition>
-          </router-view>
+          </router-view> -->
         </q-scroll-area>
-        <!-- </div> -->
       </q-page-container>
+
       <!-- <q-footer elevated class="bg-g10 text-white">
         <TheFooter />
       </q-footer> -->

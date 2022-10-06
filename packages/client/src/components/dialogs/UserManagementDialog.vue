@@ -62,7 +62,7 @@ const newUser = () =>
                 <q-card-section class="column flex-center">
                   <div class="col-auto q-mb-sm">
                     <q-icon name="person" size="xl" />
-                    <!-- <q-icon name="account_circle" size="xl" /> -->
+
                     <q-badge
                       v-if="!props.row.activated"
                       align="top"
@@ -105,7 +105,7 @@ const newUser = () =>
                     size="0.9em"
                     dense
                     flat
-                    text-color="warning" />
+                    text-color="warning2" />
 
                   <q-btn
                     label="Eliminar"

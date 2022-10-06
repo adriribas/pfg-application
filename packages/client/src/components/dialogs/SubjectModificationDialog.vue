@@ -29,7 +29,7 @@ const areas = ref(
     departmentName
   }))
 );
-const labType = ref(props.subject.labTypes.map(({ name }) => name));
+const labType = ref([...props.subject.labTypes]);
 
 const openAddAreas = () =>
   $q
@@ -78,7 +78,7 @@ const removeArea = areaAbv => (areas.value = areas.value.filter(({ abv }) => abv
         </DataTableModificationDialogSection>
 
         <DataTableModificationDialogSection title="Àrees">
-          <q-list bordered dark class="rounded-borders">
+          <q-list bordered dark v-auto-animate class="rounded-borders">
             <q-item v-for="{ abv, name, departmentAbv, departmentName } in areas" :key="abv">
               <q-item-section side center>
                 <q-btn icon="close" size="sm" round unelevated @click="removeArea(abv)" />
@@ -124,6 +124,9 @@ const removeArea = areaAbv => (areas.value = areas.value.filter(({ abv }) => abv
             label="Seleccionar tipus de laboratori"
             v-model="labType"
             :options="labTypes"
+            option-label="name"
+            option-value="name"
+            map-options
             multiple
             clearable
             stack-label
@@ -149,7 +152,7 @@ const removeArea = areaAbv => (areas.value = areas.value.filter(({ abv }) => abv
                 mediumGroups: groups.medium,
                 smallGroups: groups.small,
                 areas: areas?.map(({ abv }) => abv) || [],
-                labTypes: labType?.map(name => name) || []
+                labTypes: labType?.map(({ name }) => name) || []
               }
             })
           "

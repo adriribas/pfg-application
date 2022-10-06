@@ -1,5 +1,13 @@
 /* APPLICATION COLOR PALETTE */
 
+/* General colors */
+.text-warning2 {
+  color: #f8d470 !important;
+}
+.bg-warning2 {
+  background: #f8d470 !important;
+}
+
 /* Main color */
 .text-m1 {
   color: #e0f2f1 !important;

@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useQuasar } from 'quasar';
 
 import { studiesApi, subjectsApi, departmentsApi, areasApi, labTypesApi } from '@/api';
@@ -12,17 +12,34 @@ const studyColumns = [
   { name: 'abv', label: 'Abreviació', field: 'abv', align: 'left' },
   { name: 'name', label: 'Nom', field: 'name', align: 'left' }
 ];
-const subjectColumns = [
+const labels = computed(() =>
+  $q.screen.lt.xl
+    ? {
+        semester: 'Quad.',
+        labTypes: 'Tipus lab.',
+        bigGroups: 'G. grans',
+        mediumGroups: 'G. mitjans',
+        smallGroups: 'G. petits'
+      }
+    : {
+        semester: 'Quadrimestre',
+        labTypes: 'Tipus de laboratori',
+        bigGroups: 'Grups grans',
+        mediumGroups: 'Grups mitjans',
+        smallGroups: 'Grups petits'
+      }
+);
+const subjectColumns = computed(() => [
   { name: 'code', label: 'Codi', field: 'code', align: 'center' },
   { name: 'name', label: 'Nom', field: 'name', align: 'left' },
-  { name: 'semester', label: 'Quadrimestre', field: 'semester', align: 'center' },
+  { name: 'semester', label: labels.value.semester, field: 'semester', align: 'center' },
   { name: 'credits', label: 'Crèdits', field: 'credits', align: 'center' },
   { name: 'areas', label: 'Àrees', field: 'areas', align: 'center' },
-  { name: 'labTypes', label: 'Tipus de laboratori', field: 'labTypes', align: 'center' },
-  { name: 'bigGroups', label: 'Grups grans', field: 'bigGroups', align: 'center' },
-  { name: 'mediumGroups', label: 'Grups mitjans', field: 'mediumGroups', align: 'center' },
-  { name: 'smallGroups', label: 'Grups petits', field: 'smallGroups', align: 'center' }
-];
+  { name: 'labTypes', label: labels.value.labTypes, field: 'labTypes', align: 'center' },
+  { name: 'bigGroups', label: labels.value.bigGroups, field: 'bigGroups', align: 'center' },
+  { name: 'mediumGroups', label: labels.value.mediumGroups, field: 'mediumGroups', align: 'center' },
+  { name: 'smallGroups', label: labels.value.smallGroups, field: 'smallGroups', align: 'center' }
+]);
 const courseNames = ['Primer', 'Segon', 'Tercer', 'Quart', 'Cinquè', 'Sisè', 'Setè', 'Vuitè'];
 
 const data = ref([]);
@@ -224,7 +241,7 @@ const openSubjectMod = subject =>
         </q-td>
       </q-tr>
 
-      <q-tr v-show="props.expand" :props="props">
+      <q-tr v-if="props.expand" :props="props">
         <q-td colspan="100%" no-hover>
           <q-tabs v-model="props.row.selectedCourse" active-color="m5" class="q-mt-xs q-mb-md">
             <q-tab v-for="(, index) in props.row.subjects" :label="courseNames[index]" :name="index" />
@@ -273,7 +290,7 @@ const openSubjectMod = subject =>
                     -
                   </span>
 
-                  <div v-else>
+                  <div v-else v-auto-animate="{ duration: 700 }">
                     <AreaDepartmentInline
                       v-for="{ abv, name, Department } in props.row.areas"
                       :area="{ abv, name }"
@@ -287,7 +304,7 @@ const openSubjectMod = subject =>
                     -
                   </span>
 
-                  <div v-else>
+                  <div v-else v-auto-animate="{ duration: 700 }">
                     <div
                       v-for="{ name } in props.row.labTypes"
                       :class="[props.row.labTypes.length > 1 && 'q-my-sm']">

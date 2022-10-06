@@ -4,7 +4,7 @@ import { ref, watch } from 'vue';
 import { usePlaDocent } from '@/composables';
 import { useSchoolsStore } from '@/stores';
 
-const emit = defineEmits(['uploaded']);
+const emit = defineEmits(['startUpload', 'uploaded']);
 
 const schoolsStore = useSchoolsStore();
 
@@ -14,93 +14,51 @@ const fileToUpload = ref(null);
 const { uploading, percentage, error } = usePlaDocent(fileToUpload);
 
 watch(uploading, newUploading => {
-  if (!newUploading) {
-    fileToUpload.value = null;
-    if (!error.value) {
-      emit('uploaded');
-    }
+  if (newUploading) {
+    return emit('startUpload');
+  }
+
+  fileToUpload.value = null;
+  if (!error.value) {
+    emit('uploaded');
   }
 });
 </script>
 
 <template>
-  <!-- <q-card dark class="q-pa-lg bg-b6">
-    <q-card-section class="text-center">
-      <div class="text-h5 q-mb-sm">Pujar un pla docent i inicialitzar el curs acadèmic</div>
-      <div class="text-h6 text-m5">2022 - 2023</div>
-    </q-card-section>
+  <div v-auto-animate class="bg-b7 q-pa-xl shadow-5 container">
+    <div class="text-h5 q-mb-sm">Pujar un pla docent i inicialitzar el curs acadèmic</div>
 
-    <q-card-section class="text-center">
-      <div v-show="false" class="q-mb-md text-negative">
-        S'ha produït un error mentre es pujava el pla docent.
-      </div>
-
-      <q-file
-        v-model="file"
-        label="Seleccionar un fitxer"
-        hint="Format: .xlsx"
-        accept=".xlsx"
-        max-files="1"
-        clearable
-        clear-icon="close"
-        :disable="uploading"
-        filled
-        dark
-        color="m5"
-        @update:model-value="error = false">
-        <template #prepend>
-          <q-icon name="attach_file" />
-        </template>
-      </q-file>
-    </q-card-section>
-
-    <q-card-actions align="center">
-      <q-btn
-        icon="cloud_upload"
-        label="Pujar pla docent"
-        :disable="!file"
-        :loading="uploading"
-        :percentage="percentage"
-        no-caps
-        color="m5"
-        @click="fileToUpload = file">
-        <template #loading>
-          <q-spinner-hourglass class="on-left" />
-          Processant fitxer...
-        </template>
-      </q-btn>
-    </q-card-actions>
-  </q-card> -->
-
-  <div class="q-mt-xl bg-b6 q-pa-xl shadow-5 container">
-    <div class="text-center">
-      <div class="text-h5 q-mb-sm">Pujar un pla docent i inicialitzar el curs acadèmic</div>
-
-      <div class="text-h6 text-bold text-m5 q-mb-lg">
+    <div class="row justify-center q-mb-lg">
+      <div class="text-h6 text-m5 q-py-sm q-px-md bg-b6 course-years">
         {{ schoolsStore.nextStartYear }} - {{ schoolsStore.nextEndYear }}
       </div>
+    </div>
 
-      <div v-show="error" class="text-negative">S'ha produït un error mentre es pujava el pla docent.</div>
+    <div v-if="error" class="text-center text-negative">
+      S'ha produït un error mentre es pujava el pla docent.
+    </div>
 
-      <q-file
-        v-model="file"
-        label="Seleccionar un fitxer"
-        hint="Format: .xlsx"
-        accept=".xlsx"
-        max-files="1"
-        clearable
-        clear-icon="close"
-        :disable="uploading"
-        filled
-        dark
-        color="m5"
-        @update:model-value="error = false"
-        class="q-mt-lg">
-        <template #prepend>
-          <q-icon name="attach_file" />
-        </template>
-      </q-file>
+    <q-file
+      v-model="file"
+      label="Seleccionar un fitxer"
+      hint="Format: .xlsx"
+      accept=".xlsx"
+      max-files="1"
+      clearable
+      clear-icon="close"
+      :disable="uploading"
+      filled
+      dark
+      color="m5"
+      @update:model-value="error = false"
+      class="q-mt-lg">
+      <template #prepend>
+        <q-icon name="attach_file" />
+      </template>
+    </q-file>
 
+    <div class="row justify-center">
       <q-btn
         icon="cloud_upload"
         label="Pujar pla docent"
@@ -124,4 +82,6 @@ watch(uploading, newUploading => {
 .container
   max-width: 700px
   border-radius: 8px
+.course-years
+  border-radius: 10px
 </style>

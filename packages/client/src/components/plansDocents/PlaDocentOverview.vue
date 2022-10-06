@@ -1,12 +1,16 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
+import { useQuasar } from 'quasar';
 
 import StudiesDataTable from '@/components/StudiesDataTable.vue';
 import DepartmentsDataTable from '@/components/DepartmentsDataTable.vue';
 import RoomTypesDataTable from '@/components/RoomTypesDataTable.vue';
 
+const $q = useQuasar();
+
 const currentTab = ref(0);
-const splitter = ref(147);
+const breakpoint = computed(() => ['lg', 'sm', 'sm'][currentTab.value]);
+const splitter = computed(() => ($q.screen.lt[breakpoint.value] ? 70 : 147));
 
 const tabs = [
   { label: 'Estudis', icon: 'school', component: StudiesDataTable },
@@ -16,14 +20,14 @@ const tabs = [
 </script>
 
 <template>
-  <q-splitter
-    v-model="splitter"
-    unit="px"
-    :limits="[122, 147]"
-    class="shadow-5 height-definer width-definer splitter">
+  <q-splitter v-model="splitter" unit="px" :limits="[70, 147]" class="full-height shadow-5 splitter">
     <template #before>
       <q-tabs v-model="currentTab" vertical class="bg-b4 tabs">
-        <q-tab v-for="({ label, icon }, index) in tabs" :name="index" :icon="icon" :label="label" />
+        <q-tab
+          v-for="({ label, icon }, index) in tabs"
+          :name="index"
+          :icon="icon"
+          :label="$q.screen.lt[breakpoint] ? '' : label" />
       </q-tabs>
     </template>
 
@@ -35,7 +39,7 @@ const tabs = [
         vertical
         transition-prev="slide-down"
         transition-next="slide-up"
-        class="bg-b7 height-definer panels">
+        class="full-height bg-b7 panels">
         <q-tab-panel v-for="({ component }, index) in tabs" :name="index">
           <div class="q-pa-md">
             <component :is="component" />
@@ -47,12 +51,6 @@ const tabs = [
 </template>
 
 <style lang="sass" scoped>
-.height-definer
-  height: calc(100vh - 155px)
-  min-height: 600px
-.width-definer
-  min-width: 1200px
-  max-width: 98vw
 .splitter
   border-radius: 10px
 .tabs
