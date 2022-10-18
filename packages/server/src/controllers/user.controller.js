@@ -1,14 +1,12 @@
 import { Op } from 'sequelize';
 import _ from 'lodash';
 import createDebugger from 'debug';
-import jsonfile from 'jsonfile';
-import config from 'config';
 
 import { reqProcessing, usersUtil, emailUtil } from '#r/utils';
 import { User as Model, School as SchoolModel } from '#r/models';
 
 const { buildWhere, resError, isDuplicationError } = reqProcessing;
-const { hasCreationPermissions } = usersUtil;
+const { hasPermissions } = usersUtil;
 const { sendEmail } = emailUtil;
 const debug = createDebugger('pfgs:userController');
 
@@ -55,8 +53,8 @@ export const create = async (req, res) => {
     body: data
   } = req;
 
-  if (!hasCreationPermissions(currentUserData.role, data.role)) {
-    resError(res, 403, 'NO_PERMISSIONS', 'Current user can not create a user with this data.');
+  if (!hasPermissions(currentUserData.role, data.role)) {
+    resError(res, 403, 'NO_PERMISSIONS', 'Current user cannot create a user including this data.');
   }
 
   const userData = _.pick(data, ['firstName', 'lastName', 'email', 'role']);
@@ -80,23 +78,40 @@ export const create = async (req, res) => {
   const school = await SchoolModel.findByPk(currentUserData.school);
   await user.setSchool(school);
 
-  await sendEmail(
-    user.email,
-    await jsonfile.readFile(
-      `resources/emailTemplates/${config.get('email.templates.emailConfirmation')}.json`
-    ),
-    {
-      link: `${origin}/new-password?token=${user.generateEmailConfirmationJwt()}`,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      role: user.role,
-      createdByName: currentUserData.firstName,
-      createdByLastName: currentUserData.lastName,
-      school: school.name
-    }
-  );
+  await sendEmail(user.email, 'emailConfirmation', {
+    link: `${origin}/new-password?reason=emailConfirmation&token=${user.generateEmailConfirmationJwt()}`,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    role: user.role,
+    createdByName: currentUserData.firstName,
+    createdByLastName: currentUserData.lastName,
+    school: school.name
+  });
 
   res.status(201).json(user);
+};
+
+export const remove = async (req, res) => {
+  const {
+    user: currentUserData,
+    params: { id }
+  } = req;
+  if (!id) {
+    return resError(res, 400, 'KEY_NOT_PROVIDED', 'User key not provided.');
+  }
+
+  const user = await schoolScope(currentUserData).findByPk(id);
+  if (!user) {
+    return resError(res, 404);
+  }
+
+  if (!hasPermissions(currentUserData.role, user.role)) {
+    return resError(res, 403, 'NO_PERMISSIONS', 'Current user cannot delete this user.');
+  }
+
+  await user.destroy();
+
+  res.status(204).json();
 };
 
 //********************************************************************/
@@ -114,15 +129,4 @@ export const update = async (req, res) => {
   if (!updatedRows) {
     return res.status(404).send(`[ERROR]: User with id "${req.params.id}" does not exist`);
   }
-};
-
-export const destroy = async (req, res) => {
-  const deletedRows = Model.destroy({
-    where: { id: req.params.id }
-  });
-  if (!deletedRows) {
-    return res.status(404).send(`[ERROR]: User with id "${req.params.id}" does not exist`);
-  }
-
-  res.send({ id: req.params.id });
 };

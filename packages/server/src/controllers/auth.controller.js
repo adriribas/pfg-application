@@ -2,7 +2,6 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import _ from 'lodash';
 import config from 'config';
-import jsonfile from 'jsonfile';
 import createDebugger from 'debug';
 
 import { User as UserModel } from '#r/models';
@@ -66,22 +65,22 @@ export const assertAccessTo = (req, res) => {
 };
 
 export const resetPassword = async (req, res) => {
+  const {
+    body: { email }
+  } = req;
+
   const user = await UserModel.findOne({
-    where: { email: req.body.email }
+    where: { email }
   });
   if (!user) {
-    return resError(res, 400, 'INVALID_DATA', `User with email ${req.body.email} does not exist.`);
+    return resError(res, 400, 'INVALID_DATA', `User with email ${email} does not exist.`);
   }
 
-  const sendingResults = await emailUtil.sendEmail(
-    user.email,
-    await jsonfile.readFile(`resources/emailTemplates/${config.get('email.templates.resetPassword')}.json`),
-    {
-      link: `${req.headers.origin}/new-password?token=${user.generateResetPasswordJwt()}`,
-      firstName: user.firstName,
-      lastName: user.lastName
-    }
-  );
+  const sendingResults = await emailUtil.sendEmail(email, 'resetPassword', {
+    link: `${req.headers.origin}/new-password?reason=resetPassword&token=${user.generateResetPasswordJwt()}`,
+    firstName: user.firstName,
+    lastName: user.lastName
+  });
 
   debug('Sending results: %o', sendingResults);
 
@@ -89,20 +88,28 @@ export const resetPassword = async (req, res) => {
 };
 
 export const newPassword = async (req, res) => {
-  const { token, secret } = req.body;
+  const {
+    body: { reason, token, secret } // Reason: resetPassword or emailConfirmation
+  } = req;
   let userId;
 
   try {
-    userId = jwt.verify(token, config.get('jwt.resetPassword.key')).id;
+    userId = jwt.verify(token, config.get(`jwt.${reason}.key`)).id;
   } catch (e) {
-    debug('Reset password invalid token: %s', e.message);
+    debug('Invalid token: %s', e.message);
     return resError(res, 400, 'INVALID_TOKEN', 'Provided token is invalid or has expired.');
+  }
+
+  const user = await UserModel.findByPk(userId);
+  if (!user) {
+    debug('User %s not found', userId);
+    return resError(res, 400, 'INVALID_TOKEN', 'The encrypted user in provided token not exists.');
   }
 
   try {
     await UserModel.validateSecret(secret);
   } catch (e) {
-    debug('Reset password complexity error: %s', e.message);
+    debug('Password complexity error: %s', e.message);
     const isLengthError = e.details.some(({ type }) => type.includes('tooShort') || type.includes('tooLong'));
     return resError(
       res,
@@ -112,10 +119,12 @@ export const newPassword = async (req, res) => {
     );
   }
 
-  if (!(await UserModel.update({ secret }, { where: { id: userId } }))[0]) {
+  await user.update({ secret, activated: true });
+
+  /* if (!(await UserModel.update({ secret, activated: true }, { where: { id: userId } }))[0]) {
     debug('User with id %s not found', userId);
-    return resError(res, 400, 'INVALID_TOKEN', 'The user encrypted in provided token does not exist.');
-  }
+    return resError(res, 400, 'INVALID_TOKEN', 'The encrypted user in provided token not exists.');
+  } */
 
   res.json(true);
 };

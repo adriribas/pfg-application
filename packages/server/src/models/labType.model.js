@@ -10,6 +10,13 @@ const LabType = sequelize.define(
       type: DataTypes.STRING(50),
       primaryKey: true
     },
+    amount: {
+      type: DataTypes.SMALLINT,
+      defaultValue: 0,
+      set(value) {
+        this.setDataValue('amount', value || 0);
+      }
+    },
     capacity: {
       type: DataTypes.SMALLINT,
       set(value) {
@@ -25,7 +32,7 @@ LabType.associate = ({ Subject, SubjectLabType }) => {
   LabType.hasMany(SubjectLabType, { foreignKey: 'labType' });
 };
 
-LabType.updatableFields = ['capacity'];
+LabType.updatableFields = ['amount', 'capacity'];
 
 const validationSchema = Joi.object({
   name: Joi.string().alphanum().min(1).max(50).required(),

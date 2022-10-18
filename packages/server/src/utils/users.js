@@ -1,4 +1,4 @@
 import config from 'config';
 
-export const hasCreationPermissions = (currentUserRole, newUserRole) =>
-  config.get(`userCreationPermissions.${currentUserRole}`)?.includes(newUserRole);
+export const hasPermissions = (currentUserRole, otherUserRole) =>
+  config.get(`userPermissions.${currentUserRole}`)?.includes(otherUserRole);
