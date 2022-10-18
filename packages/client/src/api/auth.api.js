@@ -8,4 +8,5 @@ export const assertAccess = view => axios.get(`/auth/access/${view}`);
 
 export const resetPassword = email => axios.post('auth/reset-password', { email });
 
-export const newPassword = (token, password) => axios.post('/auth/new-password', { token, secret: password });
+export const newPassword = (reason, token, password) =>
+  axios.post('/auth/new-password', { reason, token, secret: password });

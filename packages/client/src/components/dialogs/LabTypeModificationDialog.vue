@@ -12,6 +12,7 @@ defineEmits([...useDialogPluginComponent.emits]);
 
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent();
 
+const amount = ref(props.labType.amount);
 const capacity = ref(props.labType.capacity);
 </script>
 
@@ -28,6 +29,12 @@ const capacity = ref(props.labType.capacity);
         <q-card-section>
           <span class="text-h6 q-mr-md">{{ labType.name }}</span>
         </q-card-section>
+
+        <DataTableModificationDialogSection title="Quantitat d'aules">
+          <div class="row justify-around">
+            <StepInput v-model="amount" title="" :min="0" :max="99" />
+          </div>
+        </DataTableModificationDialogSection>
 
         <DataTableModificationDialogSection title="Capacitat d'alumnes">
           <div class="row justify-around">
@@ -46,6 +53,7 @@ const capacity = ref(props.labType.capacity);
             onDialogOK({
               name: labType.name,
               data: {
+                amount,
                 capacity
               }
             })

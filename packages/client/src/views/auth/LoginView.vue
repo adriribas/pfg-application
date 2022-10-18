@@ -5,8 +5,6 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores';
 import { authApi } from '@/api';
 import AuthForm from '../../components/auth/AuthForm.vue';
-import EmailInput from '../../components/auth/EmailInput.vue';
-import PasswordInput from '../../components/auth/PasswordInput.vue';
 import AuthContainer from '../../components/auth/AuthContainer.vue';
 import ErrorRequest from '../../components/auth/ErrorRequest.vue';
 

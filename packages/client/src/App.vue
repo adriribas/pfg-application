@@ -1,23 +1,21 @@
 <script setup>
-import { onBeforeMount } from 'vue';
-
 import { useAuthStore, useSchoolsStore } from './stores';
 import TheNavigationTopBar from './components/TheNavigationTopBar.vue';
-import TheFooter from './components/TheFooter.vue';
 
 const authStore = useAuthStore();
 const schoolStore = useSchoolsStore();
 
-onBeforeMount(async () => {
+(async () => {
   await authStore.refreshUserData();
   await schoolStore.refreshSchoolData();
   authStore.$subscribe((_mutation, state) => {
+    schoolStore.refreshSchoolData();
     if (!state.authToken) {
       return localStorage.removeItem('authToken');
     }
     localStorage.setItem('authToken', state.authToken);
   });
-});
+})();
 </script>
 
 <template>
@@ -30,17 +28,8 @@ onBeforeMount(async () => {
       <q-page-container class="absolute-full">
         <q-scroll-area dark class="fit">
           <router-view />
-          <!-- <router-view #default="{ Component }">
-            <transition name="fade" mode="out-in">
-              <component :is="Component" />
-            </transition>
-          </router-view> -->
         </q-scroll-area>
       </q-page-container>
-
-      <!-- <q-footer elevated class="bg-g10 text-white">
-        <TheFooter />
-      </q-footer> -->
     </q-layout>
   </div>
 </template>

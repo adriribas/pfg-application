@@ -3,7 +3,6 @@ import { ref, computed } from 'vue';
 
 import { authApi } from '@/api';
 import AuthForm from '../../components/auth/AuthForm.vue';
-import EmailInput from '../../components/auth/EmailInput.vue';
 import AuthContainer from '../../components/auth/AuthContainer.vue';
 import ErrorRequest from '../../components/auth/ErrorRequest.vue';
 

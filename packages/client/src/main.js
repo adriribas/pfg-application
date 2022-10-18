@@ -9,7 +9,9 @@ import 'normalize.css';
 
 import App from '@/App.vue';
 import router from '@/router';
-import StepInput from '@/components/StepInput.vue';
+import StepInput from '@/components/inputs/StepInput.vue';
+import EmailInput from '@/components/inputs/EmailInput.vue';
+import PasswordInput from '@/components/inputs/PasswordInput.vue';
 import '@/css/color-palette.css';
 import '@/config/notificationTypes.js';
 
@@ -17,6 +19,9 @@ const app = createApp(App);
 
 app.use(router).use(createPinia()).use(Quasar, { plugins: { Dialog, Notify } }).use(autoAnimatePlugin);
 
-app.component('StepInput', StepInput);
+app
+  .component('StepInput', StepInput)
+  .component('EmailInput', EmailInput)
+  .component('PasswordInput', PasswordInput);
 
 app.mount('#app');

@@ -1,10 +1,13 @@
 <script setup>
 import { ref } from 'vue';
 import { useQuasar, useDialogPluginComponent } from 'quasar';
+import _ from 'lodash';
 
 import { usersApi } from '@/api/index.js';
 
-const props = defineProps({});
+const props = defineProps({
+  role: String
+});
 defineEmits([...useDialogPluginComponent.emits]);
 
 const $q = useQuasar();
@@ -16,7 +19,8 @@ const firstName = ref('');
 const lastName = ref('');
 const email = ref('');
 
-const submitForm = () => form.value.submit();
+const capRole = _.capitalize(props.role);
+
 const createUser = async () => {
   creating.value = true;
   try {
@@ -24,7 +28,7 @@ const createUser = async () => {
       firstName: firstName.value,
       lastName: lastName.value,
       email: email.value,
-      role: 'Coordinador'
+      role: capRole
     });
 
     $q.notify({
@@ -49,13 +53,17 @@ const createUser = async () => {
     <q-card dark class="q-pa-sm dialog-size">
       <q-card-section class="text-h5 text-center">
         <div class="q-mb-sm text-h5">Nou usuari</div>
-        <div class="text-h6 text-m5">COORDINADOR</div>
+
+        <div class="row justify-center">
+          <span class="q-py-xs q-px-md text-h5 bg-b4 text-m5 role-text">{{ capRole }}</span>
+        </div>
       </q-card-section>
 
       <q-card-section>
         <q-form ref="form" autofocus greedy @submit="createUser" class="q-gutter-md">
           <q-input
             v-model="firstName"
+            autofocus
             label="Nom"
             lazy-rules
             :rules="[val => !!val]"
@@ -82,6 +90,7 @@ const createUser = async () => {
             error-message="Aquest camp és obligatori"
             filled
             dark
+            @keypress.enter.prevent="$refs['form'].submit()"
             color="m14" />
         </q-form>
       </q-card-section>
@@ -94,7 +103,7 @@ const createUser = async () => {
           label="Crear"
           color="m6"
           no-caps
-          @click="submitForm"
+          @click="$refs['form'].submit()"
           class="q-mr-sm creation-btn">
           <template #loading>
             <q-spinner-hourglass />
@@ -111,4 +120,6 @@ const createUser = async () => {
   max-width: 90vw
 .creation-btn
   width: 80px
+.role-text
+  border-radius: 8px
 </style>

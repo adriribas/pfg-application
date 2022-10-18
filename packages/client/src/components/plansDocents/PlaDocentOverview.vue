@@ -34,9 +34,8 @@ const tabs = [
     <template #after>
       <q-tab-panels
         v-model="currentTab"
-        animated
-        swipeable
         vertical
+        animated
         transition-prev="slide-down"
         transition-next="slide-up"
         class="full-height bg-b7 panels">

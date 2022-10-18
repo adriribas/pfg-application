@@ -2,10 +2,12 @@
 import { ref } from 'vue';
 import { useQuasar, useDialogPluginComponent } from 'quasar';
 
+import { usersApi } from '@/api';
 import NewUserDialog from '@/components/dialogs/NewUserDialog.vue';
 
 const props = defineProps({
-  users: Array
+  users: Array,
+  role: String
 });
 defineEmits([...useDialogPluginComponent.emits]);
 
@@ -13,20 +15,60 @@ const $q = useQuasar();
 const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 
 const columns = [
-  { name: 'firstName', label: 'Nom', field: 'firstName' },
-  { name: 'lastName', label: 'Cognoms', field: 'lastName' },
-  { name: 'email', label: 'Correu electrònic', field: 'email' },
-  { name: 'activated', label: 'Activat', field: 'activated' },
-  { name: 'studyAbv', label: "Abreviació de l'estudi", field: row => row.study?.abv },
-  { name: 'studyName', label: "Nom de l'estudi", field: row => row.study?.name }
+  { name: 'firstName', field: 'firstName' },
+  { name: 'lastName', field: 'lastName' },
+  { name: 'email', field: 'email' },
+  { name: 'activated', field: 'activated' },
+  { name: 'dataEntityAbv', field: row => row.dataEntity?.abv },
+  { name: 'dataEntityName', field: row => row.dataEntity?.name }
 ];
 
 const usersData = ref([{}, ...props.users.sort(({ id: id1 }, { id: id2 }) => id2 - id1)]);
 
 const newUser = () =>
   $q
-    .dialog({ component: NewUserDialog })
+    .dialog({ component: NewUserDialog, componentProps: { role: props.role } })
     .onOk(({ user }) => (usersData.value = [usersData.value.at(0), user, ...usersData.value.slice(1)]));
+const deleteUser = (user, index) =>
+  $q
+    .dialog({
+      title: 'Confirmació',
+      message: `Segur que vols eliminar l'usuari <span class="text-bold text-m4">${user.fullName}</span> amb correu electrònic <span class="text-m4">${user.email}</span>?`,
+      html: true,
+      persistent: true,
+      focus: 'none',
+      dark: true,
+      ok: {
+        label: 'Eliminar',
+        noCaps: true,
+        color: 'negative'
+      },
+      cancel: {
+        label: 'Cancel·lar',
+        noCaps: true,
+        flat: true,
+        textColor: 'white'
+      }
+    })
+    .onOk(async () => {
+      try {
+        await usersApi.remove(user.id);
+
+        $q.notify({
+          type: 'success',
+          message: 'Usuari esborrat correctament',
+          caption: `${user.fullName} (${user.email})`
+        });
+
+        usersData.value.splice(index, 1);
+      } catch (e) {
+        $q.notify({
+          type: 'error',
+          message: "Error en l'eliminació de l'usuari",
+          caption: e.message
+        });
+      }
+    });
 </script>
 
 <template>
@@ -36,7 +78,7 @@ const newUser = () =>
     transition-show="rotate"
     transition-hide="rotate"
     @hide="onDialogHide">
-    <div class="dialog-size no-overflow">
+    <div class="no-overflow dialog-size">
       <q-scroll-area dark class="q-pa-md bg-b6 scroll-area">
         <q-table
           grid
@@ -79,19 +121,19 @@ const newUser = () =>
                   <div class="col-auto q-mb-xs text-g5">{{ props.row.email }}</div>
 
                   <q-badge
-                    :label="props.row.study?.abv || 'No assignat'"
-                    :outline="!props.row.study"
+                    :label="props.row.dataEntity?.abv || 'No assignat'"
+                    :outline="!props.row.dataEntity"
                     color="m6"
                     class="col-auto q-mt-sm q-py-xs">
                     <q-tooltip
-                      v-if="props.row.study"
+                      v-if="props.row.dataEntity"
                       anchor="top middle"
                       self="bottom middle"
                       transition-show="jump-up"
                       transition-hide="jump-down"
-                      :class="[!props.row.study?.name && 'text-warning']"
+                      :class="[!props.row.dataEntity?.name && 'text-warning']"
                       class="text-m12 bg-b4">
-                      {{ props.row.study?.name || 'Nom no especificat' }}
+                      {{ props.row.dataEntity?.name || 'Nom no especificat' }}
                     </q-tooltip>
                   </q-badge>
                 </q-card-section>
@@ -115,6 +157,7 @@ const newUser = () =>
                     dense
                     flat
                     text-color="negative"
+                    @click="deleteUser(props.row, props.rowIndex)"
                     :class="props.row.activated && 'q-mr-sm'" />
                 </q-card-actions>
               </q-card>

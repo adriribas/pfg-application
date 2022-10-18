@@ -4,12 +4,11 @@ import { useRouter } from 'vue-router';
 
 import { authApi } from '@/api';
 import AuthForm from '../../components/auth/AuthForm.vue';
-import PasswordInput from '../../components/auth/PasswordInput.vue';
 import AuthContainer from '../../components/auth/AuthContainer.vue';
 import ErrorRequest from '../../components/auth/ErrorRequest.vue';
-import { onBeforeRouteUpdate } from 'vue-router';
 
 const props = defineProps({
+  reason: String,
   token: String
 });
 
@@ -44,7 +43,7 @@ const changePassword = async () => {
     if (password.value !== repeatPassword.value) {
       throw { code: 'ERR_MATCH' };
     }
-    await authApi.newPassword(props.token, password.value);
+    await authApi.newPassword(props.reason, props.token, password.value);
     router.push({ name: 'login' });
   } catch (e) {
     console.log(e);

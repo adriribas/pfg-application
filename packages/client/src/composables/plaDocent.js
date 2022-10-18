@@ -196,11 +196,19 @@ const processSharedSubjects = plaDocentData => {
   return studies;
 };
 
-const splitLabTypes = (labTypes, capacity) => {
+const toEraseChars = ['(', ')', '?', '¿', '.', '-', ' '];
+
+const cleanLabTypeName = name =>
+  name
+    .split('')
+    .reduce((accum, char) => `${accum}${toEraseChars.includes(char) ? '' : char}`, '')
+    .toUpperCase();
+
+const getLabTypes = (labTypes, capacity) => {
   if (!labTypes) {
     return null;
   }
-  return labTypes.split('/').map(name => ({ name, capacity }));
+  return labTypes.split('/').map(name => ({ name: cleanLabTypeName(name), capacity }));
 };
 
 const mergeSubjects = plaDocentData => {
@@ -208,7 +216,7 @@ const mergeSubjects = plaDocentData => {
     ...study,
     subjects: study.subjects.reduce((accum, subject) => {
       const areas = subject.area ? [{ abv: subject.area, department: { abv: subject.department } }] : [];
-      const labTypes = subject.labType ? splitLabTypes(subject.labType, subject.labTypeCapacity) : [];
+      const labTypes = subject.labType ? getLabTypes(subject.labType, subject.labTypeCapacity) : [];
       const existingSubject = accum.find(({ code }) => code === subject.code);
 
       if (!existingSubject) {

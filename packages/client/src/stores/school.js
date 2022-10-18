@@ -10,16 +10,22 @@ export const useSchoolsStore = defineStore('schools', {
     errorMsg: ''
   }),
   getters: {
-    startYear: state => state.school?.currentStartYear,
-    endYear: state => state.school?.currentEndYear,
     hasPlaDocent() {
       return !!this.startYear;
+    },
+    startYear: state => state.school?.currentStartYear,
+    endYear: state => state.school?.currentEndYear,
+    course() {
+      return `${this.startYear} - ${this.endYear}`;
     },
     nextStartYear() {
       return this.hasPlaDocent ? this.startYear + 1 : new Date().getFullYear();
     },
     nextEndYear() {
       return this.hasPlaDocent ? this.endYear + 1 : new Date().getFullYear() + 1;
+    },
+    nextCourse() {
+      return `${this.nextStartYear} - ${this.nextEndYear}`;
     }
   },
   actions: {

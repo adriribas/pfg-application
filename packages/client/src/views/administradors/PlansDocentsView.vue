@@ -1,15 +1,42 @@
 <script setup>
 import { ref } from 'vue';
+import { useQuasar } from 'quasar';
 
 import { useSchoolsStore } from '@/stores';
+import { useFormatting } from '@/util';
 import PlaDocentUploader from '@/components/plansDocents/PlaDocentUploader.vue';
 import PlaDocentOverview from '@/components/plansDocents/PlaDocentOverview.vue';
 
+const $q = useQuasar();
 const schoolsStore = useSchoolsStore();
+const { toLongDate } = useFormatting();
 
 const upload = ref(!schoolsStore.hasPlaDocent);
 const uploading = ref(false);
 
+const goToUpload = () =>
+  $q
+    .dialog({
+      title: 'Confirmació',
+      message: `Segur que vols iniciar el curs acadèmic <span class="text-bold text-m4">${
+        schoolsStore.nextCourse
+      }</span> a dia <span class="text-m4">${toLongDate(Date.now())}</span>?`,
+      html: true,
+      focus: 'none',
+      dark: true,
+      ok: {
+        label: 'Continuar',
+        noCaps: true,
+        color: 'm5'
+      },
+      cancel: {
+        label: 'Cancel·lar',
+        noCaps: true,
+        flat: true,
+        textColor: 'white'
+      }
+    })
+    .onOk(() => (upload.value = true));
 const onUploaded = async () => {
   await schoolsStore.refreshSchoolData();
   uploading.value = false;
@@ -45,16 +72,16 @@ const onUploaded = async () => {
             <span class="q-py-sm q-px-md bg-b4 text-g3 course-text">Curs acadèmic</span>
 
             <span class="q-py-sm q-px-md bg-b6 text-m12 course-years">
-              {{ schoolsStore.startYear }} - {{ schoolsStore.endYear }}
+              {{ schoolsStore.course }}
             </span>
           </div>
 
           <q-btn
-            :label="`Iniciar el curs ${schoolsStore.nextStartYear} - ${schoolsStore.nextEndYear}`"
+            :label="`Iniciar el curs ${schoolsStore.nextCourse}`"
             icon="redo"
             no-caps
             color="m8"
-            @click="upload = !upload">
+            @click="goToUpload">
           </q-btn>
         </div>
 

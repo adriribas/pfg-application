@@ -9,6 +9,7 @@ const $q = useQuasar();
 
 const columns = [
   { name: 'name', label: 'Nom', field: 'name', align: 'left' },
+  { name: 'amount', label: "Quantitat d'aules", field: 'amount', align: 'center' },
   { name: 'capacity', label: "Capacitat d'alumnes", field: 'capacity', align: 'center' }
 ];
 
@@ -46,7 +47,7 @@ const openLabTypeMod = labType =>
   loading.value = true;
   try {
     const { data: labTypes } = await labTypesApi.list({
-      params: { fields: 'name,capacity' }
+      params: { fields: 'name,amount,capacity' }
     });
 
     data.value = labTypes;

@@ -30,7 +30,7 @@ const router = createRouter({
       path: '/new-password',
       name: 'newPassword',
       component: () => import('@/views/auth/NewPasswordView.vue'),
-      props: route => ({ token: route.query.token })
+      props: route => ({ reason: route.query.reason, token: route.query.token })
     },
     {
       path: '/plans-docents',
