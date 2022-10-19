@@ -105,7 +105,21 @@ const loadData = async () => {
       filterData: { role: capRole }
     });
 
-    tableData.value = await props.dataLoader(users);
+    const dataEntities = await props.dataLoader();
+
+    tableData.value = dataEntities.map(dataEntity => {
+      const userId = dataEntity[props.userField];
+      const mappedDataEntity = {
+        ...dataEntity,
+        user: userId ? users.find(({ id }) => id === userId) : null,
+        selectedUser: null
+      };
+
+      delete mappedDataEntity[props.userField];
+
+      return mappedDataEntity;
+    });
+
     usersData.value = users;
     refreshUserSelectOptions();
   } catch (e) {
@@ -259,8 +273,12 @@ loadData();
 
 <style lang="sass" scoped>
 .container
+  min-width: 1031px
   max-width: 1300px
   height: 90vh
+.table-header
+  font-size: 10pt
+  font-weight: bold
 .name-column
   font-size: 10.4pt
 .user-column
