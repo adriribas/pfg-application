@@ -7,7 +7,7 @@ import { User as Model, School as SchoolModel } from '#r/models';
 
 const { buildWhere, resError, isDuplicationError } = reqProcessing;
 const { hasPermissions } = usersUtil;
-const { sendEmail } = emailUtil;
+const { sendEmailConfirmationEmail } = emailUtil;
 const debug = createDebugger('pfgs:userController');
 
 const schoolScope = ({ school: schoolAbv }) => Model.scope({ method: ['school', schoolAbv] });
@@ -78,15 +78,7 @@ export const create = async (req, res) => {
   const school = await SchoolModel.findByPk(currentUserData.school);
   await user.setSchool(school);
 
-  await sendEmail(user.email, 'emailConfirmation', {
-    link: `${origin}/new-password?reason=emailConfirmation&token=${user.generateEmailConfirmationJwt()}`,
-    firstName: user.firstName,
-    lastName: user.lastName,
-    role: user.role,
-    createdByName: currentUserData.firstName,
-    createdByLastName: currentUserData.lastName,
-    school: school.name
-  });
+  await sendEmailConfirmationEmail(user, currentUserData, school, origin);
 
   res.status(201).json(user);
 };

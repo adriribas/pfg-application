@@ -14,7 +14,7 @@ const transporter = nodemailer.createTransport({
 const mapParams = (msg, params) =>
   Object.entries(params).reduce((accum, [key, value]) => accum.replaceAll(`%${key}%`, value), msg);
 
-export const sendEmail = async (to, resourceKey, params) => {
+const sendEmail = async (to, resourceKey, params) => {
   const { subject, text, html } = await jsonfile.readFile(
     `resources/emailTemplates/${config.get(`email.templates.${resourceKey}`)}.json`
   );
@@ -32,3 +32,21 @@ export const sendEmail = async (to, resourceKey, params) => {
     html: (html || '') && mapParams(html, params)
   }); */
 };
+
+export const sendResetPasswordEmail = (user, origin) =>
+  sendEmail(user.email, 'resetPassword', {
+    link: `${origin}/new-password?reason=resetPassword&token=${user.generateResetPasswordJwt()}`,
+    firstName: user.firstName,
+    firstName: user.lastName
+  });
+
+export const sendEmailConfirmationEmail = (user, currentUser, school, origin) =>
+  sendEmail(user.email, 'emailConfirmation', {
+    link: `${origin}/new-password?reason=emailConfirmation&token=${user.generateEmailConfirmationJwt()}`,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    role: user.role,
+    createdByFirstName: currentUser.firstName,
+    createdByLastName: currentUser.lastName,
+    schoolName: school.name
+  });

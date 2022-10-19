@@ -4,10 +4,12 @@ import _ from 'lodash';
 import config from 'config';
 import createDebugger from 'debug';
 
-import { User as UserModel } from '#r/models';
-import { reqProcessing, emailUtil } from '#r/utils';
+import { User as UserModel, School as SchoolModel } from '#r/models';
+import { reqProcessing, usersUtil, emailUtil } from '#r/utils';
 
 const { resError } = reqProcessing;
+const { hasPermissions } = usersUtil;
+const { sendEmailConfirmationEmail, sendResetPasswordEmail } = emailUtil;
 const debug = createDebugger('pfgs:auth');
 
 const getToSendUserData = user => ({
@@ -64,8 +66,42 @@ export const assertAccessTo = (req, res) => {
   res.json(true);
 };
 
+export const resendEmailConfirmation = async (req, res) => {
+  const {
+    user: currentUserData,
+    scopes: { school: schoolScope },
+    headers: { origin },
+    body: { id: userId }
+  } = req;
+  if (!userId) {
+    return resError(res, 400, 'KEY_NOT_PROVIDED', 'User key not provided.');
+  }
+
+  const user = await schoolScope(UserModel).findByPk(userId);
+  if (!user) {
+    return resError(res, 400, 'DATA_NOT_FOUND', 'User not found.');
+  }
+
+  if (!hasPermissions(currentUserData.role, user.role)) {
+    return resError(
+      res,
+      403,
+      'NO_PERMISSIONS',
+      'Current user cannot resend email confirmation email to the other user.'
+    );
+  }
+
+  const school = await SchoolModel.findByPk(currentUserData.school);
+
+  await sendEmailConfirmationEmail(user, currentUserData, school || {}, origin);
+  await user.update({ activated: false });
+
+  res.json();
+};
+
 export const resetPassword = async (req, res) => {
   const {
+    headers: { origin },
     body: { email }
   } = req;
 
@@ -76,15 +112,10 @@ export const resetPassword = async (req, res) => {
     return resError(res, 400, 'INVALID_DATA', `User with email ${email} does not exist.`);
   }
 
-  const sendingResults = await emailUtil.sendEmail(email, 'resetPassword', {
-    link: `${req.headers.origin}/new-password?reason=resetPassword&token=${user.generateResetPasswordJwt()}`,
-    firstName: user.firstName,
-    lastName: user.lastName
-  });
+  await sendResetPasswordEmail(user, origin);
+  await user.update({ secret, activated: false });
 
-  debug('Sending results: %o', sendingResults);
-
-  res.json(user.generateResetPasswordJwt());
+  res.json();
 };
 
 export const newPassword = async (req, res) => {
@@ -120,11 +151,6 @@ export const newPassword = async (req, res) => {
   }
 
   await user.update({ secret, activated: true });
-
-  /* if (!(await UserModel.update({ secret, activated: true }, { where: { id: userId } }))[0]) {
-    debug('User with id %s not found', userId);
-    return resError(res, 400, 'INVALID_TOKEN', 'The encrypted user in provided token not exists.');
-  } */
 
   res.json(true);
 };

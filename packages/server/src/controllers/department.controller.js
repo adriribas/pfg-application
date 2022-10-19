@@ -59,7 +59,9 @@ export const update = async (req, res) => {
 
   const { director: userId, ...attributes } = data;
   await updateFields(department, attributes);
-  if (userId) {
+  if (!userId) {
+    await department.setUser(null);
+  } else {
     const user = await schoolScope(UserModel).findByPk(userId);
 
     if (!user) {
@@ -71,8 +73,6 @@ export const update = async (req, res) => {
     }
 
     await department.setUser(user);
-  } else {
-    await department.setUser(null);
   }
 
   res.json(department);

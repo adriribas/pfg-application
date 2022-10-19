@@ -1,18 +1,20 @@
 import express from 'express';
 
 import { authController as controller } from '#r/controllers';
-import { authorization } from '#r/middlewares';
+import { authorization, reqProcessing } from '#r/middlewares';
+
+const { logIn, getCurrentUser, assertAccessTo, resendEmailConfirmation, resetPassword, newPassword } =
+  controller;
+const { auth } = authorization;
+const { generateScopes } = reqProcessing;
 
 const router = express.Router();
 
-router.post('/', controller.logIn);
-
-router.get('/current-user', authorization.auth, controller.getCurrentUser);
-
-router.get('/access/:view', controller.assertAccessTo);
-
-router.post('/reset-password', controller.resetPassword);
-
-router.post('/new-password', controller.newPassword);
+router.post('/', logIn);
+router.get('/current-user', auth, getCurrentUser);
+router.get('/access/:view', assertAccessTo);
+router.post('/resend-email-confirmation', auth, generateScopes, resendEmailConfirmation);
+router.post('/reset-password', resetPassword);
+router.post('/new-password', newPassword);
 
 export default router;

@@ -14,7 +14,7 @@ const router = express.Router({ mergeParams: true });
 router.get('/:id', validateRequest, applyFieldRestrictions, get);
 router.post('/filter', validateRequest, applyFieldRestrictions, validateFilter, filter);
 router.post('/', create);
-router.patch('/:id', update);
+//router.patch('/:id', update);
 router.delete('/:id', remove);
 
 export default router;
