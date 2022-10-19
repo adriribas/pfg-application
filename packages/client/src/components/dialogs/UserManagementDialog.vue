@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import { useQuasar, useDialogPluginComponent } from 'quasar';
 
-import { usersApi } from '@/api';
+import { authApi, usersApi } from '@/api';
 import NewUserDialog from '@/components/dialogs/NewUserDialog.vue';
 
 const props = defineProps({
@@ -23,12 +23,18 @@ const columns = [
   { name: 'dataEntityName', field: row => row.dataEntity?.name }
 ];
 
-const usersData = ref([{}, ...props.users.sort(({ id: id1 }, { id: id2 }) => id2 - id1)]);
+const usersData = ref([
+  {},
+  ...props.users
+    .sort(({ id: id1 }, { id: id2 }) => id2 - id1)
+    .map(user => ({ ...user, resending: false, resended: false }))
+]);
 
 const newUser = () =>
   $q
     .dialog({ component: NewUserDialog, componentProps: { role: props.role } })
     .onOk(({ user }) => (usersData.value = [usersData.value.at(0), user, ...usersData.value.slice(1)]));
+
 const deleteUser = (user, index) =>
   $q
     .dialog({
@@ -69,6 +75,27 @@ const deleteUser = (user, index) =>
         });
       }
     });
+
+const resendEmailConfirmation = async user => {
+  user.resending = true;
+  try {
+    await authApi.resendEmailConfirmation(user.id);
+    user.resended = true;
+    setTimeout(() => (user.resended = false), 5000);
+    $q.notify({
+      type: 'success',
+      message: "Correu d'activació reenviat correctament",
+      caption: `${user.email} (${user.fullName})`
+    });
+  } catch (e) {
+    $q.notify({
+      type: 'error',
+      message: "Error en el reenviament del correu d'activació",
+      caption: e.message
+    });
+  }
+  user.resending = false;
+};
 </script>
 
 <template>
@@ -141,13 +168,14 @@ const deleteUser = (user, index) =>
                 <q-card-actions align="right" :class="!props.row.activated && ['row', 'justify-around']">
                   <q-btn
                     v-if="!props.row.activated"
+                    :disable="props.row.resending || props.row.resended"
                     label="Reenviar correu"
                     icon="outgoing_mail"
                     no-caps
                     size="0.9em"
                     dense
-                    flat
-                    text-color="warning2" />
+                    text-color="warning2"
+                    @click="resendEmailConfirmation(props.row)" />
 
                   <q-btn
                     label="Eliminar"
