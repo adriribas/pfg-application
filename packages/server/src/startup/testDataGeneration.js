@@ -3,7 +3,6 @@ import createDebugger from 'debug';
 import _ from 'lodash';
 
 import { School as SchoolModel, User as UserModel } from '#r/models';
-//import { AcademicCourse as AcademicCourseModel } from '#r/models';
 
 const debug = createDebugger('pfgs:testDataGeneration');
 
@@ -20,12 +19,6 @@ const bulkCreate = async (Model, entityName) => {
 const createSchools = () => bulkCreate(SchoolModel, 'schools');
 
 const createUsers = () => bulkCreate(UserModel, 'administratorUsers');
-
-/* const createAcademicCourses = async () => {
-  debug('Generating academic courses');
-  await AcademicCourseModel.create({ startYear: 2022 });
-  debug('Academic courses have been generated successfully');
-}; */
 
 export default async () => {
   await createSchools();

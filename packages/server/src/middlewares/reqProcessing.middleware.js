@@ -105,3 +105,15 @@ export const filterValidator = Model => (req, res, next) => {
 
   next();
 };
+
+const generateFilterScope = (Model, methodName, value) => Model.scope({ method: [methodName, value] });
+
+export const generateScopes = (req, _res, next) => {
+  const {
+    user: { school: schoolAbv }
+  } = req;
+
+  req.scopes = { school: Model => generateFilterScope(Model, 'school', schoolAbv) };
+
+  next();
+};

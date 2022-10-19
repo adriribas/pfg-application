@@ -3,7 +3,7 @@ import _ from 'lodash';
 import createDebugger from 'debug';
 
 import { db as sequelize } from '#r/startup';
-import { reqProcessing, groupsUtil } from '#r/utils';
+import { reqProcessing, usersUtil, groupsUtil } from '#r/utils';
 import {
   Study as Model,
   School as SchoolModel,
@@ -16,14 +16,13 @@ import {
 
 const { buildWhere, createOrUpdate, isValidUpdateData, updateFields, updateRelation, resError } =
   reqProcessing;
+const { hasPermissions } = usersUtil;
 const { syncSubjectGroups } = groupsUtil;
 const debug = createDebugger('pfgs:studyController');
 
-const schoolScope = ({ school: schoolAbv }) => Model.scope({ method: ['school', schoolAbv] });
-
 export const get = async (req, res) => {
   const {
-    user: currentUserData,
+    scopes: { school: schoolScope },
     params: { abv },
     query: { fields }
   } = req;
@@ -31,7 +30,7 @@ export const get = async (req, res) => {
     return resError(res, 400, 'KEY_NOT_PROVIDED', 'Study key not provided.');
   }
 
-  const study = await schoolScope(currentUserData).findByPk(abv, { attributes: fields });
+  const study = await schoolScope(Model).findByPk(abv, { attributes: fields });
   if (!study) {
     return resError(res, 404);
   }
@@ -41,13 +40,13 @@ export const get = async (req, res) => {
 
 export const filter = async (req, res) => {
   const {
-    user: currentUserData,
+    scopes: { school: schoolScope },
     query: { fields },
     body: { data: filterData }
   } = req;
 
   res.json(
-    await schoolScope(currentUserData).findAll({
+    await schoolScope(Model).findAll({
       where: buildWhere(filterData),
       attributes: fields
     })
@@ -158,6 +157,8 @@ export const create = async (req, res) => {
 
 export const update = async (req, res) => {
   const {
+    user: currentUserData,
+    scopes: { school: schoolScope },
     params: { abv },
     body: data
   } = req;
@@ -169,7 +170,7 @@ export const update = async (req, res) => {
     return resError(res, 400, 'INVALID_DATA', 'The data to update is not valid.');
   }
 
-  const study = await Model.findByPk(abv);
+  const study = await schoolScope(Model).findByPk(abv);
   if (!study) {
     return resError(res, 404);
   }
@@ -177,10 +178,16 @@ export const update = async (req, res) => {
   const { coordinador: userId, ...attributes } = data;
   await updateFields(study, attributes);
   if (userId) {
-    const user = await UserModel.findByPk(userId);
+    const user = await schoolScope(UserModel).findByPk(userId);
+
     if (!user) {
       return resError(res, 400, 'DATA_NOT_FOUND', 'Coordinador user not found.');
     }
+
+    if (!hasPermissions(currentUserData.role, user.role)) {
+      resError(res, 403, 'NO_PERMISSIONS', 'Current user cannot assign the other user.');
+    }
+
     await study.setUser(user);
   } else {
     await study.setUser(null);

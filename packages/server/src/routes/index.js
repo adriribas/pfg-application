@@ -9,20 +9,22 @@ import areasRouter from './areas';
 import academicCoursesRouter from './academicCourses';
 import schoolsRouter from './schools';
 import labTypesRouter from './labTypes';
-import { authorization } from '#r/middlewares';
+import { authorization, reqProcessing } from '#r/middlewares';
 
 const { auth } = authorization;
+const { generateScopes } = reqProcessing;
 
 const router = express.Router();
 
-router.use('/auth', authRouter);
-router.use('/users', auth, usersRouter);
-router.use('/studies', auth, studiesRouter);
-router.use('/subjects', auth, subjectsRouter);
-router.use('/academic-courses', auth, academicCoursesRouter);
-router.use('/schools', auth, schoolsRouter);
-router.use('/departments', auth, deparmentsRouter);
-router.use('/areas', auth, areasRouter);
-router.use('/labTypes', auth, labTypesRouter);
+router
+  .use('/auth', authRouter)
+  .use('/users', auth, generateScopes, usersRouter)
+  .use('/studies', auth, generateScopes, studiesRouter)
+  .use('/subjects', auth, generateScopes, subjectsRouter)
+  .use('/academic-courses', auth, generateScopes, academicCoursesRouter)
+  .use('/schools', auth, generateScopes, schoolsRouter)
+  .use('/departments', auth, generateScopes, deparmentsRouter)
+  .use('/areas', auth, generateScopes, areasRouter)
+  .use('/labTypes', auth, generateScopes, labTypesRouter);
 
 export default router;

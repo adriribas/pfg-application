@@ -18,8 +18,21 @@ const Department = sequelize.define(
       }
     }
   },
-  { paranoid: true }
+  {
+    paranoid: true
+  }
 );
+
+const addScopes = ({ School }) => {
+  Department.addScope('school', schoolAbv => ({
+    include: {
+      model: School,
+      where: { abv: schoolAbv },
+      through: { attributes: [] },
+      attributes: []
+    }
+  }));
+};
 
 Department.associate = ({ User, School, SchoolDepartment, Area }) => {
   Department.belongsTo(User, { foreignKey: 'director' });
@@ -32,7 +45,11 @@ Department.associate = ({ User, School, SchoolDepartment, Area }) => {
   Department.hasMany(SchoolDepartment, { foreignKey: 'department' });
 
   Department.hasMany(Area, { foreignKey: 'department' });
+
+  addScopes({ School });
 };
+
+Department.updatableFields = ['director'];
 
 const validationSchema = Joi.object({
   abv: Joi.string().min(2).max(8).required()
