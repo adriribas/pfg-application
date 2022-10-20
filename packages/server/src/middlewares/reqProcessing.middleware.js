@@ -110,10 +110,16 @@ const generateFilterScope = (Model, methodName, value) => Model.scope({ method: 
 
 export const generateScopes = (req, _res, next) => {
   const {
-    user: { school: schoolAbv }
+    user: { school: schoolAbv, study, department }
   } = req;
 
-  req.scopes = { school: Model => generateFilterScope(Model, 'school', schoolAbv) };
+  req.scopes = {
+    school: Model => generateFilterScope(Model, 'school', schoolAbv),
+    study: study ? Model => generateFilterScope(Model, 'study', study.abv) : Model => Model,
+    department: department
+      ? Model => generateFilterScope(Model, 'department', department.abv)
+      : Model => Model
+  };
 
   next();
 };

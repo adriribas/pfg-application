@@ -63,13 +63,12 @@ export const update = async (req, res) => {
     await department.setUser(null);
   } else {
     const user = await schoolScope(UserModel).findByPk(userId);
-
     if (!user) {
       return resError(res, 400, 'DATA_NOT_FOUND', 'Director user not found.');
     }
 
     if (!hasPermissions(currentUserData.role, user.role)) {
-      resError(res, 403, 'NO_PERMISSIONS', 'Current user cannot assign the other user.');
+      return resError(res, 403, 'NO_PERMISSIONS', 'Current user cannot assign the other user.');
     }
 
     await department.setUser(user);

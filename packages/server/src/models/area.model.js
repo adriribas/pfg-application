@@ -18,7 +18,14 @@ const Area = sequelize.define(
       }
     }
   },
-  { paranoid: true }
+  {
+    paranoid: true,
+    scopes: {
+      department(departmentAbv) {
+        return { where: { department: departmentAbv } };
+      }
+    }
+  }
 );
 
 Area.associate = ({ User, Department, Subject, AreaSubject }) => {
@@ -30,6 +37,8 @@ Area.associate = ({ User, Department, Subject, AreaSubject }) => {
   Area.belongsToMany(Subject, { through: AreaSubject, foreignKey: 'area', otherKey: 'subject' });
   Area.hasMany(AreaSubject, { foreignKey: 'area' });
 };
+
+Area.updatableFields = ['responsable'];
 
 const validationSchema = Joi.object({
   abv: Joi.string().min(2).max(10).required()

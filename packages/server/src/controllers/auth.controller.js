@@ -39,7 +39,7 @@ export const logIn = async (req, res) => {
 
   res.json({
     userData: getToSendUserData(user),
-    token: user.generateAuthJwt()
+    token: await user.generateAuthJwt()
   });
 };
 
