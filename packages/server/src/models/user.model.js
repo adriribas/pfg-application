@@ -101,35 +101,13 @@ User.verifyAuthToken = bearerToken => {
   return jwt.verify(token, config.get('jwt.auth.key'));
 };
 
-const generateJsonWebToken = (user, type, extraFields = {}) =>
-  jwt.sign(
-    { ..._.pick(user, config.get(`jwt.${type}.fields`)), ...extraFields },
-    config.get(`jwt.${type}.key`),
-    {
-      expiresIn: config.get(`jwt.${type}.expiration`)
-    }
-  );
+const generateJsonWebToken = (user, type) =>
+  jwt.sign(_.pick(user, config.get(`jwt.${type}.fields`)), config.get(`jwt.${type}.key`), {
+    expiresIn: config.get(`jwt.${type}.expiration`)
+  });
 
-const roleFields = {
-  Administrador: async user => {},
-  Coordinador: async user => {
-    const study = await user.getStudy();
-    if (study) {
-      return { study: _.pick(study, ['abv', 'name']) };
-    }
-  },
-  'Director de departament': async user => {
-    const department = await user.getDepartment();
-    if (department) {
-      return { department: _.pick(department, ['abv', 'name']) };
-    }
-  },
-  'Responsable de docencia': async user => {},
-  Professor: async user => {}
-};
-
-User.prototype.generateAuthJwt = async function () {
-  return generateJsonWebToken(this, 'auth', await roleFields[this.role](this));
+User.prototype.generateAuthJwt = function () {
+  return generateJsonWebToken(this, 'auth');
 };
 User.prototype.generateResetPasswordJwt = function () {
   return generateJsonWebToken(this, 'resetPassword');

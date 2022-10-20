@@ -29,9 +29,6 @@ export const requestFormatter = (req, _res, next) => {
       return accum;
     }, {}) || {};
 
-  debug('Fields', query.fields);
-  debug('Include', query.include);
-
   next();
 };
 

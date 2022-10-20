@@ -8,59 +8,67 @@ import { User as UserModel, School as SchoolModel } from '#r/models';
 import { reqProcessing, usersUtil, emailUtil } from '#r/utils';
 
 const { resError } = reqProcessing;
-const { hasPermissions } = usersUtil;
+const { hasPermissions, getToSendUserData } = usersUtil;
 const { sendEmailConfirmationEmail, sendResetPasswordEmail } = emailUtil;
 const debug = createDebugger('pfgs:auth');
 
-const getToSendUserData = user => ({
-  ..._.pick(user, 'firstName', 'lastName', 'email', 'school', 'role'),
-  defaultView: config.get('userRoles').find(({ role }) => role === user.role).views[0]
-});
-
 export const logIn = async (req, res) => {
+  const { body: authData } = req;
+
   try {
-    await UserModel.validateAuth(req.body);
+    await UserModel.validateAuth(authData);
   } catch (e) {
     return resError(res, 400, 'INVALID_DATA', e.message);
   }
 
   const user = await UserModel.findOne({
-    where: { email: req.body.email }
+    where: { email: authData.email }
   });
   if (!user) {
     return resError(res, 400, 'INVALID_CREDENTIALS', 'Invalid email or password.');
   }
 
-  const validSecret = await bcrypt.compare(req.body.secret, user.secret);
+  const validSecret = await bcrypt.compare(authData.secret, user.secret);
 
   if (!validSecret) {
     return resError(res, 400, 'INVALID_CREDENTIALS', 'Invalid email or password.');
   }
 
-  res.json({
-    userData: getToSendUserData(user),
-    token: await user.generateAuthJwt()
-  });
+  res.json({ userData: await getToSendUserData(user), token: user.generateAuthJwt() });
 };
 
-export const getCurrentUser = (req, res) => res.json(getToSendUserData(req.user)); // TO-DO: Comprovar que l'usuari existeixi a la base de dades (per si s'ha eliminat o ha canviat)
+export const getCurrentUser = async (req, res) => {
+  const {
+    user: { id: userId }
+  } = req;
 
-export const assertAccessTo = (req, res) => {
-  let views = config.get('noAuthViews');
-  try {
-    const token = req.header('Authorization');
-    debug({ token });
-    if (token) {
-      const { role: userRole } = UserModel.verifyAuthToken(token);
-      views = config.get('userRoles').find(({ role }) => role === userRole).views;
-    }
-  } catch (e) {
-    debug('Error', e);
-    views = config.get('noAuthViews');
+  const user = await UserModel.findByPk(userId);
+  if (!user) {
+    return resError(res, 401, 'USER_DELETED', 'This user has been deleted.');
   }
 
-  if (!views.includes(req.params.view)) {
-    return resError(res, 403, 'FORBIDDEN_VIEW', `View ${req.params.view} is forbidden.`);
+  res.json(await getToSendUserData(user));
+};
+
+export const assertAccessTo = (req, res) => {
+  const {
+    headers: { authorization: token },
+    params: { view }
+  } = req;
+
+  let views = config.get('noAuthViews');
+  if (token) {
+    try {
+      const { role: userRole } = UserModel.verifyAuthToken(token);
+      views = config.get('userRoles').find(({ role }) => role === userRole).views;
+    } catch (e) {
+      debug('Error', e);
+      views = config.get('noAuthViews');
+    }
+  }
+
+  if (!views.includes(view)) {
+    return resError(res, 403, 'FORBIDDEN_VIEW', `View ${view} is forbidden.`);
   }
 
   res.json(true);
