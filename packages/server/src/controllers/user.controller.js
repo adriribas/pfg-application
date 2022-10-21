@@ -65,14 +65,15 @@ export const create = async (req, res) => {
     return resError(res, 400, 'INVALID_DATA', e.message);
   }
 
-  let user;
-  try {
-    user = await Model.create(userData);
-  } catch (e) {
-    if (!isDuplicationError(e)) {
-      throw e;
+  const user = await Model.findOne({ where: { email: data.email }, paranoid: false });
+  if (user) {
+    if (!user.isSoftDeleted()) {
+      return resError(res, 400, 'DUPLICATION', 'This user does already exist.');
     }
-    return resError(res, 400, 'DUPLICATION', 'This user does already exist.');
+    await user.restore();
+    if (user.activated) {
+      await user.update({ activated: false });
+    }
   }
 
   const school = await SchoolModel.findByPk(currentUserData.school);

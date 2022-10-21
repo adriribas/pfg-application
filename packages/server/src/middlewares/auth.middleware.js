@@ -22,7 +22,11 @@ export const auth = async (req, res, next) => {
 
     const user = await UserModel.findByPk(userId);
     if (!user) {
-      return resError(res, 401, 'USER_DELETED', 'This user has been deleted.');
+      return resError(res, 401, 'DELETED_USER', 'This user has been deleted.');
+    }
+
+    if (!user.activated) {
+      return resError(res, 400, 'NOT_ACTIVE_USER', 'This user is not active.');
     }
 
     req.user = await getReqPipelineUserData(user);

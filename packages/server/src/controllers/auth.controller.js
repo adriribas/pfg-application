@@ -24,14 +24,14 @@ export const logIn = async (req, res) => {
   const user = await UserModel.findOne({
     where: { email: authData.email }
   });
-  if (!user) {
-    return resError(res, 400, 'INVALID_CREDENTIALS', 'Invalid email or password.');
+  if (!user?.activated) {
+    return resError(res, 400, 'INVALID_CREDENTIALS', 'Invalid email or password or the user is not active.');
   }
 
   const validSecret = await bcrypt.compare(authData.secret, user.secret);
 
   if (!validSecret) {
-    return resError(res, 400, 'INVALID_CREDENTIALS', 'Invalid email or password.');
+    return resError(res, 400, 'INVALID_CREDENTIALS', 'Invalid email or password or the user is not active.');
   }
 
   res.json({ userData: await getToSendUserData(user), token: user.generateAuthJwt() });
@@ -42,12 +42,7 @@ export const getCurrentUser = async (req, res) => {
     user: { id: userId }
   } = req;
 
-  const user = await UserModel.findByPk(userId);
-  if (!user) {
-    return resError(res, 401, 'USER_DELETED', 'This user has been deleted.');
-  }
-
-  res.json(await getToSendUserData(user));
+  res.json(await getToSendUserData(await UserModel.findByPk(userId)));
 };
 
 export const assertAccessTo = (req, res) => {
@@ -63,7 +58,6 @@ export const assertAccessTo = (req, res) => {
       views = config.get('userRoles').find(({ role }) => role === userRole).views;
     } catch (e) {
       debug('Error', e);
-      views = config.get('noAuthViews');
     }
   }
 
@@ -71,7 +65,7 @@ export const assertAccessTo = (req, res) => {
     return resError(res, 403, 'FORBIDDEN_VIEW', `View ${view} is forbidden.`);
   }
 
-  res.json(true);
+  res.json();
 };
 
 export const resendEmailConfirmation = async (req, res) => {
@@ -121,7 +115,7 @@ export const resetPassword = async (req, res) => {
   }
 
   await sendResetPasswordEmail(user, origin);
-  await user.update({ secret, activated: false });
+  await user.update({ activated: false });
 
   res.json();
 };
@@ -145,6 +139,11 @@ export const newPassword = async (req, res) => {
     return resError(res, 400, 'INVALID_TOKEN', 'The encrypted user in provided token not exists.');
   }
 
+  if (user.activated) {
+    debug('User %s is already active.', userId);
+    return resError(res, 400, 'ACTIVE_USER', 'User is already active.');
+  }
+
   try {
     await UserModel.validateSecret(secret);
   } catch (e) {
@@ -160,5 +159,5 @@ export const newPassword = async (req, res) => {
 
   await user.update({ secret, activated: true });
 
-  res.json(true);
+  res.json();
 };
