@@ -29,7 +29,7 @@
       "views": ["dd_horarisProfessors", "dd_horarisGraus", "dd_gestResponsables"]
     },
     {
-      "role": "Responsable de docència",
+      "role": "Responsable de docencia",
       "views": ["rd_horarisProfessors", "rd_assignProfessors", "rd_gestProfessors"]
     },
     {

@@ -4,7 +4,7 @@ import createDebugger from 'debug';
 import { Area as Model, User as UserModel } from '#r/models';
 import { reqProcessing, usersUtil } from '#r/utils';
 
-const { buildWhere, updateFields, resError } = reqProcessing;
+const { buildWhere, isValidUpdateData, updateFields, resError } = reqProcessing;
 const { hasPermissions } = usersUtil;
 const debug = createDebugger('pfgs:areaController');
 
@@ -64,7 +64,7 @@ export const update = async (req, res) => {
   const { responsable: userId, ...attributes } = data;
   await updateFields(area, attributes);
   if (!userId) {
-    await area.setResponsable(null);
+    await area.setUser(null);
   } else {
     const user = await schoolScope(UserModel).findByPk(userId);
     if (!user) {

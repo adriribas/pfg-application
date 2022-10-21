@@ -54,7 +54,7 @@ export const create = async (req, res) => {
   } = req;
 
   if (!hasPermissions(currentUserData.role, data.role)) {
-    resError(res, 403, 'NO_PERMISSIONS', 'Current user cannot create a user including this data.');
+    return resError(res, 403, 'NO_PERMISSIONS', 'Current user cannot create a user including this data.');
   }
 
   const userData = _.pick(data, ['firstName', 'lastName', 'email', 'role']);

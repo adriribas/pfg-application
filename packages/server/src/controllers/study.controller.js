@@ -185,7 +185,7 @@ export const update = async (req, res) => {
     }
 
     if (!hasPermissions(currentUserData.role, user.role)) {
-      resError(res, 403, 'NO_PERMISSIONS', 'Current user cannot assign the other user.');
+      return resError(res, 403, 'NO_PERMISSIONS', 'Current user cannot assign the other user.');
     }
 
     await study.setUser(user);
