@@ -9,7 +9,8 @@ import UserManagementDialog from '@/components/dialogs/UserManagementDialog.vue'
 const props = defineProps({
   rowKey: String,
   role: String,
-  pluralizedRole: String,
+  roleLabel: String,
+  pluralizedRoleLabel: String,
   dataEntityLabel: String,
   dataEntityColumns: Array,
   userLabel: String,
@@ -20,7 +21,7 @@ const props = defineProps({
 
 const $q = useQuasar();
 
-const capRole = _.capitalize(props.role);
+const capRole = _.capitalize(props.roleLabel);
 const tableColumns = [
   ...props.dataEntityColumns,
   {
@@ -50,7 +51,8 @@ const openUserManagement = () =>
           }
           return { ...user, dataEntity: _.pick(dataEntity, ['abv', 'name']) };
         }),
-        role: props.role
+        role: props.role,
+        roleLabel: props.roleLabel
       }
     })
     .onDismiss(loadData);
@@ -102,7 +104,7 @@ const loadData = async () => {
   try {
     const { data: users } = await usersApi.list({
       params: { fields: 'id,firstName,lastName,fullName,email,activated' },
-      filterData: { role: capRole }
+      filterData: { role: props.role }
     });
 
     const dataEntities = await props.dataLoader();
@@ -149,7 +151,7 @@ loadData();
             <div class="row items-center">
               <q-icon name="badge" size="xl" color="m13" />
 
-              <span class="text-h4 q-ml-md">Assignació de {{ _.capitalize(pluralizedRole) }}</span>
+              <span class="text-h4 q-ml-md">Assignació de {{ _.capitalize(pluralizedRoleLabel) }}</span>
             </div>
           </template>
 

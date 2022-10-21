@@ -23,8 +23,9 @@ const updateUserAssignation = (departmentAbv, userId = null) =>
   <q-page padding>
     <AssignationTable
       row-key="abv"
-      role="director de departament"
-      pluralized-role="directors de departament"
+      role="Director de departament"
+      role-label="director de departament"
+      pluralized-role-label="directors de departament"
       data-entity-label="dels departaments"
       :data-entity-columns="columns"
       user-label="Director/a"

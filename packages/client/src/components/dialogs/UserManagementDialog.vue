@@ -7,7 +7,8 @@ import NewUserDialog from '@/components/dialogs/NewUserDialog.vue';
 
 const props = defineProps({
   users: Array,
-  role: String
+  role: String,
+  roleLabel: String
 });
 defineEmits([...useDialogPluginComponent.emits]);
 
@@ -32,7 +33,7 @@ const usersData = ref([
 
 const newUser = () =>
   $q
-    .dialog({ component: NewUserDialog, componentProps: { role: props.role } })
+    .dialog({ component: NewUserDialog, componentProps: { role: props.role, roleLabel: props.roleLabel } })
     .onOk(({ user }) => (usersData.value = [usersData.value.at(0), user, ...usersData.value.slice(1)]));
 
 const deleteUser = (user, index) =>

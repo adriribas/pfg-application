@@ -22,8 +22,9 @@ const updateUserAssignation = (areaAbv, userId = null) => areasApi.update(areaAb
   <q-page padding>
     <AssignationTable
       row-key="abv"
-      role="responsable de docència"
-      pluralized-role="responsables de docència"
+      role="Responsable de docencia"
+      role-label="responsable de docència"
+      pluralized-role-label="responsables de docència"
       data-entity-label="de les àrees"
       :data-entity-columns="columns"
       user-label="Responsable"

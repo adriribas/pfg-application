@@ -6,7 +6,8 @@ import _ from 'lodash';
 import { usersApi } from '@/api/index.js';
 
 const props = defineProps({
-  role: String
+  role: String,
+  roleLabel: String
 });
 defineEmits([...useDialogPluginComponent.emits]);
 
@@ -19,7 +20,7 @@ const firstName = ref('');
 const lastName = ref('');
 const email = ref('');
 
-const capRole = _.capitalize(props.role);
+const capRole = _.capitalize(props.roleLabel);
 
 const createUser = async () => {
   creating.value = true;
@@ -28,7 +29,7 @@ const createUser = async () => {
       firstName: firstName.value,
       lastName: lastName.value,
       email: email.value,
-      role: capRole
+      role: props.role
     });
 
     $q.notify({
