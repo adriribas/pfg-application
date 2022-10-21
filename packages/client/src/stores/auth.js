@@ -37,6 +37,11 @@ export const useAuthStore = defineStore('auth', {
         this.userData = {};
         this.authToken = '';
       }
+    },
+    logout() {
+      this.authToken = '';
+      this.refreshUserData();
+      router.push({ name: 'login' });
     }
   }
 });
