@@ -14,7 +14,7 @@ export const auth = async (req, res, next) => {
 
   if (!token) {
     debug('Token not provided');
-    return resError(res, 401, 'TOKEN_NOT_PROVIDED', 'Authorization token has not been provided.');
+    return resError(res, 401, 'TOKEN_NOT_PROVIDED', "No s'ha proporcionat el token d'autorització.");
   }
 
   try {
@@ -22,17 +22,22 @@ export const auth = async (req, res, next) => {
 
     const user = await UserModel.findByPk(userId);
     if (!user) {
-      return resError(res, 401, 'DELETED_USER', 'This user has been deleted.');
+      return resError(res, 401, 'DELETED_USER', "L'usuari ha estat eliminat.");
     }
 
     if (!user.activated) {
-      return resError(res, 400, 'NOT_ACTIVE_USER', 'This user is not active.');
+      return resError(res, 400, 'NOT_ACTIVE_USER', "L'usuari encara no ha estat activat.");
     }
 
     req.user = await getReqPipelineUserData(user);
   } catch (e) {
     debug('Invaild token', token, e.message);
-    return resError(res, 400, 'INVALID_TOKEN', 'Authorization token is invalid or has expired.');
+    return resError(
+      res,
+      400,
+      'INVALID_TOKEN',
+      "El token d'autorització proporcionat no és vàlid o bé ha expirat."
+    );
   }
 
   next();

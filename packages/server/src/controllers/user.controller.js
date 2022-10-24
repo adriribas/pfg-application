@@ -19,7 +19,7 @@ export const get = async (req, res) => {
     query: { fields }
   } = req;
   if (!id) {
-    return resError(res, 400, 'KEY_NOT_PROVIDED', 'User key not provided.');
+    return resError(res, 400, 'KEY_NOT_PROVIDED', "No s'ha proporcionat l'identificador de l'usuari");
   }
 
   const user = await schoolScope(currentUserData).findByPk(id, { attributes: fields });
@@ -54,7 +54,12 @@ export const create = async (req, res) => {
   } = req;
 
   if (!hasPermissions(currentUserData.role, data.role)) {
-    return resError(res, 403, 'NO_PERMISSIONS', 'Current user cannot create a user including this data.');
+    return resError(
+      res,
+      403,
+      'NO_PERMISSIONS',
+      'No disposes dels permisos suficients per crear aquest usuari.'
+    );
   }
 
   const userData = _.pick(data, ['firstName', 'lastName', 'email', 'role']);
@@ -68,7 +73,7 @@ export const create = async (req, res) => {
   const user = await Model.findOne({ where: { email: data.email }, paranoid: false });
   if (user) {
     if (!user.isSoftDeleted()) {
-      return resError(res, 400, 'DUPLICATION', 'This user does already exist.');
+      return resError(res, 400, 'DUPLICATION', 'Ja existeix un usuari amb aquest correu electrònic.');
     }
     await user.restore();
     if (user.activated) {
@@ -90,7 +95,7 @@ export const remove = async (req, res) => {
     params: { id }
   } = req;
   if (!id) {
-    return resError(res, 400, 'KEY_NOT_PROVIDED', 'User key not provided.');
+    return resError(res, 400, 'KEY_NOT_PROVIDED', "No s'ha proporcionat l'identificador de l'usuari");
   }
 
   const user = await schoolScope(currentUserData).findByPk(id);
@@ -99,7 +104,12 @@ export const remove = async (req, res) => {
   }
 
   if (!hasPermissions(currentUserData.role, user.role)) {
-    return resError(res, 403, 'NO_PERMISSIONS', 'Current user cannot delete this user.');
+    return resError(
+      res,
+      403,
+      'NO_PERMISSIONS',
+      'No disposes dels permisos suficients per eliminar aquest usuari.'
+    );
   }
 
   await user.destroy();
@@ -107,7 +117,7 @@ export const remove = async (req, res) => {
   res.status(204).json();
 };
 
-//********************************************************************/
+//********************************************************************//
 
 export const update = async (req, res) => {
   try {

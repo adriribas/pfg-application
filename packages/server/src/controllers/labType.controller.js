@@ -4,7 +4,7 @@ import createDebugger from 'debug';
 import { LabType as Model } from '#r/models';
 import { reqProcessing } from '#r/utils';
 
-const { buildWhere, updateFields, updateRelation, isValidUpdateData, resError } = reqProcessing;
+const { buildWhere, updateFields, isValidUpdateData, resError } = reqProcessing;
 const debug = createDebugger('pfgs:labTypeController');
 
 export const get = async (req, res) => {
@@ -13,7 +13,12 @@ export const get = async (req, res) => {
     query: { fields }
   } = req;
   if (!name) {
-    return resError(res, 400, 'KEY_NOT_PROVIDED', 'LabType key not provided.');
+    return resError(
+      res,
+      400,
+      'KEY_NOT_PROVIDED',
+      "No s'ha proporcionat l'identificador del tipus de laboratori."
+    );
   }
 
   const labType = await Model.findByPk(name, { attributes: fields });
@@ -44,11 +49,21 @@ export const update = async (req, res) => {
     body: data
   } = req;
   if (!name) {
-    return resError(res, 400, 'KEY_NOT_PROVIDED', 'LabType key not provided.');
+    return resError(
+      res,
+      400,
+      'KEY_NOT_PROVIDED',
+      "No s'ha proporcionat l'identificador del tipus de laboratori."
+    );
   }
 
   if (!isValidUpdateData(Model, data)) {
-    return resError(res, 400, 'INVALID_DATA', 'The data to update is not valid.');
+    return resError(
+      res,
+      400,
+      'INVALID_DATA',
+      'Les dades per actualitzar el tipus de laboratori no són vàlides.'
+    );
   }
 
   const labType = await Model.findByPk(name);

@@ -66,13 +66,13 @@ export const requestValidator = Model => (req, res, next) => {
   } = req;
 
   if (!validateFieldsMatching(fields, Model)) {
-    return resError(res, 400, 'BAD_QUERY_FIELDS', 'Some query fields are invalid.');
+    return resError(res, 400, 'BAD_QUERY_FIELDS', 'La consulta conté atributs invàlids.');
   }
   if (!validateFieldsRestriction(fields, Model)) {
-    return resError(res, 400, 'BAD_QUERY_FIELDS', 'Some query fields are restricted.');
+    return resError(res, 400, 'BAD_QUERY_FIELDS', 'La consulta conté atributs restringits.');
   }
   if (!validateIncludeMatching(include, Model)) {
-    return resError(res, 400, 'BAD_QUERY_INCLUDE', 'Query include is invalid.');
+    return resError(res, 400, 'BAD_QUERY_INCLUDE', 'La consulta conté "includes" invàlids.');
   }
 
   next();
@@ -93,11 +93,11 @@ export const filterValidator = Model => (req, res, next) => {
   const associations = req.body.associations || {};
 
   if (!checkRequired({ ...data, ...associations }, Model.requiredFilterFields || [])) {
-    return resError(res, 400, 'REQUIRED', 'Some required fields are not provided.');
+    return resError(res, 400, 'REQUIRED', "No s'han proporcionat tots els camps de filtratge obligatòris.");
   }
 
   if (!validateFilterData(data, Model)) {
-    return resError(res, 400, 'BAD_FIELDS', 'Some fields do not match data model or are restricted.');
+    return resError(res, 400, 'BAD_FIELDS', 'Alguns camps de filtratge són invàlids o bé estan restringits.');
   }
 
   next();

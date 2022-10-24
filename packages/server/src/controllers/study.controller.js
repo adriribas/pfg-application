@@ -14,8 +14,7 @@ import {
   LabType as LabTypeModel
 } from '#r/models';
 
-const { buildWhere, createOrUpdate, isValidUpdateData, updateFields, updateRelation, resError } =
-  reqProcessing;
+const { buildWhere, createOrUpdate, isValidUpdateData, updateFields, resError } = reqProcessing;
 const { hasPermissions } = usersUtil;
 const { syncSubjectGroups } = groupsUtil;
 const debug = createDebugger('pfgs:studyController');
@@ -27,7 +26,7 @@ export const get = async (req, res) => {
     query: { fields }
   } = req;
   if (!abv) {
-    return resError(res, 400, 'KEY_NOT_PROVIDED', 'Study key not provided.');
+    return resError(res, 400, 'KEY_NOT_PROVIDED', "No s'ha proporcionat l'identificador de l'estudi.");
   }
 
   const study = await schoolScope(Model).findByPk(abv, { attributes: fields });
@@ -58,12 +57,12 @@ export const create = async (req, res) => {
     user: { school: schoolAbv }
   } = req;
   if (!schoolAbv) {
-    return resError(res, 400, 'INVALID_USER', 'User is not assigned to any school.');
+    return resError(res, 400, 'INVALID_USER', 'No estàs assignat a cap facultat.');
   }
 
   const school = await SchoolModel.findByPk(schoolAbv);
   if (!school) {
-    return resError(res, 400, 'INVALID_DATA', `School ${schoolAbv} does not exist.`);
+    return resError(res, 400, 'INVALID_DATA', "No s'ha trobat la teva facultat.");
   }
 
   try {
@@ -163,11 +162,11 @@ export const update = async (req, res) => {
     body: data
   } = req;
   if (!abv) {
-    return resError(res, 400, 'KEY_NOT_PROVIDED', 'Study key not provided.');
+    return resError(res, 400, 'KEY_NOT_PROVIDED', "No s'ha proporcionat l'identificador de l'estudi.");
   }
 
   if (!isValidUpdateData(Model, data)) {
-    return resError(res, 400, 'INVALID_DATA', 'The data to update is not valid.');
+    return resError(res, 400, 'INVALID_DATA', "Les dades per actualitzar l'estudi no són vàlides.");
   }
 
   const study = await schoolScope(Model).findByPk(abv);
@@ -181,11 +180,16 @@ export const update = async (req, res) => {
     const user = await schoolScope(UserModel).findByPk(userId);
 
     if (!user) {
-      return resError(res, 400, 'DATA_NOT_FOUND', 'Coordinador user not found.');
+      return resError(res, 400, 'DATA_NOT_FOUND', "No s'ha trobat l'usuari Coordinador d'aquest estudi.");
     }
 
     if (!hasPermissions(currentUserData.role, user.role)) {
-      return resError(res, 403, 'NO_PERMISSIONS', 'Current user cannot assign the other user.');
+      return resError(
+        res,
+        403,
+        'NO_PERMISSIONS',
+        'No disposes dels permisos suficients per fer aquesta assignació.'
+      );
     }
 
     await study.setUser(user);

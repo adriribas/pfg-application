@@ -15,7 +15,7 @@ export const get = async (req, res) => {
     params: { abv }
   } = req;
   if (!abv) {
-    return resError(res, 400, 'KEY_NOT_PROVIDED', 'Area key not provided.');
+    return resError(res, 400, 'KEY_NOT_PROVIDED', "No s'ha proporcionat l'identificador de l'àrea.");
   }
 
   const area = await departamentScope(Model).findByPk(abv, { attributes: fields });
@@ -49,11 +49,11 @@ export const update = async (req, res) => {
     body: data
   } = req;
   if (!abv) {
-    return resError(res, 400, 'KEY_NOT_PROVIDED', 'Area key not provided.');
+    return resError(res, 400, 'KEY_NOT_PROVIDED', "No s'ha proporcionat l'identificador de l'àrea.");
   }
 
   if (!isValidUpdateData(Model, data)) {
-    return resError(res, 400, 'INVALID_DATA', 'The data to update is not valid.');
+    return resError(res, 400, 'INVALID_DATA', "Les dades per actualitzar l'àrea no són vàlides.");
   }
 
   const area = await departamentScope(Model).findByPk(abv);
@@ -68,11 +68,21 @@ export const update = async (req, res) => {
   } else {
     const user = await schoolScope(UserModel).findByPk(userId);
     if (!user) {
-      return resError(res, 400, 'DATA_NOT_FOUND', 'Responsable user not found.');
+      return resError(
+        res,
+        400,
+        'DATA_NOT_FOUND',
+        "No s'ha trobat l'usuari Responsable de la docència d'aquesta àrea."
+      );
     }
 
     if (!hasPermissions(currentUserData.role, user.role)) {
-      return resError(res, 403, 'NO_PERMISSIONS', 'Current user cannot assign the other user.');
+      return resError(
+        res,
+        403,
+        'NO_PERMISSIONS',
+        'No disposes dels permisos suficients per fer aquesta assignació.'
+      );
     }
 
     await area.setUser(user);

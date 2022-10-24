@@ -18,20 +18,30 @@ export const logIn = async (req, res) => {
   try {
     await UserModel.validateAuth(authData);
   } catch (e) {
-    return resError(res, 400, 'INVALID_DATA', e.message);
+    return resError(res, 400, 'INVALID_DATA', 'El format de les dades introduïdes no és vàlid.');
   }
 
   const user = await UserModel.findOne({
     where: { email: authData.email }
   });
   if (!user?.activated) {
-    return resError(res, 400, 'INVALID_CREDENTIALS', 'Invalid email or password or the user is not active.');
+    return resError(
+      res,
+      400,
+      'INVALID_CREDENTIALS',
+      "Les credencials no són vàlides o bé encara no has activat l'usuari."
+    );
   }
 
   const validSecret = await bcrypt.compare(authData.secret, user.secret);
 
   if (!validSecret) {
-    return resError(res, 400, 'INVALID_CREDENTIALS', 'Invalid email or password or the user is not active.');
+    return resError(
+      res,
+      400,
+      'INVALID_CREDENTIALS',
+      "Les credencials no són vàlides o bé encara no has activat l'usuari."
+    );
   }
 
   res.json({ userData: await getToSendUserData(user), token: user.generateAuthJwt() });
@@ -62,7 +72,12 @@ export const assertAccessTo = (req, res) => {
   }
 
   if (!views.includes(view)) {
-    return resError(res, 403, 'FORBIDDEN_VIEW', `View ${view} is forbidden.`);
+    return resError(
+      res,
+      403,
+      'FORBIDDEN_VIEW',
+      'No disposes dels permisos suficients per accedir a aquesta vista.'
+    );
   }
 
   res.json();
@@ -76,12 +91,12 @@ export const resendEmailConfirmation = async (req, res) => {
     body: { id: userId }
   } = req;
   if (!userId) {
-    return resError(res, 400, 'KEY_NOT_PROVIDED', 'User key not provided.');
+    return resError(res, 400, 'KEY_NOT_PROVIDED', "No s'ha proporcionat l'identificador de l'usuari.");
   }
 
   const user = await schoolScope(UserModel).findByPk(userId);
   if (!user) {
-    return resError(res, 400, 'DATA_NOT_FOUND', 'User not found.');
+    return resError(res, 400, 'DATA_NOT_FOUND', "No s'ha trobat l'usuari.");
   }
 
   if (!hasPermissions(currentUserData.role, user.role)) {
@@ -89,7 +104,7 @@ export const resendEmailConfirmation = async (req, res) => {
       res,
       403,
       'NO_PERMISSIONS',
-      'Current user cannot resend email confirmation email to the other user.'
+      "No disposes dels permisos suficients per reenviar el correu d'activació a aquest usuari."
     );
   }
 
@@ -111,7 +126,7 @@ export const resetPassword = async (req, res) => {
     where: { email }
   });
   if (!user) {
-    return resError(res, 400, 'INVALID_DATA', `User with email ${email} does not exist.`);
+    return resError(res, 400, 'INVALID_DATA', "No s'ha trobat l'usuari");
   }
 
   await sendResetPasswordEmail(user, origin);
@@ -130,18 +145,18 @@ export const newPassword = async (req, res) => {
     userId = jwt.verify(token, config.get(`jwt.${reason}.key`)).id;
   } catch (e) {
     debug('Invalid token: %s', e.message);
-    return resError(res, 400, 'INVALID_TOKEN', 'Provided token is invalid or has expired.');
+    return resError(res, 400, 'INVALID_TOKEN', 'El token proporcionat no és vàlid o bé ha expirat.');
   }
 
   const user = await UserModel.findByPk(userId);
   if (!user) {
     debug('User %s not found', userId);
-    return resError(res, 400, 'INVALID_TOKEN', 'The encrypted user in provided token not exists.');
+    return resError(res, 400, 'INVALID_TOKEN', "No s'ha trobat l'usuari.");
   }
 
   if (user.activated) {
     debug('User %s is already active.', userId);
-    return resError(res, 400, 'ACTIVE_USER', 'User is already active.');
+    return resError(res, 400, 'ACTIVE_USER', "L'usuari ja ha estat activat.");
   }
 
   try {
@@ -153,7 +168,9 @@ export const newPassword = async (req, res) => {
       res,
       400,
       isLengthError ? 'PWD_LENGTH' : 'PWD_COMPLEXITY',
-      isLengthError ? 'Invalid password length.' : 'Password complexity is too low.'
+      isLengthError
+        ? 'La contrasenya ha de contenir entre 10 i 30 caràcters.'
+        : 'La contrasenya ha de contenir com a mínim una lletra minúscula, una majúscula i un número.'
     );
   }
 

@@ -14,7 +14,7 @@ export const get = async (req, res) => {
     query: { fields }
   } = req;
   if (!abv) {
-    return resError(res, 400, 'KEY_NOT_PROVIDED', 'School key not provided.');
+    return resError(res, 400, 'KEY_NOT_PROVIDED', "No s'ha proporcionat l'identificador de la facultat.");
   }
 
   const school = await Model.findByPk(abv, { attributes: fields });

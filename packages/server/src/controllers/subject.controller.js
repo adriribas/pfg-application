@@ -44,7 +44,7 @@ export const get = async (req, res) => {
     query: { fields, include }
   } = req;
   if (!code) {
-    return resError(res, 400, 'KEY_NOT_PROVIDED', 'Subject key not provided.');
+    return resError(res, 400, 'KEY_NOT_PROVIDED', "No s'ha proporcionat l'identificador de l'assignatura.");
   }
 
   const subject = await Model.findByPk(code, { include: buildInclude(include), attributes: fields });
@@ -87,11 +87,11 @@ export const update = async (req, res) => {
     body: data
   } = req;
   if (!code) {
-    return resError(res, 400, 'KEY_NOT_PROVIDED', 'Subject key not provided.');
+    return resError(res, 400, 'KEY_NOT_PROVIDED', "No s'ha proporcionat l'identificador de l'assignatura.");
   }
 
   if (!isValidUpdateData(Model, data)) {
-    return resError(res, 400, 'INVALID_DATA', 'The data to update is not valid.');
+    return resError(res, 400, 'INVALID_DATA', "Les dades per actualitzar l'assignatura no són vàlides.");
   }
 
   const subject = await Model.findByPk(code);
