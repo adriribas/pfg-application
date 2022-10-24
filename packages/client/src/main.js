@@ -17,7 +17,11 @@ import '@/config/notificationTypes.js';
 
 const app = createApp(App);
 
-app.use(router).use(createPinia()).use(Quasar, { plugins: { Dialog, Notify } }).use(autoAnimatePlugin);
+app
+  .use(router)
+  .use(createPinia())
+  .use(Quasar, { plugins: { Dialog, Notify }, config: { screen: { bodyClasses: true } } })
+  .use(autoAnimatePlugin);
 
 app
   .component('StepInput', StepInput)

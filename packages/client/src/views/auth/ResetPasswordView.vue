@@ -1,32 +1,42 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
+import { useQuasar } from 'quasar';
 
 import { authApi } from '@/api';
-import AuthForm from '../../components/auth/AuthForm.vue';
-import AuthContainer from '../../components/auth/AuthContainer.vue';
-import ErrorRequest from '../../components/auth/ErrorRequest.vue';
+import AuthForm from '@/components/auth/AuthForm.vue';
+import AuthContainer from '@/components/auth/AuthContainer.vue';
+
+const $q = useQuasar();
 
 const email = ref('');
 const sent = ref(false);
-const error = ref(null);
 
-const errorMsg = computed(() => {
-  switch (error.value.code) {
-    case 'ERR_NETWORK':
-      return 'Error de connexió amb el servidor.';
-    case 'ERR_BAD_REQUEST':
-      return "L'adreça de correu electrònic no és vàlida.";
-    default:
-      'Error desconegut. Prova-ho més tard.';
-  }
-});
+const getErrorMsg = error => {
+  const {
+    response: {
+      status,
+      code: axiosCode,
+      data: { message }
+    }
+  } = error;
+
+  return status === 400
+    ? message
+    : axiosCode === 'ERR_NETWORK'
+    ? 'Error de connexió amb el servidor.'
+    : 'Error desconegut. Prova-ho més tard.';
+};
 
 const resetPassword = async () => {
   try {
     await authApi.resetPassword(email.value);
     sent.value = true;
   } catch (e) {
-    error.value = e;
+    $q.notify({
+      type: 'error',
+      message: 'Error en la sol·licitud del restabliment.',
+      caption: getErrorMsg(e)
+    });
   }
 };
 </script>
@@ -37,15 +47,13 @@ const resetPassword = async () => {
     :nav-text="sent ? 'Vols autenticar-te?' : 'No vols restablir la teva contrasenya?'"
     :nav-link-text="sent ? 'Fes-ho aquí' : 'Autentica\'t aquí'"
     nav-route="login">
-    <ErrorRequest v-if="error && !sent" :message="errorMsg" />
-
-    <AuthForm v-if="!sent" submit-text="Enviar" @submit="resetPassword">
+    <AuthForm v-if="!sent" submit-text="Sol·licitar" @submit="resetPassword">
       <EmailInput v-model="email" />
     </AuthForm>
 
     <div v-else>
-      <p>S'ha enviat un correu electrònic de restabliment a</p>
-      <p class="text-m5 text-weight-bold">{{ email }}</p>
+      <div>S'ha enviat un correu electrònic de restabliment a</div>
+      <div class="text-m5 text-weight-bold">{{ email }}</div>
     </div>
   </AuthContainer>
 </template>

@@ -18,7 +18,13 @@ const authStore = useAuthStore();
       :key="tab.routeName"
       :to="{ name: tab.routeName }"
       :label="tab.title" />
+
     <q-space />
+
+    <q-btn label="Logout" flat outline @click="authStore.logout()" />
+
+    <q-space />
+
     <q-icon name="person" size="sm" />
     <span class="q-tab q-tab--no-caps relative-position self-stretch flex flex-center text-center text-bold">
       {{ authStore.fullName }}
@@ -30,9 +36,9 @@ const authStore = useAuthStore();
       {{ authStore.role }}
     </span> -->
     <span
-      class="q-tab q-tab--no-caps relative-position self-stretch flex flex-center text-center text-m8 role"
-      >{{ authStore.role }}</span
-    >
+      class="q-tab q-tab--no-caps relative-position self-stretch flex flex-center text-center text-m8 role">
+      {{ authStore.role }}
+    </span>
   </q-tabs>
 </template>
 

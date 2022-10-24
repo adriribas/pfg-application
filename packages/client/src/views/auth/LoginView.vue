@@ -1,41 +1,53 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useQuasar } from 'quasar';
 
 import { useAuthStore } from '@/stores';
 import { authApi } from '@/api';
-import AuthForm from '../../components/auth/AuthForm.vue';
-import AuthContainer from '../../components/auth/AuthContainer.vue';
-import ErrorRequest from '../../components/auth/ErrorRequest.vue';
+import AuthForm from '@/components/auth/AuthForm.vue';
+import AuthContainer from '@/components/auth/AuthContainer.vue';
 
+const $q = useQuasar();
 const router = useRouter();
 const authStore = useAuthStore();
 
 const authForm = ref(null);
 const email = ref('');
 const password = ref('');
-const error = ref(null);
 
-const errorMsg = computed(() => {
-  switch (error.value.code) {
-    case 'ERR_NETWORK':
-      return 'Error de connexió amb el servidor.';
-    case 'ERR_BAD_REQUEST':
-      return 'Les credencials no són vàlides.';
-    default:
-      'Error desconegut. Prova-ho més tard.';
-  }
-});
+const getErrorMsg = error => {
+  const {
+    response: {
+      status,
+      code: axiosCode,
+      data: { code, message }
+    }
+  } = error;
+
+  return status === 400
+    ? code === 'ERR_INVALID_DATA'
+      ? 'El format de les dades no és correcte.'
+      : message
+    : axiosCode === 'ERR_NETWORK'
+    ? 'Error de connexió amb el servidor.'
+    : 'Error desconegut. Prova-ho més tard.';
+};
 
 const logIn = async () => {
   try {
     const {
       data: { userData, token }
     } = await authApi.logIn(email.value, password.value);
+
     authStore.$patch({ userData, authToken: token });
     router.push({ name: authStore.defaultView });
   } catch (e) {
-    error.value = e;
+    $q.notify({
+      type: 'error',
+      message: "Error en l'autenticació",
+      caption: getErrorMsg(e)
+    });
   }
 };
 </script>
@@ -46,10 +58,9 @@ const logIn = async () => {
     nav-text="No recordes la contrasenya?"
     nav-link-text="Restableix-la aquí"
     nav-route="resetPassword">
-    <ErrorRequest v-if="error" :message="errorMsg" />
-
     <AuthForm submit-text="Entrar" ref="authForm" @submit="logIn">
       <EmailInput v-model="email" />
+
       <PasswordInput v-model="password" toggle-icon />
     </AuthForm>
   </AuthContainer>
