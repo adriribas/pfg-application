@@ -40,7 +40,7 @@ const tabs = [
         transition-next="slide-up"
         class="full-height bg-b7 panels">
         <q-tab-panel v-for="({ component }, index) in tabs" :name="index">
-          <div class="q-pa-md">
+          <div :class="[$q.screen.gt.md && 'q-pa-md']">
             <component :is="component" />
           </div>
         </q-tab-panel>

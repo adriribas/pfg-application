@@ -95,6 +95,9 @@ const openSubjectMod = subject =>
       }
     });
 
+const reduceSubjectName = name =>
+  name.split(' ').reduce((accum, word) => `${accum} ${word.length < 5 ? word : `${word.slice(0, 4)}.`}`, '');
+
 (async () => {
   loading.value = true;
   try {
@@ -228,7 +231,7 @@ const openSubjectMod = subject =>
       <q-tr :props="props">
         <q-td auto-width>
           <q-btn
-            :icon="props.expand ? 'expand_less' : 'expand_more'"
+            :icon="`expand_${props.expand ? 'less' : 'more'}`"
             @click="props.expand = !props.expand"
             round
             dense
@@ -274,7 +277,11 @@ const openSubjectMod = subject =>
                 </q-td>
 
                 <q-td key="name" :props="props">
-                  {{ props.row.name }}
+                  {{
+                    $q.screen.lt.lg && props.row.name.length > 35
+                      ? reduceSubjectName(props.row.name)
+                      : props.row.name
+                  }}
                 </q-td>
 
                 <q-td key="semester" :props="props">

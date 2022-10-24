@@ -1,12 +1,16 @@
 <script setup>
+import { useQuasar } from 'quasar';
+
 const props = defineProps({
   area: Object,
   department: Object
 });
+
+const $q = useQuasar();
 </script>
 
 <template>
-  <div class="row flex-center parent">
+  <div class="row flex-center container">
     <div class="col-5">
       <q-tooltip
         anchor="center left"
@@ -21,7 +25,11 @@ const props = defineProps({
       <span>{{ area.abv }}</span>
     </div>
 
-    <q-icon name="arrow_right_alt" size="sm" color="m7" class="col q-mx-md" />
+    <q-icon
+      name="arrow_right_alt"
+      :size="$q.screen.lt.lg ? 'xs' : 'sm'"
+      color="m7"
+      :class="$q.screen.lt.lg ? 'col-1' : 'col'" />
 
     <div class="col-5">
       <q-badge color="m7" class="q-py-xs q-px-xs col-auto">
@@ -42,6 +50,6 @@ const props = defineProps({
 </template>
 
 <style lang="sass" scoped>
-.parent
-  min-width: 200px
+.container
+  min-width: 195px
 </style>
