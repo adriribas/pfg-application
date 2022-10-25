@@ -19,9 +19,17 @@ const Group = sequelize.define(
   { indexes: [{ fields: ['id', 'type', 'number'], unique: true }] }
 );
 
-Group.associate = ({ Subject, AcademicCourse }) => {
+Group.associate = ({ Subject, TimeBlock, Study, StudyGroup }) => {
   Group.belongsTo(Subject, { foreignKey: 'subject' });
-  //Group.belongsTo(AcademicCourse, { foreignKey: 'academicCourse' });
+
+  Group.hasMany(TimeBlock, { foreignKey: 'group' });
+
+  Group.belongsToMany(Study, {
+    through: StudyGroup,
+    foreignKey: 'group',
+    otherKey: 'study'
+  });
+  Group.hasMany(StudyGroup, { foreignKey: 'group' });
 };
 
 const validationSchema = Joi.object({

@@ -5,7 +5,7 @@ import createDebugger from 'debug';
 import { reqProcessing, usersUtil, emailUtil } from '#r/utils';
 import { User as Model, School as SchoolModel } from '#r/models';
 
-const { buildWhere, resError, isDuplicationError } = reqProcessing;
+const { buildWhere, resError } = reqProcessing;
 const { hasPermissions } = usersUtil;
 const { sendEmailConfirmationEmail } = emailUtil;
 const debug = createDebugger('pfgs:userController');
@@ -70,8 +70,10 @@ export const create = async (req, res) => {
     return resError(res, 400, 'INVALID_DATA', e.message);
   }
 
-  const user = await Model.findOne({ where: { email: data.email }, paranoid: false });
-  if (user) {
+  let user = await Model.findOne({ where: { email: data.email }, paranoid: false });
+  if (!user) {
+    user = await Model.create(userData);
+  } else {
     if (!user.isSoftDeleted()) {
       return resError(res, 400, 'DUPLICATION', 'Ja existeix un usuari amb aquest correu electrònic.');
     }
