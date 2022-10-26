@@ -12,25 +12,23 @@ const $q = useQuasar();
 const router = useRouter();
 const authStore = useAuthStore();
 
-const authForm = ref(null);
 const email = ref('');
 const password = ref('');
 
-const getErrorMsg = error => {
+const getErrorMsg = ({ code: axiosCode, response }) => {
+  if (axiosCode === 'ERR_NETWORK') {
+    return 'Error de connexió amb el servidor.';
+  }
+
   const {
-    response: {
-      status,
-      code: axiosCode,
-      data: { code, message }
-    }
-  } = error;
+    status,
+    data: { code, message }
+  } = response;
 
   return status === 400
     ? code === 'ERR_INVALID_DATA'
       ? 'El format de les dades no és correcte.'
       : message
-    : axiosCode === 'ERR_NETWORK'
-    ? 'Error de connexió amb el servidor.'
     : 'Error desconegut. Prova-ho més tard.';
 };
 
@@ -43,6 +41,7 @@ const logIn = async () => {
     authStore.$patch({ userData, authToken: token });
     router.push({ name: authStore.defaultView });
   } catch (e) {
+    console.log('ERROR', e);
     $q.notify({
       type: 'error',
       message: "Error en l'autenticació",
@@ -58,7 +57,7 @@ const logIn = async () => {
     nav-text="No recordes la contrasenya?"
     nav-link-text="Restableix-la aquí"
     nav-route="resetPassword">
-    <AuthForm submit-text="Entrar" ref="authForm" @submit="logIn">
+    <AuthForm submit-text="Entrar" @submit="logIn">
       <EmailInput v-model="email" />
 
       <PasswordInput v-model="password" toggle-icon />

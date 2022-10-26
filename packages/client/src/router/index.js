@@ -6,11 +6,11 @@ import { authApi } from '@/api';
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    {
+    /* {
       path: '/',
       name: 'home',
       component: () => import('@/views/HomeView.vue')
-    },
+    }, */
     {
       path: '/error',
       name: 'error',
@@ -19,16 +19,25 @@ const router = createRouter({
     {
       path: '/login',
       name: 'login',
+      meta: {
+        noAuth: true
+      },
       component: () => import('@/views/auth/LoginView.vue')
     },
     {
       path: '/reset-password',
       name: 'resetPassword',
+      meta: {
+        noAuth: true
+      },
       component: () => import('@/views/auth/ResetPasswordView.vue')
     },
     {
       path: '/new-password',
       name: 'newPassword',
+      meta: {
+        noAuth: true
+      },
       component: () => import('@/views/auth/NewPasswordView.vue'),
       props: route => ({ reason: route.query.reason, token: route.query.token })
     },
@@ -180,18 +189,26 @@ const router = createRouter({
 });
 
 router.beforeEach(async to => {
-  if (to.name === 'error') {
-    return true;
-  }
   const authStore = useAuthStore();
-  try {
-    await authApi.assertAccess(to.name);
-  } catch (e) {
-    if (e.code === 'ERR_NETWORK') {
-      return { name: 'error' };
-    }
-    return { name: authStore.isLoggedIn ? authStore.defaultView : 'login' };
+
+  if (!authStore.refreshing instanceof Promise) {
+    return { name: 'error' };
   }
+
+  await authStore.refreshing;
+
+  if (authStore.isLoggedIn) {
+    if (authStore.hasAccessTo(to.name)) {
+      return;
+    }
+    return { name: authStore.defaultView };
+  }
+
+  if (to.meta.noAuth) {
+    return;
+  }
+
+  return { name: 'login' };
 });
 
 export default router;

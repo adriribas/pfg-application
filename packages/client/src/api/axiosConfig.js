@@ -19,18 +19,20 @@ instance.interceptors.request.use(config => {
 instance.interceptors.response.use(
   response => response,
   error => {
-    const {
-      response: {
-        status,
-        data: { code }
-      }
-    } = error;
+    if (error.code !== 'ERR_NETWORK') {
+      const {
+        response: {
+          status,
+          data: { code }
+        }
+      } = error;
 
-    if (
-      (status === 400 && code === 'ERR_NOT_ACTIVE_USER') ||
-      (status === 401 && code === 'ERR_DELETED_USER')
-    ) {
-      useAuthStore().logout();
+      if (
+        (status === 400 && code === 'ERR_NOT_ACTIVE_USER') ||
+        (status === 401 && code === 'ERR_DELETED_USER')
+      ) {
+        useAuthStore().logout();
+      }
     }
 
     return Promise.reject(error);

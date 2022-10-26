@@ -4,6 +4,7 @@ import { authApi } from '@/api';
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
+    refreshing: null,
     userData: {},
     authToken: localStorage.getItem('authToken') || ''
   }),
@@ -18,25 +19,34 @@ export const useAuthStore = defineStore('auth', {
         .getRoutes()
         .reduce(
           (accum, route) =>
-            route.meta?.role === this.role
+            this.role && route.meta?.role === this.role
               ? [...accum, { title: route.meta?.title, routeName: route.name }]
               : accum,
           []
         );
+    },
+    hasAccessTo() {
+      return viewName => !!this.tabs.find(({ routeName }) => routeName === viewName);
     }
   },
   actions: {
-    async refreshUserData() {
-      if (!this.isLoggedIn) {
-        return (this.userData = {});
-      }
-      try {
-        const { data: user } = await authApi.getCurrentUser();
-        this.userData = user;
-      } catch (e) {
-        this.userData = {};
-        this.authToken = '';
-      }
+    refreshUserData() {
+      this.refreshing = new Promise(async res => {
+        if (!this.authToken) {
+          this.userData = {};
+          return res();
+        }
+
+        try {
+          const { data: user } = await authApi.getCurrentUser();
+          this.userData = user;
+        } catch (e) {
+          this.userData = {};
+          this.authToken = '';
+        }
+
+        return res();
+      });
     },
     logout() {
       this.authToken = '';

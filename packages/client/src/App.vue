@@ -6,8 +6,10 @@ const authStore = useAuthStore();
 const schoolStore = useSchoolsStore();
 
 (async () => {
-  await authStore.refreshUserData();
+  authStore.refreshUserData();
+  await authStore.refreshing;
   await schoolStore.refreshSchoolData();
+
   authStore.$subscribe((_mutation, state) => {
     schoolStore.refreshSchoolData();
     if (!state.authToken) {

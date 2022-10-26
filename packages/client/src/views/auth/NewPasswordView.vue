@@ -18,21 +18,20 @@ const router = useRouter();
 const password = ref('');
 const repeatPassword = ref('');
 
-const getErrorMsg = error => {
+const getErrorMsg = ({ code: axiosCode, response }) => {
+  if (axiosCode === 'ERR_NETWORK') {
+    return 'Error de connexió amb el servidor.';
+  }
+
   const {
-    response: {
-      status,
-      code: axiosCode,
-      data: { code, message }
-    }
-  } = error;
+    status,
+    data: { code, message }
+  } = response;
 
   return status === 400
     ? code === 'ERR_MATCH'
       ? 'Les contrasenyes no coincideixen.'
       : message
-    : axiosCode === 'ERR_NETWORK'
-    ? 'Error de connexió amb el servidor.'
     : 'Error desconegut. Prova-ho més tard.';
 };
 

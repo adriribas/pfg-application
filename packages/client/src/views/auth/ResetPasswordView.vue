@@ -11,20 +11,17 @@ const $q = useQuasar();
 const email = ref('');
 const sent = ref(false);
 
-const getErrorMsg = error => {
-  const {
-    response: {
-      status,
-      code: axiosCode,
-      data: { message }
-    }
-  } = error;
+const getErrorMsg = ({ code: axiosCode, response }) => {
+  if (axiosCode === 'ERR_NETWORK') {
+    return 'Error de connexió amb el servidor.';
+  }
 
-  return status === 400
-    ? message
-    : axiosCode === 'ERR_NETWORK'
-    ? 'Error de connexió amb el servidor.'
-    : 'Error desconegut. Prova-ho més tard.';
+  const {
+    status,
+    data: { message }
+  } = response;
+
+  return status === 400 ? message : 'Error desconegut. Prova-ho més tard.';
 };
 
 const resetPassword = async () => {
