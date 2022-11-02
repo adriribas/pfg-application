@@ -18,23 +18,23 @@
   "userRoles": [
     {
       "role": "Administrador",
-      "views": ["a_plansDocents", "a_assignAules", "a_gestCoordinadors", "a_gestDirectors"]
+      "views": ["plansDocents", "assignAules", "gestCoordinadors", "gestDirectors"]
     },
     {
       "role": "Coordinador",
-      "views": ["c_horarisGraus", "c_horarisProfessors", "c_horarisAules"]
+      "views": ["horarisGraus", "horarisProfessors", "horarisAules"]
     },
     {
       "role": "Director de departament",
-      "views": ["dd_horarisProfessors", "dd_horarisGraus", "dd_gestResponsables"]
+      "views": ["horarisProfessors", "horarisGraus", "gestResponsables"]
     },
     {
       "role": "Responsable de docencia",
-      "views": ["rd_horarisProfessors", "rd_assignProfessors", "rd_gestProfessors"]
+      "views": ["horarisProfessors", "assignProfessors", "gestProfessors"]
     },
     {
       "role": "Professor",
-      "views": ["p_horarisPropis", "p_horarisAssignatures", "p_horarisGraus"]
+      "views": ["horarisPropis", "horarisAssignatures", "horarisGraus"]
     }
   ],
   "userPermissions": {
