@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router';
-
 import { useAuthStore } from '@/stores';
 
 const router = createRouter({
@@ -75,6 +74,25 @@ const router = createRouter({
       path: '/horaris-graus',
       name: 'horarisGraus',
       component: () => import('@/views/HorarisGrausView.vue'),
+      redirect: { name: 'studyScheduleChoosing' },
+      children: [
+        {
+          path: '',
+          name: 'studyScheduleChoosing',
+          component: () => import('@/components/schedule/StudyChoosing.vue')
+        },
+        {
+          path: ':invalidMatch(.*?)*',
+          name: 'studyScheduleInvalidMatch',
+          redirect: { name: 'studyScheduleChoosing' }
+        },
+        {
+          path: ':studyAbv([a-zA-Z]+)/:course(\\d+)/:semester(1|2)',
+          name: 'studySchedule',
+          component: () => import('@/components/schedule/StudySchedule.vue'),
+          props: true
+        }
+      ],
       meta: {
         title: 'Horaris de graus',
         roles: ['Coordinador', 'Director de departament', 'Professors']
@@ -156,7 +174,10 @@ router.beforeEach(async to => {
   await authStore.refreshing;
 
   if (authStore.isLoggedIn) {
-    if (authStore.hasAccessTo(to.name)) {
+    if (
+      authStore.hasAccessTo(to.name) ||
+      to.matched.some(({ children }) => children.some(({ name }) => name === to.name))
+    ) {
       return;
     }
     return { name: authStore.defaultView };
