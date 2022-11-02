@@ -20,8 +20,8 @@ export const useAuthStore = defineStore('auth', {
         .getRoutes()
         .reduce(
           (accum, route) =>
-            this.role && route.meta?.role === this.role
-              ? [...accum, { title: route.meta?.title, routeName: route.name }]
+            this.role && route.meta?.roles?.includes(this.role)
+              ? [...accum, { title: route.meta?.title || route.name, routeName: route.name }]
               : accum,
           []
         );

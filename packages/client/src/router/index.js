@@ -1,16 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
 import { useAuthStore } from '@/stores';
-import { authApi } from '@/api';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    /* {
-      path: '/',
-      name: 'home',
-      component: () => import('@/views/HomeView.vue')
-    }, */
     {
       path: '/error',
       name: 'error',
@@ -43,146 +37,110 @@ const router = createRouter({
     },
     {
       path: '/plans-docents',
-      name: 'a_plansDocents',
+      name: 'plansDocents',
       component: () => import('@/views/administradors/PlansDocentsView.vue'),
       meta: {
         title: 'Plans docents',
-        role: 'Administrador'
+        roles: ['Administrador']
       }
     },
     {
       path: '/assignacio-aules',
-      name: 'a_assignAules',
+      name: 'assignAules',
       component: () => import('@/views/administradors/AssignAulesView.vue'),
       meta: {
         title: "Assignació d'aules",
-        role: 'Administrador'
+        roles: ['Administrador']
       }
     },
     {
       path: '/gestio-coordinadors',
-      name: 'a_gestCoordinadors',
+      name: 'gestCoordinadors',
       component: () => import('@/views/administradors/GestCoordinadorsView.vue'),
       meta: {
         title: 'Gestió de Coordinadors',
-        role: 'Administrador'
+        roles: ['Administrador']
       }
     },
     {
       path: '/gestio-directors-departament',
-      name: 'a_gestDirectors',
+      name: 'gestDirectors',
       component: () => import('@/views/administradors/GestDirectorsView.vue'),
       meta: {
         title: 'Gestió de Directors de departament',
-        role: 'Administrador'
+        roles: ['Administrador']
       }
     },
     {
       path: '/horaris-graus',
-      name: 'c_horarisGraus',
+      name: 'horarisGraus',
       component: () => import('@/views/HorarisGrausView.vue'),
       meta: {
         title: 'Horaris de graus',
-        role: 'Coordinador'
+        roles: ['Coordinador', 'Director de departament', 'Professors']
       }
     },
     {
       path: '/horaris-professors',
-      name: 'c_horarisProfessors',
-      component: () => import('@/views/coordinadors/HorarisProfessorsView.vue'),
+      name: 'horarisProfessors',
+      component: () => import('@/views/HorarisProfessorsView.vue'),
       meta: {
         title: 'Horaris de Professors',
-        role: 'Coordinador'
+        roles: ['Coordinador', 'Director de departament', 'Responsable de docencia']
       }
     },
     {
       path: '/horaris-aules',
-      name: 'c_horarisAules',
+      name: 'horarisAules',
       component: () => import('@/views/coordinadors/HorarisAulesView.vue'),
       meta: {
         title: "Horaris d'aules",
-        role: 'Coordinador'
-      }
-    },
-    {
-      path: '/horaris-professors',
-      name: 'dd_horarisProfessors',
-      component: () => import('@/views/directors/HorarisProfessorsView.vue'),
-      meta: {
-        title: 'Horaris de Professors',
-        role: 'Director de departament'
-      }
-    },
-    {
-      path: '/horaris-graus',
-      name: 'dd_horarisGraus',
-      component: () => import('@/views/HorarisGrausView.vue'),
-      meta: {
-        title: 'Horaris de graus',
-        role: 'Director de departament'
+        roles: ['Coordinador']
       }
     },
     {
       path: '/gestio-responsables-docencia',
-      name: 'dd_gestResponsables',
+      name: 'gestResponsables',
       component: () => import('@/views/directors/GestResponsablesView.vue'),
       meta: {
         title: 'Gestió de Responsables de docència',
-        role: 'Director de departament'
-      }
-    },
-    {
-      path: '/horaris-professors',
-      name: 'rd_horarisProfessors',
-      component: () => import('@/views/responsables/HorarisProfessorsView.vue'),
-      meta: {
-        title: 'Horaris de Professors',
-        role: 'Responsable de docència'
+        roles: ['Director de departament']
       }
     },
     {
       path: '/assignacio-professors',
-      name: 'rd_assignProfessors',
+      name: 'assignProfessors',
       component: () => import('@/views/responsables/AssignProfessorsView.vue'),
       meta: {
         title: 'Assignació de Professors',
-        role: 'Responsable de docència'
+        roles: ['Responsable de docencia']
       }
     },
     {
       path: '/gestio-professors',
-      name: 'rd_gestProfessors',
+      name: 'gestProfessors',
       component: () => import('@/views/responsables/GestProfessorsView.vue'),
       meta: {
         title: 'Gestió de Professors',
-        role: 'Responsable de docència'
+        roles: ['Responsable de docencia']
       }
     },
     {
       path: '/horaris-propis',
-      name: 'p_horarisPropis',
+      name: 'horarisPropis',
       component: () => import('@/views/professors/HorarisPropisView.vue'),
       meta: {
         title: 'Horaris propis',
-        role: 'Professor'
+        roles: ['Professor']
       }
     },
     {
       path: '/horaris-assignatures',
-      name: 'p_horarisAssignatures',
+      name: 'horarisAssignatures',
       component: () => import('@/views/professors/HorarisAssignaturesView.vue'),
       meta: {
         title: "Horaris d'assignatures",
-        role: 'Professor'
-      }
-    },
-    {
-      path: '/horaris-graus',
-      name: 'p_horarisGraus',
-      component: () => import('@/views/HorarisGrausView.vue'),
-      meta: {
-        title: 'Horaris de graus',
-        role: 'Professor'
+        roles: ['Professor']
       }
     }
   ]

@@ -20,9 +20,7 @@ const views = {
       <component :is="views[authStore.role]" />
 
       <template #fallback>
-        <div class="absolute-center">
-          <q-spinner-ball size="7em" color="m5" />
-        </div>
+        <ViewLoadingSpinner />
       </template>
     </Suspense>
   </q-page>
