@@ -14,6 +14,7 @@ export const useAuthStore = defineStore('auth', {
     fullName: state => `${state.userData.firstName} ${state.userData.lastName}`,
     school: state => state.userData.school,
     role: state => state.userData.role,
+    study: state => state.userData.study,
     tabs() {
       return router
         .getRoutes()

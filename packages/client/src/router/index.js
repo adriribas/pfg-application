@@ -80,7 +80,7 @@ const router = createRouter({
     {
       path: '/horaris-graus',
       name: 'c_horarisGraus',
-      component: () => import('@/views/coordinadors/HorarisGrausView.vue'),
+      component: () => import('@/views/HorarisGrausView.vue'),
       meta: {
         title: 'Horaris de graus',
         role: 'Coordinador'
@@ -116,7 +116,7 @@ const router = createRouter({
     {
       path: '/horaris-graus',
       name: 'dd_horarisGraus',
-      component: () => import('@/views/directors/HorarisGrausView.vue'),
+      component: () => import('@/views/HorarisGrausView.vue'),
       meta: {
         title: 'Horaris de graus',
         role: 'Director de departament'
@@ -179,7 +179,7 @@ const router = createRouter({
     {
       path: '/horaris-graus',
       name: 'p_horarisGraus',
-      component: () => import('@/views/professors/HorarisGrausView.vue'),
+      component: () => import('@/views/HorarisGrausView.vue'),
       meta: {
         title: 'Horaris de graus',
         role: 'Professor'

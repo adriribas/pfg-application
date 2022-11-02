@@ -1,7 +1,7 @@
 import axios from './axiosConfig';
 import { formatFilter } from './apiUtil.js';
 
-export const get = abv => axios.get(`/studies/${abv}`);
+export const get = (abv, params) => axios.get(`/studies/${abv}`, { params });
 
 export const list = ({ params, filterData, associations } = {}) =>
   axios.post('/studies/filter', formatFilter(filterData, associations), params);
