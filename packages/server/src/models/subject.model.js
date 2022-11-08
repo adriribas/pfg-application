@@ -58,7 +58,7 @@ Subject.associate = ({ Area, AreaSubject, Study, StudySubject, LabType, SubjectL
 
   Subject.hasMany(Group, { foreignKey: 'subject' });
 
-  Subject.allowedInclusions = [Area, LabType];
+  Subject.allowedInclusions = [Area, LabType, Study, Group];
 };
 
 Subject.requiredFilterFields = ['study'];

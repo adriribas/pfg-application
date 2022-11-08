@@ -16,7 +16,24 @@ const Group = sequelize.define(
       allowNull: false
     }
   },
-  { indexes: [{ fields: ['id', 'type', 'number'], unique: true }] }
+  {
+    indexes: [{ fields: ['id', 'type', 'number'], unique: true }],
+    hooks: {
+      afterCreate: async (group, { transaction }) => {
+        if (await group.countTimeBlocks({ transaction })) {
+          return;
+        }
+
+        // Data for test reasons:
+        const testData =
+          group.subject === '3105G07003'
+            ? { day: Math.floor(Math.random() * 4), start: `1${Math.floor(Math.random() * 10)}:00:00` }
+            : {};
+
+        await group.createTimeBlock({ ...config.get('defaultData.timeBlock'), ...testData }, { transaction });
+      }
+    }
+  }
 );
 
 Group.associate = ({ Subject, TimeBlock, Study, StudyGroup }) => {

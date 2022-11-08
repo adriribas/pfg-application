@@ -8,14 +8,15 @@ import {
   Study as StudyModel,
   Department as DepartmentModel,
   Area as AreaModel,
-  LabType as LabTypeModel
+  LabType as LabTypeModel,
+  TimeBlock as TimeBlockModel
 } from '#r/models';
 
 const { buildWhere, updateFields, updateRelation, isValidUpdateData, resError } = reqProcessing;
 const { syncSubjectGroups } = groupsUtil;
 const debug = createDebugger('pfgs:subjectController');
 
-const buildInclude = ({ Area, LabType }) => {
+const buildInclude = ({ Area, LabType, Study, Group }) => {
   const include = [];
 
   Area &&
@@ -33,6 +34,21 @@ const buildInclude = ({ Area, LabType }) => {
       model: LabType,
       through: { attributes: [] },
       attributes: ['name']
+    });
+  Study &&
+    include.push({
+      model: StudyModel,
+      through: { attributes: ['course'] },
+      attributes: ['abv', 'name']
+    });
+  Group &&
+    include.push({
+      model: Group,
+      attributes: ['type', 'number'],
+      include: {
+        model: TimeBlockModel,
+        attributes: ['day', 'start', 'duration', 'week']
+      }
     });
 
   return include;
@@ -60,9 +76,15 @@ export const filter = async (req, res) => {
     query: { fields, include },
     body: {
       data: filterData,
-      associations: { study: studyAbv }
+      associations: { study: studyAbv },
+      specialOptions
     }
   } = req;
+  const course = specialOptions?.course;
+
+  if (studyAbv && include.Study) {
+    delete include.study;
+  }
 
   res.json(
     await Model.findAll({
@@ -71,8 +93,11 @@ export const filter = async (req, res) => {
         {
           model: StudyModel,
           where: buildWhere({ abv: studyAbv }),
-          through: { attributes: ['course'] },
-          attributes: ['abv']
+          through: {
+            where: course && buildWhere({ course }),
+            attributes: ['course']
+          },
+          attributes: ['abv', 'name']
         },
         ...buildInclude(include)
       ],

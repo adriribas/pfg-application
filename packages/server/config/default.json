@@ -45,5 +45,10 @@
     "Professor": []
   },
   "noAuthViews": ["login", "resetPassword", "newPassword"],
-  "groupTypes": ["small", "medium", "big"]
+  "groupTypes": ["small", "medium", "big"],
+  "defaultData": {
+    "timeBlock": {
+      "duration": 60
+    }
+  }
 }

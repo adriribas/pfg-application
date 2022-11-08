@@ -37,16 +37,34 @@ export const get = async (req, res) => {
   res.json(study);
 };
 
+const buildFilterInclude = ({ subjectCode }) => {
+  const filterInclude = [];
+
+  subjectCode &&
+    filterInclude.push({
+      model: SubjectModel,
+      where: buildWhere({ code: subjectCode }),
+      through: { attributes: ['course'] },
+      attributes: ['code']
+    });
+
+  return filterInclude;
+};
+
 export const filter = async (req, res) => {
   const {
     scopes: { school: schoolScope },
     query: { fields },
-    body: { data: filterData }
+    body: {
+      data: filterData,
+      associations: { subject: subjectCode }
+    }
   } = req;
 
   res.json(
     await schoolScope(Model).findAll({
       where: buildWhere(filterData),
+      include: [...buildFilterInclude({ subjectCode })],
       attributes: fields
     })
   );
