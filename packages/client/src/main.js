@@ -10,6 +10,7 @@ import 'normalize.css';
 import App from '@/App.vue';
 import router from '@/router';
 import ViewLoadingSpinner from '@/components/ViewLoadingSpinner.vue';
+import Breadcrumbs from '@/components/Breadcrumbs.vue';
 import StepInput from '@/components/inputs/StepInput.vue';
 import EmailInput from '@/components/inputs/EmailInput.vue';
 import PasswordInput from '@/components/inputs/PasswordInput.vue';
@@ -26,6 +27,7 @@ app
 
 app
   .component('ViewLoadingSpinner', ViewLoadingSpinner)
+  .component('Breadcrumbs', Breadcrumbs)
   .component('StepInput', StepInput)
   .component('EmailInput', EmailInput)
   .component('PasswordInput', PasswordInput);

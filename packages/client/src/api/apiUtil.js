@@ -1,1 +1,5 @@
-export const formatFilter = (filterData = {}, associations = {}) => ({ data: filterData, associations });
+export const formatFilter = (filterData = {}, associations = {}, specialOptions = {}) => ({
+  data: filterData,
+  associations,
+  specialOptions
+});

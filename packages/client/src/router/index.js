@@ -79,18 +79,40 @@ const router = createRouter({
         {
           path: '',
           name: 'studyScheduleChoosing',
-          component: () => import('@/components/schedule/StudyChoosing.vue')
+          component: () => import('@/components/schedule/studies/StudyChoosing.vue')
         },
         {
-          path: ':invalidMatch(.*?)*',
+          path: ':invalidMatch(.*)*',
           name: 'studyScheduleInvalidMatch',
           redirect: { name: 'studyScheduleChoosing' }
         },
         {
-          path: ':studyAbv([a-zA-Z]+)/:course(\\d+)/:semester(1|2)',
+          path: ':abv([a-zA-Z]+)/:course(\\d+)/:semester(1|2)',
           name: 'studySchedule',
-          component: () => import('@/components/schedule/StudySchedule.vue'),
-          props: true
+          component: () => import('@/components/schedule/studies/StudySchedule.vue'),
+          props: route => {
+            const {
+              params: { abv, course, semester },
+              query: { action }
+            } = route;
+
+            return { studyAbv: abv, course: +course, semester: +semester, editMode: action === 'edit' };
+          },
+          beforeEnter: to => {
+            const authStore = useAuthStore();
+            const {
+              name,
+              params,
+              query: { action }
+            } = to;
+
+            if (
+              (action !== 'view' && action !== 'edit') ||
+              (action === 'edit' && params.studyAbv !== authStore.study.abv)
+            ) {
+              return { name, params, query: { action: 'view' }, replace: true };
+            }
+          }
         }
       ],
       meta: {

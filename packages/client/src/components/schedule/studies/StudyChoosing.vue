@@ -5,8 +5,8 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores';
 import { useConstants } from '@/util';
 import { useStudyChoosing } from '@/composables';
-import MainStudyScheduleChoosing from '@/components/schedule/MainStudyScheduleChoosing.vue';
-import OtherStudyScheduleChoosing from '@/components/schedule/OtherStudyScheduleChoosing.vue';
+import MainStudyChoosing from '@/components/schedule/studies/MainStudyChoosing.vue';
+import OtherStudyChoosing from '@/components/schedule/studies/OtherStudyChoosing.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -24,13 +24,13 @@ const otherStudies = ref(null);
 })();
 
 const loadSchedule = (action, studyAbv, course, semester) =>
-  router.push({ name: 'studySchedule', params: { studyAbv, course, semester }, query: { action } });
+  router.push({ name: 'studySchedule', params: { abv: studyAbv, course, semester }, query: { action } });
 </script>
 
 <template>
   <div class="row flex-center main-container">
     <div class="col-xl-9 col-lg-10 col-md-11 col-sm-12 col-xs-12">
-      <MainStudyScheduleChoosing v-if="mainStudy" :study="mainStudy" @select="loadSchedule" />
+      <MainStudyChoosing v-if="mainStudy" :study="mainStudy" @select="loadSchedule" />
 
       <div
         v-if="otherStudies?.data.length"
@@ -41,7 +41,7 @@ const loadSchedule = (action, studyAbv, course, semester) =>
           </span>
         </div>
 
-        <OtherStudyScheduleChoosing
+        <OtherStudyChoosing
           v-for="study in otherStudies.data"
           :study="study"
           @select="loadSchedule"

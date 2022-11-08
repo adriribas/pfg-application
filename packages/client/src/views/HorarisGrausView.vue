@@ -2,7 +2,7 @@
 
 <template>
   <q-page padding>
-    <RouterView />
+    <router-view />
   </q-page>
 </template>
 

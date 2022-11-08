@@ -13,8 +13,8 @@ const { courseLabels, semesterLabels } = useConstants();
 <template>
   <div class="q-pa-md shadow-5 bg-b7 container">
     <div class="row flex-center">
-      <div class="row q-pa-md shadow-2 text-bold text-m2 bg-b6 header-container">
-        <span class="col-auto q-mr-md study-name">Grau en {{ study.name }}</span>
+      <div class="row flex-center q-pa-md shadow-2 text-bold text-m2 bg-b6 header-container">
+        <span class="col q-mr-md study-name">Grau en {{ study.name }}</span>
 
         <q-badge :label="study.abv" outline color="m3" class="col-auto q-py-xs study-abv" />
       </div>
@@ -31,7 +31,7 @@ const { courseLabels, semesterLabels } = useConstants();
         <div class="col-xl-2 col-lg-2 col-md-3 col-sm-4 col-xs-4 q-px-md q-py-sm course-card-container">
           <q-card dark class="bg-b5">
             <q-card-section class="text-center">
-              <span class="q-mb-md inline-block text-center text-m1">
+              <span class="q-mb-md inline-block text-m1">
                 {{ courseLabels[props.row - 1].toUpperCase() }}
               </span>
 

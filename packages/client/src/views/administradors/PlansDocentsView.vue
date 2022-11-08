@@ -45,7 +45,7 @@ const onUploaded = async () => {
 </script>
 
 <template>
-  <q-page padding v-auto-animate>
+  <q-page padding>
     <div v-if="schoolsStore.loading" class="absolute-center">
       <q-spinner-ball size="7em" color="m5" />
     </div>
