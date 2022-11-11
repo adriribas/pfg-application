@@ -11,13 +11,14 @@ const props = defineProps({
   },
   separatorColor: {
     type: String,
-    default: 'm12'
+    default: 'm6'
   }
 });
 </script>
 
 <template>
   <q-breadcrumbs
+    :active-color="textColor"
     :class="[`text-${textColor}`, `bg-${bgColor}`]"
     class="q-px-md q-py-sm shadow-5 breadcrumbs-container">
     <template #separator>

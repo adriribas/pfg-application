@@ -28,7 +28,7 @@ const breadcrumbsData = [
   {
     icon: props.editMode ? 'edit_calendar' : 'calendar_month',
     to: 'studyScheduleChoosing',
-    color: 'm12'
+    color: 'm6'
   },
   { icon: 'school', label: props.studyAbv },
   { label: courseLabels[props.course - 1] },
@@ -50,10 +50,10 @@ const goToStudyChoosing = () => {
     const studyData = await loadStudyData(props.studyAbv, props.course, props.semester);
     study.value = studyData.study;
     subjects.value = studyData.subjects;
-    console.log('Subjects', subjects.value);
+    //console.log('Subjects', subjects.value);
 
     timeBlocks.value = classifyTimeBlocks(subjects.value);
-    console.log('TimeBlocks', timeBlocks.value);
+    //console.log('TimeBlocks', timeBlocks.value);
   } catch (e) {
     console.error(e);
     goToStudyChoosing();
@@ -64,8 +64,6 @@ const goToStudyChoosing = () => {
 
 <template>
   <ViewLoadingSpinner v-if="loading" />
-
-  <!-- <ScheduleModification v-else-if="action === 'edit'" /> -->
 
   <Schedule :subjects="subjects" :time-blocks="timeBlocks" v-else>
     <template #breadcrumbs>

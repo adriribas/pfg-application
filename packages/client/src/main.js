@@ -14,6 +14,7 @@ import Breadcrumbs from '@/components/Breadcrumbs.vue';
 import StepInput from '@/components/inputs/StepInput.vue';
 import EmailInput from '@/components/inputs/EmailInput.vue';
 import PasswordInput from '@/components/inputs/PasswordInput.vue';
+import '@/css/general.css';
 import '@/css/color-palette.css';
 import '@/config/notificationTypes.js';
 
