@@ -5,7 +5,12 @@ import { db as sequelize } from '#r/startup';
 
 const TimeBlock = sequelize.define('TimeBlock', {
   day: DataTypes.TINYINT,
-  start: DataTypes.TIME,
+  start: {
+    type: DataTypes.TIME,
+    get() {
+      return this.getDataValue('start')?.substring(0, 5) || null;
+    }
+  },
   duration: DataTypes.SMALLINT,
   //end: DataTypes.TIME,
   week: DataTypes.ENUM('A', 'B')
