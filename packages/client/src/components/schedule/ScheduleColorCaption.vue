@@ -5,13 +5,13 @@ defineProps({
   showLabel: Boolean
 });
 
-const { groupTypeLabels, scheduleTimeBlockColorNames } = useConstants();
+const { groupTypeLabels, timeBlockColorNames } = useConstants();
 </script>
 
 <template>
   <div class="row items-center q-px-xs q-py-sm shadow-5 bg-b6 caption-container">
     <div v-for="[groupType, groupLabel] in Object.entries(groupTypeLabels)" class="col-auto q-mx-sm">
-      <q-badge :color="scheduleTimeBlockColorNames[groupType]" />
+      <q-badge :color="timeBlockColorNames[groupType]" />
 
       <span v-if="showLabel" class="q-ml-xs text-m1">{{ groupLabel }}</span>
 
@@ -20,7 +20,7 @@ const { groupTypeLabels, scheduleTimeBlockColorNames } = useConstants();
         self="bottom middle"
         transition-show="jump-up"
         transition-hide="jump-down"
-        :class="`bg-${scheduleTimeBlockColorNames[groupType]}`">
+        :class="`bg-${timeBlockColorNames[groupType]}`">
         <span>Grup {{ groupLabel }}</span>
       </q-tooltip>
     </div>

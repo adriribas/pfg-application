@@ -3,7 +3,7 @@ import { studiesApi, subjectsApi } from '@/api';
 const loadStudyData = async (studyAbv, course, semester) => {
   const { data: subjects } = await subjectsApi.list({
     params: {
-      fields: 'code,name,credits,bigGroups,mediumGroups,smallGroups',
+      fields: 'code,abv,name,credits,bigGroups,mediumGroups,smallGroups',
       include: 'Area,LabType,Group'
     },
     filterData: { semester },

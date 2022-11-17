@@ -17,15 +17,14 @@ const groupTypeLabels = {
 const scheduleIntervalStart = 7.5;
 const scheduleIntervalEnd = 21.5;
 const scheduleIntervalMinutes = 30;
-const scheduleTimeBlockColorNames = {
+const timeBlockColorNames = {
   big: 'orange',
   medium: 'green',
   small: 'indigo',
   generic: 'red'
 };
-const scheduleTimeBlockColorTones = {
+const timeBlockColorTones = {
   bg: 7,
-  subjectBg: 8,
   weekBg: 5,
   tooltipBg: 9,
   detailHeaderIcons: 12,
@@ -38,7 +37,7 @@ const scheduleTimeBlockColorTones = {
   detailDeptBg: 6,
   detailCloseBtn: 8
 };
-const scheduleTimeBlockFontSizes = {
+const timeBlockFontSizes = {
   subject: 9,
   group: 8.5,
   week: 8,
@@ -47,6 +46,7 @@ const scheduleTimeBlockFontSizes = {
   detailGroup: 11,
   detailWeek: 10
 };
+const timeBlocksSizeLevels = [2499, 10749];
 
 export default () => ({
   roleMapping,
@@ -57,7 +57,8 @@ export default () => ({
   scheduleIntervalStart,
   scheduleIntervalEnd,
   scheduleIntervalMinutes,
-  scheduleTimeBlockColorNames,
-  scheduleTimeBlockColorTones,
-  scheduleTimeBlockFontSizes
+  timeBlockColorNames,
+  timeBlockColorTones,
+  timeBlockFontSizes,
+  timeBlocksSizeLevels
 });

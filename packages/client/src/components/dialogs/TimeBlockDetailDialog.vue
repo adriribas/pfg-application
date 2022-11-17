@@ -162,6 +162,6 @@ const { text, bg, px, percent, pt } = useGeneral();
 
 <style lang="sass" scoped>
 .dialog-size
-  min-width: 800px
-  max-width: 95vw
+  width: 800px
+  max-width: 100vw
 </style>

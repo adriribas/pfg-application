@@ -1,3 +1,4 @@
+import { hasChanged } from '@vue/shared';
 import _ from 'lodash';
 
 import { useConstants } from '.';
@@ -12,52 +13,76 @@ const padStartZero = value => `${value > 9 ? '' : '0'}${value}`;
 
 const minutesToTime = minutes => `${padStartZero(Math.trunc(minutes / 60))}:${padStartZero(minutes % 60)}`;
 
-const collide = (timeBlock1, timeBlock2) => {
-  const tb1 = { start: timeToMinutes(timeBlock1.start), duration: timeBlock1.duration };
-  const tb2 = { start: timeToMinutes(timeBlock2.start), duration: timeBlock2.duration };
+const getEndMinutes = (startTime, duration) => timeToMinutes(startTime) + duration;
 
-  let first = tb1;
-  let second = tb2;
-  if (second.start < first.start) {
-    first = tb2;
-    second = tb1;
-  }
+const getEndTime = (startTime, duration) => minutesToTime(getEndMinutes(startTime, duration));
 
-  return _.inRange(second.start, first.start, first.start + first.duration);
+const collide = (timeBlock1, timeBlock2) =>
+  getEndTime(timeBlock1.start, timeBlock1.duration) > timeBlock2.start &&
+  timeBlock1.start < getEndTime(timeBlock2.start, timeBlock2.duration);
+
+const layoutTimeBlocks = timeBlocks => {
+  const groups = [];
+  let columns = [];
+  let lastTimeBlockEndMinutes = 0;
+
+  timeBlocks
+    .sort((tb1, tb2) => {
+      const startDiff = timeToMinutes(tb1.start) - timeToMinutes(tb2.start);
+
+      if (startDiff !== 0) {
+        return startDiff;
+      }
+
+      return getEndMinutes(tb1.start, tb1.duration) - getEndMinutes(tb2.start, tb2.duration);
+    })
+    .forEach(timeBlock => {
+      if (lastTimeBlockEndMinutes && timeToMinutes(timeBlock.start) > lastTimeBlockEndMinutes) {
+        groups.push(columns);
+        columns = [];
+        lastTimeBlockEndMinutes = 0;
+      }
+
+      let placed = false;
+      for (const col of columns) {
+        if (!collide(col.at(-1), timeBlock)) {
+          col.push(timeBlock);
+          placed = true;
+          break;
+        }
+      }
+      if (!placed) {
+        columns.push([timeBlock]);
+      }
+
+      if (lastTimeBlockEndMinutes <= getEndMinutes(timeBlock.start, timeBlock.duration)) {
+        lastTimeBlockEndMinutes = getEndMinutes(timeBlock.start, timeBlock.duration);
+      }
+    });
+
+  return [...groups, columns];
 };
 
-const updateCollisions = timeBlocks =>
-  timeBlocks.forEach((timeBlock, index) => {
-    const candidateCollisions = timeBlocks.reduce(
-      (accum, timeBlock2, cIndex) =>
-        cIndex !== index && collide(timeBlock, timeBlock2) ? [...accum, cIndex] : accum,
-      []
-    );
+const getTimeBlockColSpan = (timeBlock, colIndex, cols) => {
+  let colSpan = 1;
 
-    timeBlock.collisions = candidateCollisions
-      .filter(
-        (cIndex, index) =>
-          !candidateCollisions
-            .slice(index + 1)
-            .some(cIndex2 => collide(timeBlocks[cIndex], timeBlocks[cIndex2]))
-      )
-      .sort((cIndex1, cIndex2) => cIndex1 - cIndex2);
-  });
+  for (const col of cols.slice(colIndex + 1)) {
+    if (col.some(timeBlock2 => collide(timeBlock, timeBlock2))) {
+      break;
+    }
+    colSpan++;
+  }
 
-const getPositionInAgrupation = (index, collisions) => {
-  const position = collisions.findIndex(cIndex => index < cIndex);
-
-  return position > -1 ? position : collisions.length;
+  return colSpan;
 };
 
 const getStylingGetters = groupType => ({
   getColor: el => {
-    const { scheduleTimeBlockColorNames: colorNames, scheduleTimeBlockColorTones: colorSizes } =
-      useConstants();
+    const { timeBlockColorNames: colorNames, timeBlockColorTones: colorSizes } = useConstants();
     return `${colorNames[groupType]}-${colorSizes[el]}`;
   },
   getFontSize: el => {
-    const { scheduleTimeBlockFontSizes: fontSizes } = useConstants();
+    const { timeBlockFontSizes: fontSizes } = useConstants();
     return fontSizes[el];
   }
 });
@@ -67,8 +92,10 @@ export default () => ({
   calcIntervalCount,
   timeToMinutes,
   minutesToTime,
+  getEndMinutes,
+  getEndTime,
   collide,
-  updateCollisions,
-  getPositionInAgrupation,
+  layoutTimeBlocks,
+  getTimeBlockColSpan,
   getStylingGetters
 });
