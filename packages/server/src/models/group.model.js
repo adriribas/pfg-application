@@ -25,12 +25,22 @@ const Group = sequelize.define(
         }
 
         // Data for test reasons:
-        const testData =
-          group.subject === '3105G07003'
-            ? { day: Math.floor(Math.random() * 4), start: `1${Math.floor(Math.random() * 10)}:00:00` }
-            : {};
+        const rand = max => Math.floor(Math.random() * (max + 1));
 
-        await group.createTimeBlock({ ...config.get('defaultData.timeBlock'), ...testData }, { transaction });
+        const h1 = rand(1);
+        const h2 = h1 === 0 ? [8, 9][rand(1)] : rand(9);
+
+        const testData = {
+          day: rand(4),
+          start: `${h1}${h2}:${['0', '3'][rand(1)]}0`,
+          duration: [30, 60, 90, 120, 150][rand(4)],
+          week: [null, 'A', 'B'][rand(2)]
+        };
+
+        await group.createTimeBlock(
+          { /* ...config.get('defaultData.timeBlock'), */ ...testData },
+          { transaction }
+        );
       }
     }
   }

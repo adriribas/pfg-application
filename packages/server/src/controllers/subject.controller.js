@@ -47,7 +47,7 @@ const buildInclude = ({ Area, LabType, Study, Group }) => {
       attributes: ['type', 'number'],
       include: {
         model: TimeBlockModel,
-        attributes: ['day', 'start', 'duration', 'week']
+        attributes: ['id', 'day', 'start', 'duration', 'week']
       }
     });
 

@@ -10,6 +10,27 @@ const Subject = sequelize.define(
       type: DataTypes.STRING(10),
       primaryKey: true
     },
+    abv: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        const excludeList = ['i', 'de', 'dels', 'la', 'les', 'el', 'els'];
+
+        return this.getDataValue('name')
+          .split(' ')
+          .reduce((accum, word) => {
+            if (excludeList.includes(word.toLowerCase())) {
+              return accum;
+            }
+
+            if (/^i+l*$|^l+i*$|\d/i.test(word)) {
+              return `${accum} ${word.toUpperCase().replace('L', 'I')}`;
+            }
+
+            return `${accum} ${word[0].toUpperCase()}.`;
+          }, '')
+          .trim();
+      }
+    },
     name: {
       type: DataTypes.STRING(100),
       allowNull: false
