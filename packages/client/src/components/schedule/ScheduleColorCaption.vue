@@ -2,7 +2,7 @@
 import { useConstants } from '@/util';
 
 defineProps({
-  showLabel: Boolean
+  dense: Boolean
 });
 
 const { groupTypeLabels, timeBlockColorNames } = useConstants();
@@ -13,7 +13,7 @@ const { groupTypeLabels, timeBlockColorNames } = useConstants();
     <div v-for="[groupType, groupLabel] in Object.entries(groupTypeLabels)" class="col-auto q-mx-sm">
       <q-badge :color="timeBlockColorNames[groupType]" />
 
-      <span v-if="showLabel" class="q-ml-xs text-m1">{{ groupLabel }}</span>
+      <span v-if="!dense" class="q-ml-xs text-m1">{{ groupLabel }}</span>
 
       <q-tooltip
         anchor="top middle"

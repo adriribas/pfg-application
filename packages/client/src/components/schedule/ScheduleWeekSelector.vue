@@ -1,10 +1,14 @@
 <script setup>
 import { ref } from 'vue';
+import { useQuasar } from 'quasar';
 
 const props = defineProps({
-  week: String
+  week: String,
+  dense: Boolean
 });
 defineEmits(['update:week']);
+
+const $q = useQuasar();
 
 const selectedWeek = ref(props.week);
 </script>
@@ -18,11 +22,11 @@ const selectedWeek = ref(props.week);
     active-bg-color="m3"
     @update:model-value="$emit('update:week', selectedWeek)"
     class="shadow-5 bg-b6 tabs-container">
-    <q-tab name="general" label="General" />
+    <q-tab name="general" :label="dense ? 'Tot' : 'General'" />
 
-    <q-tab name="A" label="Setmanes A" />
+    <q-tab name="A" :label="dense ? 'A' : 'Setmanes A'" />
 
-    <q-tab name="B" label="Setmanes B" />
+    <q-tab name="B" :label="dense ? 'B' : 'Setmanes B'" />
   </q-tabs>
 </template>
 

@@ -79,7 +79,7 @@ const router = createRouter({
         {
           path: '',
           name: 'studyScheduleChoosing',
-          component: () => import('@/components/schedule/studies/StudyChoosing.vue')
+          component: () => import('@/views/scheduling/StudyChoosing.vue')
         },
         {
           path: ':invalidMatch(.*)*',
@@ -89,7 +89,7 @@ const router = createRouter({
         {
           path: ':abv([a-zA-Z]+)/:course(\\d+)/:semester(1|2)',
           name: 'studySchedule',
-          component: () => import('@/components/schedule/studies/StudySchedule.vue'),
+          component: () => import('@/views/scheduling/StudySchedule.vue'),
           props: route => {
             const {
               params: { abv, course, semester },
@@ -108,7 +108,7 @@ const router = createRouter({
 
             if (
               (action !== 'view' && action !== 'edit') ||
-              (action === 'edit' && params.studyAbv !== authStore.study.abv)
+              (action === 'edit' && params.abv !== authStore.study.abv)
             ) {
               return { name, params, query: { action: 'view' }, replace: true };
             }

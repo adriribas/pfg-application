@@ -1,10 +1,12 @@
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import { Quasar, Dialog, Notify } from 'quasar';
+import QCalendarPlugin from '@quasar/quasar-ui-qcalendar/dist/index.esm.js';
 import { autoAnimatePlugin } from '@formkit/auto-animate/vue';
 import '@quasar/extras/roboto-font-latin-ext/roboto-font-latin-ext.css';
 import '@quasar/extras/material-icons/material-icons.css';
 import 'quasar/src/css/index.sass';
+import '@quasar/quasar-ui-qcalendar/dist/index.css';
 import 'normalize.css';
 
 import App from '@/App.vue';
@@ -24,6 +26,7 @@ app
   .use(router)
   .use(createPinia())
   .use(Quasar, { plugins: { Dialog, Notify }, config: { screen: { bodyClasses: true } } })
+  .use(QCalendarPlugin.default)
   .use(autoAnimatePlugin);
 
 app

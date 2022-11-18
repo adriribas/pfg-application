@@ -43,20 +43,16 @@ const layoutTimeBlocks = timeBlocks => {
         lastTimeBlockEndMinutes = 0;
       }
 
-      let placed = false;
-      for (const col of columns) {
-        if (!collide(col.at(-1), timeBlock)) {
-          col.push(timeBlock);
-          placed = true;
-          break;
-        }
-      }
-      if (!placed) {
+      const col = columns.find(col => !collide(col.at(-1), timeBlock));
+      if (col) {
+        col.push(timeBlock);
+      } else {
         columns.push([timeBlock]);
       }
 
-      if (lastTimeBlockEndMinutes <= getEndMinutes(timeBlock.start, timeBlock.duration)) {
-        lastTimeBlockEndMinutes = getEndMinutes(timeBlock.start, timeBlock.duration);
+      const endMinutes = getEndMinutes(timeBlock.start, timeBlock.duration);
+      if (lastTimeBlockEndMinutes <= endMinutes) {
+        lastTimeBlockEndMinutes = endMinutes;
       }
     });
 

@@ -1,10 +1,8 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { useQuasar } from 'quasar';
+import { ref, computed } from 'vue';
 import _ from 'lodash';
 
 import { useConstants, useCalendar, useGeneral } from '@/util';
-import TimeBlockDetailDialog from '@/components/dialogs/TimeBlockDetailDialog.vue';
 
 const props = defineProps({
   timeBlock: Object,
@@ -13,11 +11,11 @@ const props = defineProps({
   timeStartPos: Function,
   timeDurationHeight: Function
 });
+defineEmits(['press']);
 
-const $q = useQuasar();
 const { groupTypeLabels, timeBlocksSizeLevels } = useConstants();
 const { minutesToTime, getEndTime, getStylingGetters } = useCalendar();
-const { text, bg, px, percent, pt } = useGeneral();
+const { bg, px, percent, pt } = useGeneral();
 
 const timeBlockRef = ref(null);
 
@@ -40,7 +38,7 @@ const { getColor, getFontSize } = getStylingGetters(props.timeBlock.group.type);
 const subjectLabelFormatters = [
   () => {
     const subject = props.timeBlock.subject;
-    return subject.name.split(' ').some(word => word.length * 5.5 > width.value) ? subject.abv : subject.name;
+    return subject.name.split(' ').some(word => word.length * 6.5 > width.value) ? subject.abv : subject.name;
   },
   () =>
     props.timeBlock.subject.abv
@@ -64,35 +62,16 @@ const groupLabelFormatter = [
 const subjectLabel = computed(() => subjectLabelFormatters[sizeLevel.value]());
 const groupLabel = computed(() => groupLabelFormatter[sizeLevel.value]());
 
-const onResize = size => {
+const updateDims = size => {
   width.value = size.width;
   height.value = size.height;
 };
-const openTimeBlockDetail = () =>
-  $q.dialog({
-    component: TimeBlockDetailDialog,
-    componentProps: {
-      start: props.timeBlock.start,
-      end: endTime.value,
-      duration: props.timeBlock.duration,
-      week: props.timeBlock.week,
-      group: props.timeBlock.group,
-      subject: props.timeBlock.subject,
-      getColor,
-      getFontSize
-    }
-  });
-
-onMounted(() => {
-  width.value = timeBlockRef.value.offsetWidth;
-  height.value = timeBlockRef.value.offsetHeight;
-});
 </script>
 
 <template>
   <div
     ref="timeBlockRef"
-    @click="openTimeBlockDetail"
+    @click="$emit('press', { timeBlock, getColor, getFontSize })"
     :class="classes"
     class="absolute border-8 shadow-3 text-center cursor-pointer time-block-container"
     :style="positionStyles">
@@ -142,7 +121,7 @@ onMounted(() => {
       </div>
     </q-tooltip>
 
-    <q-resize-observer @resize="onResize" />
+    <q-resize-observer @resize="updateDims" />
   </div>
 </template>
 
