@@ -1,4 +1,5 @@
 import { DataTypes } from 'sequelize';
+import _ from 'lodash';
 import Joi from 'joi';
 
 import { db as sequelize } from '#r/startup';
@@ -14,19 +15,29 @@ const Subject = sequelize.define(
       type: DataTypes.VIRTUAL,
       get() {
         const excludeList = ['i', 'de', 'dels', 'la', 'les', 'el', 'els'];
+        const representsANumber = word => /^i+l*$|^l+i*$|\d/i.test(word);
 
-        return this.getDataValue('name')
-          .split(' ')
+        const words = this.getDataValue('name').split(' ');
+
+        if (words.length < 3) {
+          const abv = _.capitalize(words[0].substring(0, 3));
+
+          if (words.length === 2 && representsANumber(words[1])) {
+            return `${abv} ${words[1].toUpperCase().replace('L', 'I')}`;
+          }
+        }
+
+        return words
           .reduce((accum, word) => {
             if (excludeList.includes(word.toLowerCase())) {
               return accum;
             }
 
-            if (/^i+l*$|^l+i*$|\d/i.test(word)) {
+            if (representsANumber(word)) {
               return `${accum} ${word.toUpperCase().replace('L', 'I')}`;
             }
 
-            return `${accum} ${word[0].toUpperCase()}.`;
+            return `${accum} ${_.capitalize(word.substring(0, words.length > 1 ? 1 : 3))}.`;
           }, '')
           .trim();
       }
