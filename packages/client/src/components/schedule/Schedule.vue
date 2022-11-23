@@ -9,7 +9,12 @@ import TimeBlock from '@/components/schedule/TimeBlock.vue';
 import '@/css/calendar-variables.sass';
 
 const props = defineProps({
-  timeBlocks: Array
+  timeBlocks: Array,
+  dragEnter: Function,
+  dragOver: Function,
+  dragLeave: Function,
+  drop: Function,
+  intervalsFront: Boolean
 });
 defineEmits(['pressTimeBlock']);
 
@@ -60,7 +65,7 @@ watch(
 </script>
 
 <template>
-  <div class="border-10 bg-b8 schedule-container">
+  <div class="schedule-container">
     <div class="absolute-full q-pa-md">
       <div class="row no-wrap justify-between items-center q-mb-md">
         <slot name="breadcrumbs" />
@@ -86,6 +91,11 @@ watch(
         :interval-minutes="scheduleIntervalMinutes"
         dark
         animated
+        :interval-class="({ scope: { droppable } }) => ({ droppable })"
+        :drag-enter-func="dragEnter"
+        :drag-over-func="dragOver"
+        :drag-leave-func="dragLeave"
+        :drop-func="(...params) => drop(...params, week)"
         class="q-pa-md border-10 shadow-5 calendar-styling schedule-calendar">
         <template
           #head-day="{
@@ -107,18 +117,34 @@ watch(
           <template v-for="timeBlockGroup in layoutedTimeBlocks[weekday - 1]">
             <template v-for="(timeBlockColumn, colIndex) in timeBlockGroup">
               <template v-for="timeBlock in timeBlockColumn" :key="`${timeBlock.id}-${timeBlock.nUpdates}`">
-                <TimeBlock
-                  :time-block="timeBlock"
-                  :left-percent="colIndex / timeBlockGroup.length"
-                  :width-percent="
-                    getTimeBlockColSpan(timeBlock, colIndex, timeBlockGroup) / timeBlockGroup.length
-                  "
-                  :time-start-pos="timeStartPos"
-                  :time-duration-height="timeDurationHeight"
-                  @press="data => $emit('pressTimeBlock', data)" />
+                <slot
+                  name="time-block"
+                  :week-day="weekday - 1"
+                  :props="{
+                    timeBlock,
+                    leftPercent: colIndex / timeBlockGroup.length,
+                    widthPercent:
+                      getTimeBlockColSpan(timeBlock, colIndex, timeBlockGroup) / timeBlockGroup.length,
+                    timeStartPos,
+                    timeDurationHeight
+                  }">
+                  <TimeBlock
+                    :time-block="timeBlock"
+                    :left-percent="colIndex / timeBlockGroup.length"
+                    :width-percent="
+                      getTimeBlockColSpan(timeBlock, colIndex, timeBlockGroup) / timeBlockGroup.length
+                    "
+                    :time-start-pos="timeStartPos"
+                    :time-duration-height="timeDurationHeight"
+                    @press="data => $emit('pressTimeBlock', data)" />
+                </slot>
               </template>
             </template>
           </template>
+        </template>
+
+        <template #day-interval>
+          <span v-if="intervalsFront" class="absolute-full z1" />
         </template>
       </q-calendar-day>
     </div>
@@ -133,5 +159,3 @@ watch(
 .schedule-calendar
   height: calc(100% - 55px)
 </style>
-
-<style lang="sass"></style>

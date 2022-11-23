@@ -1,4 +1,3 @@
-import { hasChanged } from '@vue/shared';
 import _ from 'lodash';
 
 import { useConstants } from '.';
@@ -59,6 +58,28 @@ const layoutTimeBlocks = timeBlocks => {
   return [...groups, columns];
 };
 
+const sortTimeBlocks = timeBlocks =>
+  timeBlocks.sort(({ id: id1, group: group1 }, { id: id2, group: group2 }) => {
+    if (group1.type !== group2.type) {
+      if (group1.type === 'big') {
+        return -1;
+      }
+      if (group2.type === 'big') {
+        return 1;
+      }
+      if (group1.type === 'small') {
+        return 1;
+      }
+      if (group2.type === 'small') {
+        return -1;
+      }
+    }
+    if (group1.number !== group2.number) {
+      return group1.number - group2.number;
+    }
+    return id1 - id2;
+  });
+
 const getTimeBlockColSpan = (timeBlock, colIndex, cols) => {
   let colSpan = 1;
 
@@ -92,6 +113,7 @@ export default () => ({
   getEndTime,
   collide,
   layoutTimeBlocks,
+  sortTimeBlocks,
   getTimeBlockColSpan,
   getStylingGetters
 });

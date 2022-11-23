@@ -40,6 +40,7 @@ const timeBlockColorTones = {
 const timeBlockFontSizes = {
   subject: 9,
   group: 8.5,
+  unplacedGroup: 9,
   week: 8,
   detailTime: 12,
   detailSubject: 12,

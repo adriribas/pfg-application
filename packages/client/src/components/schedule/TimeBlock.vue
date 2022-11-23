@@ -23,7 +23,7 @@ const width = ref(0);
 const height = ref(0);
 
 const endTime = computed(() => getEndTime(props.timeBlock.start, props.timeBlock.duration));
-const classes = computed(() => [bg(getColor('bg'))]);
+const classes = computed(() => [bg(getColor('bg')), props.timeBlock.front && 'z2']);
 const positionStyles = computed(() => ({
   top: px(props.timeStartPos(props.timeBlock.start)),
   height: px(props.timeDurationHeight(props.timeBlock.duration)),
@@ -127,7 +127,6 @@ const updateDims = size => {
 
 <style lang="sass" scoped>
 .time-block-container
-  z-index: 1
   user-select: none
 .week
   top: 0

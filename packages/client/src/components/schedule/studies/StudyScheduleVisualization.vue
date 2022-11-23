@@ -52,7 +52,7 @@ const openTimeBlockDetail = ({
 </script>
 
 <template>
-  <div class="visualization-container">
+  <div class="border-10 shadow-5 bg-b8 visualization-container">
     <Schedule :time-blocks="timeBlocks" @press-time-block="openTimeBlockDetail">
       <template #breadcrumbs>
         <Breadcrumbs :elements="breadcrumbsData" />

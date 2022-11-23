@@ -1,3 +1,13 @@
+.z1 {
+  z-index: 1 !important;
+}
+.z2 {
+  z-index: 2 !important;
+}
+.z3 {
+  z-index: 3 !important;
+}
+
 .border-5 {
   border-radius: 5px !important;
 }
