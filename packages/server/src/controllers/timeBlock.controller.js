@@ -53,7 +53,8 @@ export const update = async (req, res) => {
     return resError(res, 404);
   }
 
-  // Update
+  const { ...attributes } = data;
+  await updateFields(timeBlock, attributes);
 
   res.json(timeBlock);
 };

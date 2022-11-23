@@ -38,7 +38,9 @@ const Group = sequelize.define(
         };
 
         await group.createTimeBlock(
-          { /* ...config.get('defaultData.timeBlock'), */ ...testData },
+          rand(2) === 2
+            ? { duration: testData.duration }
+            : { /* ...config.get('defaultData.timeBlock'), */ ...testData },
           { transaction }
         );
       }
