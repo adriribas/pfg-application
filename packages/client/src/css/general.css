@@ -26,3 +26,11 @@
 .border-10 {
   border-radius: 10px !important;
 }
+
+.cursor-grabbing {
+  cursor: grabbing !important;
+  -moz-grabbing: grabbing !important;
+}
+.cursor-ns-resize {
+  cursor: ns-resize !important;
+}

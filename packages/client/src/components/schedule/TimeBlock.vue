@@ -1,44 +1,57 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import _ from 'lodash';
 
 import { useConstants, useCalendar, useGeneral } from '@/util';
 
 const props = defineProps({
   timeBlock: Object,
-  leftPercent: Number,
-  widthPercent: Number,
+  enableResizers: Boolean,
+  top: Number,
+  height: Number,
+  left: Number,
+  width: Number,
   timeStartPos: Function,
   timeDurationHeight: Function
 });
-defineEmits(['press']);
+const emit = defineEmits(['press', 'resize']);
 
-const { groupTypeLabels, timeBlocksSizeLevels } = useConstants();
-const { minutesToTime, getEndTime, getStylingGetters } = useCalendar();
+const {
+  groupTypeLabels,
+  scheduleIntervalMinutes,
+  scheduleIntervalStartTime,
+  scheduleIntervalEndTime,
+  timeBlocksSizeLevels
+} = useConstants();
+const { timeToMinutes, minutesToTime, getEndTime, getNearestIntervalTime, getStylingGetters } = useCalendar();
 const { bg, px, percent, pt } = useGeneral();
 
-const timeBlockRef = ref(null);
+const { getColor, getFontSize } = getStylingGetters(props.timeBlock.group.type);
 
-const width = ref(0);
-const height = ref(0);
+const timeBlockRef = ref(null);
+const calcTop = ref(props.top);
+const calcHeight = ref(props.height);
+const widthPx = ref(0);
+const resizing = ref(false);
 
 const endTime = computed(() => getEndTime(props.timeBlock.start, props.timeBlock.duration));
-const classes = computed(() => [bg(getColor('bg')), props.timeBlock.front && 'z2']);
+const classes = computed(() => [bg(getColor('bg')), resizing.value && 'z2 resizing']);
 const positionStyles = computed(() => ({
-  top: px(props.timeStartPos(props.timeBlock.start)),
-  height: px(props.timeDurationHeight(props.timeBlock.duration)),
-  left: percent(props.leftPercent * 100),
-  width: percent(props.widthPercent * 100)
+  top: px(calcTop.value),
+  height: px(calcHeight.value),
+  left: percent(props.left),
+  width: percent(props.width)
 }));
-const wide = computed(() => width.value - height.value > 100);
-const area = computed(() => width.value * height.value);
+const wide = computed(() => widthPx.value - calcHeight.value > 100);
+const area = computed(() => widthPx.value * calcHeight.value);
 const sizeLevel = computed(() => timeBlocksSizeLevels.findIndex(max => _.inRange(area.value, null, max)) + 1);
 
-const { getColor, getFontSize } = getStylingGetters(props.timeBlock.group.type);
 const subjectLabelFormatters = [
   () => {
     const subject = props.timeBlock.subject;
-    return subject.name.split(' ').some(word => word.length * 6.5 > width.value) ? subject.abv : subject.name;
+    return subject.name.split(' ').some(word => word.length * 6.5 > widthPx.value)
+      ? subject.abv
+      : subject.name;
   },
   () =>
     props.timeBlock.subject.abv
@@ -48,7 +61,7 @@ const subjectLabelFormatters = [
       .replaceAll('.', ''),
   () => props.timeBlock.subject.abv
 ];
-const groupLabelFormatter = [
+const groupLabelFormatters = [
   () => `Grup ${groupTypeLabels[props.timeBlock.group.type]} ${props.timeBlock.group.number}`,
   () => `${groupTypeLabels[props.timeBlock.group.type][0]}${props.timeBlock.group.number}`,
   () =>
@@ -60,12 +73,64 @@ const groupLabelFormatter = [
 ];
 
 const subjectLabel = computed(() => subjectLabelFormatters[sizeLevel.value]());
-const groupLabel = computed(() => groupLabelFormatter[sizeLevel.value]());
+const groupLabel = computed(() => groupLabelFormatters[sizeLevel.value]());
 
-const updateDims = size => {
-  width.value = size.width;
-  height.value = size.height;
+const updateWidthPx = newWidth => (widthPx.value = newWidth);
+
+const resizeFromTop = ({ delta: { y: delta }, isFinal }) => {
+  resizing.value = true;
+  if (
+    calcHeight.value - delta >= props.timeDurationHeight(scheduleIntervalMinutes) &&
+    calcTop.value + delta >= props.timeStartPos(scheduleIntervalStartTime)
+  ) {
+    calcTop.value += delta;
+    calcHeight.value -= delta;
+  }
+
+  if (isFinal) {
+    const currentTop = calcTop.value;
+    const newStartTime = getNearestIntervalTime(calcTop.value);
+
+    calcTop.value = props.timeStartPos(newStartTime);
+    calcHeight.value += currentTop - calcTop.value;
+
+    emit('resize', {
+      start: newStartTime,
+      duration: timeToMinutes(endTime.value) - timeToMinutes(newStartTime)
+    });
+    resizing.value = false;
+  }
 };
+
+const resizeFromBottom = ({ delta: { y: delta }, isFinal }) => {
+  resizing.value = true;
+  if (
+    calcHeight.value + delta >= props.timeDurationHeight(scheduleIntervalMinutes) &&
+    props.timeStartPos(props.timeBlock.start) + calcHeight.value + delta <=
+      props.timeStartPos(scheduleIntervalEndTime)
+  ) {
+    calcHeight.value += delta;
+  }
+
+  if (isFinal) {
+    const currentEndTimePx = props.timeStartPos(props.timeBlock.start) + calcHeight.value;
+    const newEndTime = getNearestIntervalTime(currentEndTimePx);
+
+    calcHeight.value += props.timeStartPos(newEndTime) - currentEndTimePx;
+
+    emit('resize', { duration: timeToMinutes(newEndTime) - timeToMinutes(props.timeBlock.start) });
+    resizing.value = false;
+  }
+};
+
+watch(props, (newProps, oldProps) => {
+  if (newProps.top !== oldProps.top) {
+    calcTop.value = newProps.top;
+  }
+  if (newProps.height !== oldProps.height) {
+    calcHeight.value = newProps.height;
+  }
+});
 </script>
 
 <template>
@@ -73,7 +138,7 @@ const updateDims = size => {
     ref="timeBlockRef"
     @click="$emit('press', { timeBlock, getColor, getFontSize })"
     :class="classes"
-    class="absolute border-8 shadow-3 text-center cursor-pointer time-block-container"
+    class="absolute border-8 shadow-3 text-center cursor-pointer non-selectable"
     :style="positionStyles">
     <div class="column fit flex-center">
       <span :style="{ fontSize: pt(getFontSize('subject')) }">
@@ -121,14 +186,34 @@ const updateDims = size => {
       </div>
     </q-tooltip>
 
-    <q-resize-observer @resize="updateDims" />
+    <q-resize-observer @resize="({ width }) => updateWidthPx(width)" />
+
+    <template v-if="enableResizers">
+      <div
+        v-touch-pan.prevent.mouse.vertical="resizeFromTop"
+        class="row absolute justify-center cursor-ns-resize resizer-outer"
+        :style="{ top: 0 }">
+        <div :class="[bg(getColor('resizer'))]" class="col-5 border-8 resizer-inner" />
+      </div>
+      <div
+        v-touch-pan.prevent.mouse.vertical="resizeFromBottom"
+        class="row absolute justify-center items-end cursor-ns-resize resizer-outer"
+        :style="{ bottom: 0 }">
+        <div :class="[bg(getColor('resizer'))]" class="col-5 border-8 resizer-inner" />
+      </div>
+    </template>
   </div>
 </template>
 
 <style lang="sass" scoped>
-.time-block-container
-  user-select: none
 .week
   top: 0
   left: 0
+.resizer-outer
+  width: 100%
+  height: 10px
+.resizer-inner
+  height: 3px
+.resizing
+  opacity: 0.8
 </style>

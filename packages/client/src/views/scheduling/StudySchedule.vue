@@ -6,7 +6,7 @@ import { useAuthStore } from '@/stores';
 import { useStudySchedule } from '@/composables';
 import { useConstants } from '@/util';
 import StudyScheduleVisualization from '@/components/schedule/studies/StudyScheduleVisualization.vue';
-import StudyScheduleModification from '@/components/schedule/studies/StudyScheduleModification.vue';
+import StudyScheduleModification from '@/components/schedule/studies/modification/StudyScheduleModification.vue';
 
 const props = defineProps({
   studyAbv: String,

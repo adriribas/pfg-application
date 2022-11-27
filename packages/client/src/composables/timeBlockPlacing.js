@@ -1,6 +1,14 @@
 export default (placedTimeBlocks, unplacedTimeBlocks) => {
   const refreshPlacedTimeBlocks = () => (placedTimeBlocks.value = [...placedTimeBlocks.value]);
 
+  const getPlaced = subjectCode =>
+    placedTimeBlocks.value.reduce(
+      (accum, weekDayTimeBlocks) => [
+        ...accum,
+        ...weekDayTimeBlocks.filter(({ subject: { code } }) => code === subjectCode)
+      ],
+      []
+    );
   const findPlaced = (weekDay, id) => {
     const index = placedTimeBlocks.value[weekDay].findIndex(timeBlock => timeBlock.id === id);
 
@@ -17,6 +25,8 @@ export default (placedTimeBlocks, unplacedTimeBlocks) => {
     });
   const removeFromPlaced = (weekDay, index) => placedTimeBlocks.value[weekDay].splice(index, 1);
 
+  const getUnplaced = subjectCode =>
+    unplacedTimeBlocks.value.filter(({ subject: { code } }) => code === subjectCode);
   const findUnplaced = id => {
     const index = unplacedTimeBlocks.value.findIndex(timeBlock => timeBlock.id === id);
 
@@ -58,9 +68,11 @@ export default (placedTimeBlocks, unplacedTimeBlocks) => {
 
   return {
     refreshPlacedTimeBlocks,
+    getPlaced,
     findPlaced,
     addToPlaced,
     removeFromPlaced,
+    getUnplaced,
     findUnplaced,
     addToUnplaced,
     removeFromUnplaced,

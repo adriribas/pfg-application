@@ -5,6 +5,7 @@ import QCalendarPlugin from '@quasar/quasar-ui-qcalendar/dist/index.esm.js';
 import { autoAnimatePlugin } from '@formkit/auto-animate/vue';
 import '@quasar/extras/roboto-font-latin-ext/roboto-font-latin-ext.css';
 import '@quasar/extras/material-icons/material-icons.css';
+import '@quasar/extras/animate/rubberBand.css';
 import 'quasar/src/css/index.sass';
 import '@quasar/quasar-ui-qcalendar/dist/index.css';
 import 'normalize.css';

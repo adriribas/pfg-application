@@ -10,11 +10,21 @@ const timeToMinutes = timeString => +timeString.substring(0, 2) * 60 + +timeStri
 
 const padStartZero = value => `${value > 9 ? '' : '0'}${value}`;
 
-const minutesToTime = minutes => `${padStartZero(Math.trunc(minutes / 60))}:${padStartZero(minutes % 60)}`;
+const minutesToTime = minutes =>
+  `${padStartZero(Math.trunc(minutes / 60))}:${padStartZero(Math.round(minutes % 60))}`;
 
 const getEndMinutes = (startTime, duration) => timeToMinutes(startTime) + duration;
 
 const getEndTime = (startTime, duration) => minutesToTime(getEndMinutes(startTime, duration));
+
+const getNearestIntervalTime = pxValue => {
+  const { scheduleIntervalStartTime, scheduleIntervalMinutes, scheduleIntervalHeight } = useConstants();
+  return minutesToTime(
+    (Math.round(pxValue / scheduleIntervalHeight) +
+      timeToMinutes(scheduleIntervalStartTime) / scheduleIntervalMinutes) *
+      scheduleIntervalMinutes
+  );
+};
 
 const collide = (timeBlock1, timeBlock2) =>
   getEndTime(timeBlock1.start, timeBlock1.duration) > timeBlock2.start &&
@@ -93,6 +103,11 @@ const getTimeBlockColSpan = (timeBlock, colIndex, cols) => {
   return colSpan;
 };
 
+const getTimeBlockLeft = (colIndex, timeBlockGroup) => (colIndex / timeBlockGroup.length) * 100;
+
+const getTimeBlockWidth = (timeBlock, colIndex, timeBlockGroup) =>
+  (getTimeBlockColSpan(timeBlock, colIndex, timeBlockGroup) / timeBlockGroup.length) * 100;
+
 const getStylingGetters = groupType => ({
   getColor: el => {
     const { timeBlockColorNames: colorNames, timeBlockColorTones: colorSizes } = useConstants();
@@ -111,9 +126,12 @@ export default () => ({
   minutesToTime,
   getEndMinutes,
   getEndTime,
+  getNearestIntervalTime,
   collide,
   layoutTimeBlocks,
   sortTimeBlocks,
   getTimeBlockColSpan,
+  getTimeBlockLeft,
+  getTimeBlockWidth,
   getStylingGetters
 });

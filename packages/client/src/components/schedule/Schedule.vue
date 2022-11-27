@@ -20,7 +20,8 @@ defineEmits(['pressTimeBlock']);
 
 const $q = useQuasar();
 const { weekDays, scheduleIntervalStart, scheduleIntervalEnd, scheduleIntervalMinutes } = useConstants();
-const { calcIntervalStart, calcIntervalCount, layoutTimeBlocks, getTimeBlockColSpan } = useCalendar();
+const { calcIntervalStart, calcIntervalCount, layoutTimeBlocks, getTimeBlockLeft, getTimeBlockWidth } =
+  useCalendar();
 
 const calendarRef = ref(null);
 const headerWidth = ref(0);
@@ -122,18 +123,19 @@ watch(
                   :week-day="weekday - 1"
                   :props="{
                     timeBlock,
-                    leftPercent: colIndex / timeBlockGroup.length,
-                    widthPercent:
-                      getTimeBlockColSpan(timeBlock, colIndex, timeBlockGroup) / timeBlockGroup.length,
+                    top: timeStartPos(timeBlock.start),
+                    height: timeDurationHeight(timeBlock.duration),
+                    left: getTimeBlockLeft(colIndex, timeBlockGroup),
+                    width: getTimeBlockWidth(timeBlock, colIndex, timeBlockGroup),
                     timeStartPos,
                     timeDurationHeight
                   }">
                   <TimeBlock
                     :time-block="timeBlock"
-                    :left-percent="colIndex / timeBlockGroup.length"
-                    :width-percent="
-                      getTimeBlockColSpan(timeBlock, colIndex, timeBlockGroup) / timeBlockGroup.length
-                    "
+                    :top="timeStartPos(timeBlock.start)"
+                    :height="timeDurationHeight(timeBlock.duration)"
+                    :left="getTimeBlockLeft(colIndex, timeBlockGroup)"
+                    :width="getTimeBlockWidth(timeBlock, colIndex, timeBlockGroup)"
                     :time-start-pos="timeStartPos"
                     :time-duration-height="timeDurationHeight"
                     @press="data => $emit('pressTimeBlock', data)" />
@@ -144,7 +146,8 @@ watch(
         </template>
 
         <template #day-interval>
-          <span v-if="intervalsFront" class="absolute-full z1" />
+          <!-- Millora: Fer els handlers del drag and drop manualment aquí  -->
+          <div v-if="intervalsFront" class="absolute-full z1" />
         </template>
       </q-calendar-day>
     </div>

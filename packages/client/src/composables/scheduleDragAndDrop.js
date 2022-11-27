@@ -1,9 +1,10 @@
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
+import { useQuasar } from 'quasar';
 import _ from 'lodash';
 
 import { timeBlocksApi } from '@/api';
 import { useTimeBlockPlacing } from '@/composables';
-import { useGeneral } from '@/util';
+import { useGeneral, useConstants } from '@/util';
 
 const doUpdateApiCall = (id, { day, start, duration, week }) => {
   const data = {};
@@ -15,13 +16,28 @@ const doUpdateApiCall = (id, { day, start, duration, week }) => {
 };
 
 export default (placed, unplaced) => {
+  const $q = useQuasar();
   const { stop, prevent, stopPrevent } = useGeneral();
+  const { timeBlockShakeAnimation, draggingCursor } = useConstants();
   const placedTimeBlocks = ref(placed);
   const unplacedTimeBlocks = ref(unplaced);
   const placing = ref(false);
   const moving = ref(false);
   const dragging = computed(() => placing.value || moving.value);
   const { doPlace, doUnplace, doMove } = useTimeBlockPlacing(placedTimeBlocks, unplacedTimeBlocks);
+
+  const doShakeAnimation = elem =>
+    new Promise(res => {
+      if (!elem) {
+        return res();
+      }
+
+      elem.addEventListener('animationend', () => {
+        elem.style.animationName = null;
+        res();
+      });
+      elem.style.animationName = timeBlockShakeAnimation;
+    });
 
   const onDragStart = (event, id, weekDay = -1, action = 'place') => {
     event.dataTransfer.dropEffect = 'move';
@@ -30,12 +46,13 @@ export default (placed, unplaced) => {
     event.dataTransfer.setData('id', id);
     event.dataTransfer.setData('weekDay', weekDay);
 
-    setTimeout(() => {
+    setTimeout(async () => {
       if (action === 'place') {
         placing.value = true;
       } else {
         moving.value = true;
       }
+      //await doShakeAnimation(event.target);
       event.target.style.display = 'none';
     }, 0);
 
@@ -44,6 +61,7 @@ export default (placed, unplaced) => {
 
   const onDragEnd = event => {
     event.target.style.display = 'block';
+    //doShakeAnimation(event.target);
     placing.value = false;
     moving.value = false;
   };
@@ -132,12 +150,23 @@ export default (placed, unplaced) => {
     }
   };
 
+  watch(dragging, newDragging => {
+    const classList = document.getElementsByTagName('html').item(0).classList;
+
+    if (newDragging) {
+      classList.add(draggingCursor);
+    } else {
+      classList.remove(draggingCursor);
+    }
+  });
+
   return {
     placedTimeBlocks,
     unplacedTimeBlocks,
     placing,
     moving,
     dragging,
+    doShakeAnimation,
     onDragStart,
     onDragEnd,
     onDragEnter,

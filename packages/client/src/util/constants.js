@@ -15,8 +15,11 @@ const groupTypeLabels = {
   generic: 'Genèric'
 };
 const scheduleIntervalStart = 7.5;
+const scheduleIntervalStartTime = '07:30';
 const scheduleIntervalEnd = 21.5;
+const scheduleIntervalEndTime = '21:30';
 const scheduleIntervalMinutes = 30;
+const scheduleIntervalHeight = 40;
 const timeBlockColorNames = {
   big: 'orange',
   medium: 'green',
@@ -35,7 +38,8 @@ const timeBlockColorTones = {
   detailData: 3,
   detailDept: 2,
   detailDeptBg: 6,
-  detailCloseBtn: 8
+  detailCloseBtn: 8,
+  resizer: 5
 };
 const timeBlockFontSizes = {
   subject: 9,
@@ -48,6 +52,8 @@ const timeBlockFontSizes = {
   detailWeek: 10
 };
 const timeBlocksSizeLevels = [2499, 10749];
+const timeBlockShakeAnimation = 'rubberBand';
+const draggingCursor = 'cursor-grabbing';
 
 export default () => ({
   roleMapping,
@@ -56,10 +62,15 @@ export default () => ({
   weekDays,
   groupTypeLabels,
   scheduleIntervalStart,
+  scheduleIntervalStartTime,
   scheduleIntervalEnd,
+  scheduleIntervalEndTime,
   scheduleIntervalMinutes,
+  scheduleIntervalHeight,
   timeBlockColorNames,
   timeBlockColorTones,
   timeBlockFontSizes,
-  timeBlocksSizeLevels
+  timeBlocksSizeLevels,
+  timeBlockShakeAnimation,
+  draggingCursor
 });
