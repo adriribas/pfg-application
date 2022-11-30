@@ -10,7 +10,6 @@ const loadStudyData = async (studyAbv, course, semester) => {
     associations: { study: studyAbv },
     specialOptions: { course }
   });
-
   const { data: studies } = await studiesApi.list({
     params: {
       fields: 'abv,name'
@@ -18,32 +17,21 @@ const loadStudyData = async (studyAbv, course, semester) => {
     associations: { subject: subjects.map(({ code }) => code) }
   });
 
-  studies
-    .filter(({ abv }) => abv !== studyAbv)
-    .forEach(({ Subjects: studySubjects, ...study }) =>
-      studySubjects.forEach(({ code: sharedSubjectCode, StudySubject: { course: sharedSubjectCourse } }) => {
-        const subject = subjects.find(({ code }) => code === sharedSubjectCode);
-        if (!subject) {
-          return;
-        }
-
-        subject.sharedBy ??= [];
-        if (!subject.sharedBy.find(({ abv }) => abv === study.abv)) {
-          subject.sharedBy.push({ ...study, course: sharedSubjectCourse });
-        }
-      })
-    );
-
   return {
     study: studies.find(({ abv }) => abv === studyAbv),
     subjects: subjects.map(({ Areas: areas, Groups: groups, LabTypes: labTypes, Studies, ...subject }) => ({
       ...subject,
       areas: areas.map(({ Department: department, ...area }) => ({ ...area, department })),
-      groups: groups.map(({ TimeBlocks: timeBlocks, ...group }) => ({
+      groups: groups.map(({ TimeBlocks: timeBlocks, Studies: studies, ...group }) => ({
         ...group,
-        timeBlocks: timeBlocks.map(({ ...timeBlock }) => ({ ...timeBlock /*TODO*/ }))
+        timeBlocks: timeBlocks.map(({ ...timeBlock }) => ({ ...timeBlock /*TODO (professors i aules)*/ })),
+        studies: studies?.map(({ ...study }) => ({ ...study })) || null
       })),
-      labTypes: labTypes
+      labTypes: labTypes,
+      sharedBy: studies.reduce((accum, { abv, name, Subjects: subjects }) => {
+        const sharedSubject = subjects.find(({ code }) => code === subject.code);
+        return sharedSubject ? [...accum, { abv, name, course: sharedSubject.StudySubject.course }] : accum;
+      }, [])
     }))
   };
 };

@@ -19,7 +19,7 @@ const containerXPadding = computed(() => `q-px-${$q.screen.lt.lg ? 'lg' : 'xl'}`
   <div class="row flex-center fit absolute-center">
     <div
       :class="[containerSize, containerXPadding]"
-      class="col-xl-3 col-lg-4 col-md-5 col-sm-6 col-xs-12 q-py-xl shadow-5 text-center bg-b6 container">
+      class="col-xl-3 col-lg-4 col-md-5 col-sm-6 col-xs-12 q-py-xl shadow-5 text-center bg-b7 container">
       <div class="q-mb-md q-mt-md text-h3">{{ title }}</div>
 
       <div class="q-mb-xl inline-block q-py-xs q-px-md text-h5 text-bold bg-b4 text-m5 app-name-text">

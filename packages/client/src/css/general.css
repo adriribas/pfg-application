@@ -27,10 +27,17 @@
   border-radius: 10px !important;
 }
 
+.bordered-1 {
+  border: 1px solid !important;
+}
+
 .cursor-grabbing {
   cursor: grabbing !important;
   -moz-grabbing: grabbing !important;
 }
 .cursor-ns-resize {
   cursor: ns-resize !important;
+}
+.cursor-no-drop {
+  cursor: no-drop !important;
 }

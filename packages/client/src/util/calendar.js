@@ -6,7 +6,11 @@ const calcIntervalStart = (startHour, minutes) => startHour * (60 / minutes);
 
 const calcIntervalCount = (startHour, endHour, minutes) => (60 / minutes) * (endHour - startHour);
 
-const timeToMinutes = timeString => +timeString.substring(0, 2) * 60 + +timeString.substring(3, 5);
+const getHr = time => +time.split(':')[0];
+
+const getMin = time => +time.split(':')[1];
+
+const timeToMinutes = timeString => getHr(timeString) * 60 + getMin(timeString);
 
 const padStartZero = value => `${value > 9 ? '' : '0'}${value}`;
 
@@ -25,6 +29,25 @@ const getNearestIntervalTime = pxValue => {
       scheduleIntervalMinutes
   );
 };
+
+const getMinPlaceableTime = () => {
+  const { scheduleIntervalStartTime, scheduleIntervalMinutes, scheduleIntervalMargin } = useConstants();
+
+  return minutesToTime(
+    timeToMinutes(scheduleIntervalStartTime) + scheduleIntervalMargin * scheduleIntervalMinutes
+  );
+};
+
+const getMaxPlaceableTime = () => {
+  const { scheduleIntervalEndTime, scheduleIntervalMinutes, scheduleIntervalMargin } = useConstants();
+
+  return minutesToTime(
+    timeToMinutes(scheduleIntervalEndTime) - scheduleIntervalMargin * scheduleIntervalMinutes
+  );
+};
+
+const clampMinutes = minutes =>
+  _.clamp(minutes, timeToMinutes(getMinPlaceableTime()), timeToMinutes(getMaxPlaceableTime()));
 
 const collide = (timeBlock1, timeBlock2) =>
   getEndTime(timeBlock1.start, timeBlock1.duration) > timeBlock2.start &&
@@ -122,11 +145,16 @@ const getStylingGetters = groupType => ({
 export default () => ({
   calcIntervalStart,
   calcIntervalCount,
+  getHr,
+  getMin,
   timeToMinutes,
   minutesToTime,
   getEndMinutes,
   getEndTime,
   getNearestIntervalTime,
+  getMinPlaceableTime,
+  getMaxPlaceableTime,
+  clampMinutes,
   collide,
   layoutTimeBlocks,
   sortTimeBlocks,

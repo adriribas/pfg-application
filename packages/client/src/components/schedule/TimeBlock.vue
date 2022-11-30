@@ -16,14 +16,16 @@ const props = defineProps({
 });
 const emit = defineEmits(['press', 'resize']);
 
+const { groupTypeLabels, scheduleIntervalMinutes, timeBlocksSizeLevels } = useConstants();
 const {
-  groupTypeLabels,
-  scheduleIntervalMinutes,
-  scheduleIntervalStartTime,
-  scheduleIntervalEndTime,
-  timeBlocksSizeLevels
-} = useConstants();
-const { timeToMinutes, minutesToTime, getEndTime, getNearestIntervalTime, getStylingGetters } = useCalendar();
+  timeToMinutes,
+  minutesToTime,
+  getEndTime,
+  getNearestIntervalTime,
+  getMinPlaceableTime,
+  getMaxPlaceableTime,
+  getStylingGetters
+} = useCalendar();
 const { bg, px, percent, pt } = useGeneral();
 
 const { getColor, getFontSize } = getStylingGetters(props.timeBlock.group.type);
@@ -81,7 +83,7 @@ const resizeFromTop = ({ delta: { y: delta }, isFinal }) => {
   resizing.value = true;
   if (
     calcHeight.value - delta >= props.timeDurationHeight(scheduleIntervalMinutes) &&
-    calcTop.value + delta >= props.timeStartPos(scheduleIntervalStartTime)
+    calcTop.value + delta >= props.timeStartPos(getMinPlaceableTime())
   ) {
     calcTop.value += delta;
     calcHeight.value -= delta;
@@ -107,7 +109,7 @@ const resizeFromBottom = ({ delta: { y: delta }, isFinal }) => {
   if (
     calcHeight.value + delta >= props.timeDurationHeight(scheduleIntervalMinutes) &&
     props.timeStartPos(props.timeBlock.start) + calcHeight.value + delta <=
-      props.timeStartPos(scheduleIntervalEndTime)
+      props.timeStartPos(getMaxPlaceableTime())
   ) {
     calcHeight.value += delta;
   }
@@ -193,13 +195,14 @@ watch(props, (newProps, oldProps) => {
         v-touch-pan.prevent.mouse.vertical="resizeFromTop"
         class="row absolute justify-center cursor-ns-resize resizer-outer"
         :style="{ top: 0 }">
-        <div :class="[bg(getColor('resizer'))]" class="col-5 border-8 resizer-inner" />
+        <div :class="[bg(getColor('resizer'))]" class="col-5 top-resizer resizer-inner" />
       </div>
+
       <div
         v-touch-pan.prevent.mouse.vertical="resizeFromBottom"
         class="row absolute justify-center items-end cursor-ns-resize resizer-outer"
         :style="{ bottom: 0 }">
-        <div :class="[bg(getColor('resizer'))]" class="col-5 border-8 resizer-inner" />
+        <div :class="[bg(getColor('resizer'))]" class="col-5 bottom-resizer resizer-inner" />
       </div>
     </template>
   </div>
@@ -214,6 +217,10 @@ watch(props, (newProps, oldProps) => {
   height: 10px
 .resizer-inner
   height: 3px
+.top-resizer
+  border-radius: 0px 0px 8px 8px
+.bottom-resizer
+  border-radius: 8px 8px 0px 0px
 .resizing
   opacity: 0.8
 </style>

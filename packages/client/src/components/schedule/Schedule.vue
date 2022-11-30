@@ -1,6 +1,5 @@
 <script setup>
-import { ref, computed, watch } from 'vue';
-import { useQuasar } from 'quasar';
+import { ref, computed, watch, watchEffect } from 'vue';
 
 import { useConstants, useCalendar } from '@/util';
 import ScheduleWeekSelector from '@/components/schedule/ScheduleWeekSelector.vue';
@@ -16,12 +15,25 @@ const props = defineProps({
   drop: Function,
   intervalsFront: Boolean
 });
-defineEmits(['pressTimeBlock']);
+defineEmits(['press-time-block']);
 
-const $q = useQuasar();
-const { weekDays, scheduleIntervalStart, scheduleIntervalEnd, scheduleIntervalMinutes } = useConstants();
-const { calcIntervalStart, calcIntervalCount, layoutTimeBlocks, getTimeBlockLeft, getTimeBlockWidth } =
-  useCalendar();
+const {
+  weekDays,
+  scheduleIntervalStart,
+  scheduleIntervalStartTime,
+  scheduleIntervalEnd,
+  scheduleIntervalEndTime,
+  scheduleIntervalMinutes
+} = useConstants();
+const {
+  timeToMinutes,
+  minutesToTime,
+  calcIntervalStart,
+  calcIntervalCount,
+  layoutTimeBlocks,
+  getTimeBlockLeft,
+  getTimeBlockWidth
+} = useCalendar();
 
 const calendarRef = ref(null);
 const headerWidth = ref(0);
@@ -31,31 +43,25 @@ const layoutedTimeBlocks = ref([]);
 
 const denseHeader = computed(() => headerWidth.value < 965);
 
-const increaseUpdatesNumber = () => {
+const increaseUpdatesNumber = () =>
   timeBlocks.value.forEach(weekDayTimeBlocks =>
     weekDayTimeBlocks.forEach(timeBlock => {
       timeBlock.nUpdates ??= 0;
       timeBlock.nUpdates++;
     })
   );
-};
-const updateCalendarLayout = () => {
+const updateCalendarLayout = currentWeek => {
   increaseUpdatesNumber();
   layoutedTimeBlocks.value = timeBlocks.value.map(weekDayTimeBlocks =>
     layoutTimeBlocks(
-      week.value === 'general'
+      currentWeek === 'general'
         ? weekDayTimeBlocks
-        : weekDayTimeBlocks.filter(timeBlock => timeBlock.week === week.value)
+        : weekDayTimeBlocks.filter(timeBlock => !timeBlock.week || timeBlock.week === currentWeek)
     )
   );
 };
-const updateHeaderWidth = ({ width }) => {
-  headerWidth.value = width;
-};
+const updateHeaderWidth = ({ width }) => (headerWidth.value = width);
 
-updateCalendarLayout();
-
-watch(week, updateCalendarLayout);
 watch(
   () => props.timeBlocks,
   newTimeBlocks => {
@@ -63,6 +69,7 @@ watch(
     updateCalendarLayout();
   }
 );
+watchEffect(() => updateCalendarLayout(week.value));
 </script>
 
 <template>
@@ -138,16 +145,30 @@ watch(
                     :width="getTimeBlockWidth(timeBlock, colIndex, timeBlockGroup)"
                     :time-start-pos="timeStartPos"
                     :time-duration-height="timeDurationHeight"
-                    @press="data => $emit('pressTimeBlock', data)" />
+                    @press="data => $emit('press-time-block', { weekDay: weekday - 1, ...data })" />
                 </slot>
               </template>
             </template>
           </template>
         </template>
 
-        <template #day-interval>
+        <template
+          v-if="intervalsFront"
+          #day-interval="{
+            scope: {
+              timestamp: { time }
+            }
+          }">
           <!-- Millora: Fer els handlers del drag and drop manualment aquí  -->
-          <div v-if="intervalsFront" class="absolute-full z1" />
+          <div
+            v-if="
+              time === scheduleIntervalStartTime ||
+              time === minutesToTime(timeToMinutes(scheduleIntervalEndTime) - scheduleIntervalMinutes)
+            "
+            @dragover.stop.prevent
+            class="absolute-full bg-b6" />
+
+          <div v-else class="absolute-full z1" />
         </template>
       </q-calendar-day>
     </div>

@@ -1,16 +1,20 @@
 <script setup>
-import { ref } from 'vue';
-
-const value = ref('');
+defineProps({
+  modelValue: {
+    type: String,
+    required: true
+  }
+});
+defineEmits('update:model-value');
 </script>
 
 <template>
   <q-input
+    :model-value="modelValue"
     type="text"
     label="Correu electrònic"
-    v-model="value"
     lazy-rules
-    :rules="[val => !!val]"
+    :rules="[value => !!value]"
     error-message="Aquest camp és obligatori"
     no-error-icon
     dark
@@ -19,7 +23,8 @@ const value = ref('');
     autocorrect="off"
     autocapitalize="off"
     autocomplete="off"
-    spellcheck="false">
+    spellcheck="false"
+    @update:model-value="value => $emit('update:model-value', value)">
     <template #prepend>
       <q-icon name="email" size="28px" />
     </template>

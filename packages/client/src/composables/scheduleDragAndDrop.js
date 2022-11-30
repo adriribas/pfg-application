@@ -4,7 +4,7 @@ import _ from 'lodash';
 
 import { timeBlocksApi } from '@/api';
 import { useTimeBlockPlacing } from '@/composables';
-import { useGeneral, useConstants } from '@/util';
+import { useConstants, useCalendar, useGeneral } from '@/util';
 
 const doUpdateApiCall = (id, { day, start, duration, week }) => {
   const data = {};
@@ -15,12 +15,11 @@ const doUpdateApiCall = (id, { day, start, duration, week }) => {
   return _.isEmpty(data) ? Promise.resolve() : timeBlocksApi.update(id, data);
 };
 
-export default (placed, unplaced) => {
+export default (placedTimeBlocks, unplacedTimeBlocks) => {
   const $q = useQuasar();
-  const { stop, prevent, stopPrevent } = useGeneral();
   const { timeBlockShakeAnimation, draggingCursor } = useConstants();
-  const placedTimeBlocks = ref(placed);
-  const unplacedTimeBlocks = ref(unplaced);
+  const { timeToMinutes, minutesToTime, getMaxPlaceableTime } = useCalendar();
+  const { stop, prevent, stopPrevent } = useGeneral();
   const placing = ref(false);
   const moving = ref(false);
   const dragging = computed(() => placing.value || moving.value);
@@ -39,12 +38,13 @@ export default (placed, unplaced) => {
       elem.style.animationName = timeBlockShakeAnimation;
     });
 
-  const onDragStart = (event, id, weekDay = -1, action = 'place') => {
+  const onDragStart = (event, id, weekDay = -1, duration, action = 'place') => {
     event.dataTransfer.dropEffect = 'move';
     event.dataTransfer.effectAllowed = 'move';
     event.dataTransfer.setData('action', action);
     event.dataTransfer.setData('id', id);
     event.dataTransfer.setData('weekDay', weekDay);
+    event.dataTransfer.setData('duration', duration);
 
     setTimeout(async () => {
       if (action === 'place') {
@@ -83,7 +83,7 @@ export default (placed, unplaced) => {
   const onDropCalendar = async (
     event,
     _type,
-    { droppable, timestamp: { weekday: newWeekDay, time: newStart } },
+    { droppable, timestamp: { weekday: newWeekDay, time } },
     newWeek
   ) => {
     prevent(event);
@@ -95,6 +95,13 @@ export default (placed, unplaced) => {
     const action = event.dataTransfer.getData('action');
     const id = +event.dataTransfer.getData('id');
     const weekDay = +event.dataTransfer.getData('weekDay');
+    const duration = +event.dataTransfer.getData('duration');
+
+    const maxPlaceableMinutes = timeToMinutes(getMaxPlaceableTime());
+    const newStart =
+      timeToMinutes(time) + duration <= maxPlaceableMinutes
+        ? time
+        : minutesToTime(maxPlaceableMinutes - duration);
 
     try {
       if (action === 'place') {
@@ -112,8 +119,7 @@ export default (placed, unplaced) => {
         try {
           await doUpdateApiCall(id, { day: newWeekDay - 1, start: newStart, week: newWeek });
         } catch (e) {
-          doUnplace(id, newWeekDay - 1);
-          doPlace(id, weekDay, oldData.start, oldData.week);
+          doMove(id, newWeekDay - 1, weekDay, oldData.start, oldData.duration);
           throw e;
         }
       }
@@ -161,8 +167,6 @@ export default (placed, unplaced) => {
   });
 
   return {
-    placedTimeBlocks,
-    unplacedTimeBlocks,
     placing,
     moving,
     dragging,

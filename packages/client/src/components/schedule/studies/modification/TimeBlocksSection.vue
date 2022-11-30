@@ -1,7 +1,7 @@
 <script setup>
 import { useConstants, useCalendar, useGeneral } from '@/util';
 
-defineProps({
+const props = defineProps({
   subjects: Array,
   dragging: Boolean,
   getPlaced: Function,
@@ -30,23 +30,21 @@ const getFontSize = (groupType, fontSize) => getStylingGetters(groupType).getFon
       :key="subject.code"
       :disable="!getUnplaced(subject.code).length"
       default-opened
-      :header-inset-level="0.15"
       :label-lines="2"
-      :content-inset-level="0.75"
       icon="auto_stories"
       :label="subject.name"
-      header-class="text-g5"
-      expand-icon-class="text-g5"
+      header-class=""
+      expand-icon-class=""
       class="q-mb-md">
       <template #header>
-        <q-item-section avatar>
-          <q-avatar icon="auto_stories" color="transparent" text-color="g5" />
-        </q-item-section>
+        <!-- <q-item-section avatar>
+          <q-avatar icon="auto_stories" color="transparent" text-color="" />
+        </q-item-section> -->
 
         <q-item-section>
           <q-item-label :lines="2">{{ subject.name }}</q-item-label>
 
-          <q-item-label caption :lines="1" class="text-g8">
+          <q-item-label caption :lines="1" class="">
             {{ getPlaced(subject.code).length }} de
             {{ getPlaced(subject.code).length + getUnplaced(subject.code).length }}
             blocs col·locats
@@ -54,35 +52,44 @@ const getFontSize = (groupType, fontSize) => getStylingGetters(groupType).getFon
         </q-item-section>
       </template>
 
-      <q-table
-        v-if="getUnplaced(subject.code).length"
-        grid
-        :rows="sortTimeBlocks(getUnplaced(subject.code))"
-        row-key="id"
-        hide-header
-        :pagination="{ rowsPerPage: 0 }"
-        hide-pagination
-        card-container-class="q-gutter-sm">
-        <template #item="{ row }">
-          <div
-            draggable="true"
-            @click="$emit('press')"
-            @dragstart="$emit('drag-start', $event, row.id)"
-            @dragend="dragEndData => $emit('drag-end', dragEndData)"
-            @dragover.stop
-            :class="[bg(getColor(row.group.type, 'bg'))]"
-            class="col-5 q-py-xs border-8 shadow-2 cursor-pointer text-center animated non-selectable"
-            :style="{ fontSize: pt(getFontSize(row.group.type, 'unplacedGroup')) }">
-            <span class="text-bold"> G{{ groupTypeLabels[row.group.type][0] }} {{ row.group.number }} </span>
-
-            <div class="row no-wrap flex-center">
-              <q-icon name="hourglass_top" size="10pt" class="q-mr-xs" />
-
-              {{ minutesToTime(row.duration) }}h
+      <div class="row justify-center">
+        <q-table
+          v-if="getUnplaced(subject.code).length"
+          grid
+          :rows="sortTimeBlocks(getUnplaced(subject.code))"
+          row-key="id"
+          hide-header
+          :pagination="{ rowsPerPage: 0 }"
+          hide-pagination
+          card-container-class="justify-center q-gutter-sm"
+          class="col-11">
+          <template #item="{ row }">
+            <div
+              draggable="true"
+              @click="
+                $emit('press', {
+                  timeBlock: row,
+                  getColor: getStylingGetters(row.group.type).getColor,
+                  getFontSize: getStylingGetters(row.group.type).getFontSize
+                })
+              "
+              @dragstart="$emit('drag-start', $event, row.id, row.duration)"
+              @dragend="dragEndData => $emit('drag-end', dragEndData)"
+              @dragover.stop
+              :class="[bg(getColor(row.group.type, 'bg'))]"
+              class="col-5 q-py-xs border-8 shadow-2 cursor-pointer text-center animated non-selectable"
+              :style="{ fontSize: pt(getFontSize(row.group.type, 'unplacedGroup')) }">
+              <span class="text-bold">
+                G{{ groupTypeLabels[row.group.type][0] }} {{ row.group.number }}
+              </span>
+              <div class="row no-wrap flex-center">
+                <q-icon name="hourglass_top" size="10pt" class="q-mr-xs" />
+                {{ minutesToTime(row.duration) }}h
+              </div>
             </div>
-          </div>
-        </template>
-      </q-table>
+          </template>
+        </q-table>
+      </div>
     </q-expansion-item>
   </div>
 </template>

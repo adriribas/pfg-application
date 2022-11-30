@@ -34,6 +34,7 @@ const goToStudyChoosing = () => {
 
   try {
     const studyData = await loadStudyData(props.studyAbv, props.course, props.semester);
+    console.log(studyData);
 
     study.value = studyData.study;
     subjects.value = studyData.subjects;

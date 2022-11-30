@@ -3,8 +3,6 @@ import { useQuasar } from 'quasar';
 
 import { useConstants, useCalendar } from '@/util';
 import Schedule from '@/components/schedule/Schedule.vue';
-import ScheduleWeekSelector from '@/components/schedule/ScheduleWeekSelector.vue';
-import ScheduleColorCaption from '@/components/schedule/ScheduleColorCaption.vue';
 import TimeBlockDetailDialog from '@/components/dialogs/TimeBlockDetailDialog.vue';
 
 const props = defineProps({
@@ -31,6 +29,9 @@ const breadcrumbsData = [
   { label: `${semesterLabels[props.semester - 1]} Q` }
 ];
 
+const isShared = ({ sharedBy }) => sharedBy.length > 1;
+const filter = ({ subject, group: { studies } }) =>
+  !isShared(subject) || studies.some(({ abv }) => abv === props.studyAbv);
 const openTimeBlockDetail = ({
   timeBlock: { start, duration, week, group, subject },
   getColor,
@@ -53,7 +54,9 @@ const openTimeBlockDetail = ({
 
 <template>
   <div class="border-10 shadow-5 bg-b8 visualization-container">
-    <Schedule :time-blocks="timeBlocks" @press-time-block="openTimeBlockDetail">
+    <Schedule
+      :time-blocks="timeBlocks.map(weekDayTimeBlocks => weekDayTimeBlocks.filter(filter))"
+      @press-time-block="openTimeBlockDetail">
       <template #breadcrumbs>
         <Breadcrumbs :elements="breadcrumbsData" />
       </template>

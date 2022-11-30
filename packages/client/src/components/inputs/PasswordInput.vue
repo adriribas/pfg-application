@@ -1,19 +1,31 @@
 <script setup>
 import { ref } from 'vue';
-const value = ref('');
-const isVisiblePassword = ref(false);
+
 defineProps({
-  toggleIcon: Boolean,
-  customLabel: String
+  modelValue: {
+    type: String,
+    required: true
+  },
+  toggleIcon: {
+    type: Boolean,
+    default: false
+  },
+  customLabel: {
+    type: String,
+    default: 'Contrasenya'
+  }
 });
+defineEmits('update:model-value');
+
+const hidden = ref(true);
 </script>
 <template>
   <q-input
-    :type="isVisiblePassword ? 'text' : 'password'"
-    :label="customLabel || 'Contrasenya'"
-    v-model="value"
+    :model-value="modelValue"
+    :type="hidden ? 'password' : 'text'"
+    :label="customLabel"
     lazy-rules
-    :rules="[val => !!val]"
+    :rules="[value => !!value]"
     error-message="Aquest camp és obligatori"
     no-error-icon
     dark
@@ -22,17 +34,18 @@ defineProps({
     autocorrect="off"
     autocapitalize="off"
     autocomplete="off"
-    spellcheck="false">
+    spellcheck="false"
+    @update:model-value="value => $emit('update:model-value', value)">
     <template #prepend>
       <q-icon name="key" size="28px" />
     </template>
 
     <template #append v-if="toggleIcon">
       <q-icon
-        :name="isVisiblePassword ? 'visibility' : 'visibility_off'"
-        class="cursor-pointer"
+        :name="hidden ? 'visibility_off' : 'visibility'"
         color="m3"
-        @click="isVisiblePassword = !isVisiblePassword" />
+        @click="hidden = !hidden"
+        class="cursor-pointer" />
     </template>
   </q-input>
 </template>
