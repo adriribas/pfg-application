@@ -10,6 +10,7 @@ import academicCoursesRouter from './academicCourses';
 import schoolsRouter from './schools';
 import labTypesRouter from './labTypes';
 import timeblocksRouter from './timeBlocks';
+import groupRouter from './groups';
 import { authorization, reqProcessing } from '#r/middlewares';
 
 const { auth } = authorization;
@@ -27,6 +28,7 @@ router
   .use('/departments', auth, generateScopes, deparmentsRouter)
   .use('/areas', auth, generateScopes, areasRouter)
   .use('/labTypes', auth, generateScopes, labTypesRouter)
+  .use('/groups', auth, generateScopes, groupRouter)
   .use('/time-blocks', auth, generateScopes, timeblocksRouter);
 
 export default router;

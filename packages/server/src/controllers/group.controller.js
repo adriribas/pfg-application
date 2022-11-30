@@ -2,7 +2,7 @@ import _ from 'lodash';
 import createDebugger from 'debug';
 
 import { reqProcessing, groupsUtil } from '#r/utils';
-import { Group as Model } from '#r/models';
+import { Group as Model, Study as StudyModel } from '#r/models';
 
 const { buildWhere, isValidUpdateData, updateFields, updateRelation, resError } = reqProcessing;
 const { syncSubjectGroups } = groupsUtil;
@@ -58,6 +58,9 @@ export const update = async (req, res) => {
   if (!group) {
     return resError(res, 404);
   }
+
+  const { studies, ...attributes } = data;
+  await updateRelation(StudyModel, studies, group, 'setStudies');
 
   res.json(group);
 };

@@ -24,7 +24,7 @@ const Group = sequelize.define(
           return;
         }
 
-        // Data for test reasons:
+        /* // Data for test reasons:
         const rand = max => Math.floor(Math.random() * (max + 1));
 
         const h1 = rand(1);
@@ -35,12 +35,13 @@ const Group = sequelize.define(
           start: `${h1}${h2}:${['0', '3'][rand(1)]}0`,
           duration: [30, 60, 90, 120, 150][rand(4)],
           week: [null, 'A', 'B'][rand(2)]
-        };
+        }; */
 
         await group.createTimeBlock(
-          rand(2) === 2
+          /* rand(2) === 2
             ? { duration: testData.duration }
-            : { /* ...config.get('defaultData.timeBlock'), */ ...testData },
+            : testData  */
+          config.get(`defaultData.timeBlock.${group.type}`),
           { transaction }
         );
       }
@@ -60,6 +61,8 @@ Group.associate = ({ Subject, TimeBlock, Study, StudyGroup }) => {
   });
   Group.hasMany(StudyGroup, { foreignKey: 'group' });
 };
+
+Group.updatableFields = ['studies'];
 
 const validationSchema = Joi.object({
   type: Joi.string().min(2).max(20).required(),

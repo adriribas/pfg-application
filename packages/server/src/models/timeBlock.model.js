@@ -12,7 +12,6 @@ const TimeBlock = sequelize.define('TimeBlock', {
     }
   },
   duration: DataTypes.SMALLINT,
-  //end: DataTypes.TIME,
   week: DataTypes.ENUM('A', 'B')
 });
 
@@ -26,7 +25,6 @@ const validationSchema = Joi.object({
   day: Joi.number().min(0).max(4),
   start: Joi.string().pattern(/[0-2][0-9]:[0-5][0-9]:00/),
   duration: Joi.number().min(15).max(800),
-  //end: Joi.string().pattern(/[0-2][0-9]:[0-5][0-9]:00/),
   week: Joi.string().pattern(/A|B/)
 });
 

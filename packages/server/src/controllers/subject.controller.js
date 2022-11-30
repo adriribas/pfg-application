@@ -44,11 +44,18 @@ const buildInclude = ({ Area, LabType, Study, Group }) => {
   Group &&
     include.push({
       model: Group,
-      attributes: ['type', 'number'],
-      include: {
-        model: TimeBlockModel,
-        attributes: ['id', 'day', 'start', 'duration', 'week']
-      }
+      attributes: ['id', 'type', 'number'],
+      include: [
+        {
+          model: TimeBlockModel,
+          attributes: ['id', 'day', 'start', 'duration', 'week']
+        },
+        {
+          model: StudyModel,
+          through: { attributes: [] },
+          attributes: ['abv', 'name']
+        }
+      ]
     });
 
   return include;

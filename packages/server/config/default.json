@@ -48,7 +48,15 @@
   "groupTypes": ["small", "medium", "big"],
   "defaultData": {
     "timeBlock": {
-      "duration": 60
+      "small": {
+        "duration": 120
+      },
+      "medium": {
+        "duration": 60
+      },
+      "big": {
+        "duration": 120
+      }
     }
   }
 }
