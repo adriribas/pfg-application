@@ -3,6 +3,9 @@ import _ from 'lodash';
 import Joi from 'joi';
 
 import { db as sequelize } from '#r/startup';
+import { stringsUtil } from '#r/utils';
+
+const { abreviate } = stringsUtil;
 
 const Subject = sequelize.define(
   'Subject',
@@ -14,32 +17,7 @@ const Subject = sequelize.define(
     abv: {
       type: DataTypes.VIRTUAL,
       get() {
-        const excludeList = ['i', 'de', 'dels', 'la', 'les', 'el', 'els'];
-        const representsANumber = word => /^i+l*$|^l+i*$|\d/i.test(word);
-
-        const words = this.getDataValue('name').split(' ');
-
-        if (words.length < 3) {
-          const abv = _.capitalize(words[0].substring(0, 3));
-
-          if (words.length === 2 && representsANumber(words[1])) {
-            return `${abv} ${words[1].toUpperCase().replace('L', 'I')}`;
-          }
-        }
-
-        return words
-          .reduce((accum, word) => {
-            if (excludeList.includes(word.toLowerCase())) {
-              return accum;
-            }
-
-            if (representsANumber(word)) {
-              return `${accum} ${word.toUpperCase().replace('L', 'I')}`;
-            }
-
-            return `${accum} ${_.capitalize(word.substring(0, words.length > 1 ? 1 : 3))}.`;
-          }, '')
-          .trim();
+        return abreviate(this.getDataValue('name').split(' '));
       }
     },
     name: {

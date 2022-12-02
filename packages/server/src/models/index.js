@@ -14,3 +14,4 @@ export { default as AreaSubject } from './area_subject.model.js';
 export { default as LabType } from './labType.model.js';
 export { default as SubjectLabType } from './subject_labType.model.js';
 export { default as TimeBlock } from './timeBlock.model.js';
+export { default as GenericTimeBlock } from './genericTimeBlock.model.js';

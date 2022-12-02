@@ -9,3 +9,4 @@ export * as subjectController from './subject.controller.js';
 export * as labTypeController from './labType.controller.js';
 export * as groupController from './group.controller.js';
 export * as timeBlockController from './timeBlock.controller.js';
+export * as genericTimeBlockController from './genericTimeBlock.controller.js';

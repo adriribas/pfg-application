@@ -37,24 +37,30 @@ export const get = async (req, res) => {
   res.json(study);
 };
 
-const buildFilterInclude = ({ subjectCode }) => {
-  const filterInclude = [];
+const buildFilteredInclude = ({ subjectCode }) => {
+  const filteredInclude = [];
 
   subjectCode &&
-    filterInclude.push({
+    filteredInclude.push({
       model: SubjectModel,
       where: buildWhere({ code: subjectCode }),
       through: { attributes: ['course'] },
       attributes: ['code']
     });
 
-  return filterInclude;
+  return filteredInclude;
+};
+
+const buildInclude = ({}) => {
+  const include = [];
+
+  return include;
 };
 
 export const filter = async (req, res) => {
   const {
     scopes: { school: schoolScope },
-    query: { fields },
+    query: { fields, include },
     body: {
       data: filterData,
       associations: { subject: subjectCode }
@@ -64,7 +70,7 @@ export const filter = async (req, res) => {
   res.json(
     await schoolScope(Model).findAll({
       where: buildWhere(filterData),
-      include: [...buildFilterInclude({ subjectCode })],
+      include: [...buildFilteredInclude({ subjectCode }), ...buildInclude(include)],
       attributes: fields
     })
   );

@@ -28,7 +28,7 @@ const Study = sequelize.define(
   }
 );
 
-Study.associate = ({ User, School, Subject, StudySubject, Group, StudyGroup }) => {
+Study.associate = ({ User, School, Subject, StudySubject, Group, StudyGroup, GenericTimeBlock }) => {
   Study.belongsTo(User, { foreignKey: 'coordinador' });
 
   Study.belongsTo(School, { foreignKey: 'school' });
@@ -46,6 +46,8 @@ Study.associate = ({ User, School, Subject, StudySubject, Group, StudyGroup }) =
     otherKey: 'group'
   });
   Study.hasMany(StudyGroup, { foreignKey: 'study' });
+
+  Study.hasMany(GenericTimeBlock, { foreignKey: 'study' });
 };
 
 Study.updatableFields = ['coordinador'];

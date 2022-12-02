@@ -81,3 +81,5 @@ export const isDuplicationError = ({ errors, parent, original }) =>
   errors.some(({ type }) => type === 'unique violation') ||
   parent.code === 'ER_DUP_ENTRY' ||
   original.code === 'ER_DUP_ENTRY';
+
+export const isForeignKeyError = ({ name }) => name === 'SequelizeForeignKeyConstraintError';

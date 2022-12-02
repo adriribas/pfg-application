@@ -22,10 +22,12 @@ TimeBlock.associate = ({ Group }) => {
 TimeBlock.updatableFields = ['day', 'start', 'duration', 'week'];
 
 const validationSchema = Joi.object({
-  day: Joi.number().min(0).max(4),
-  start: Joi.string().pattern(/[0-2][0-9]:[0-5][0-9]:00/),
+  day: Joi.number().min(0).max(4).allow(null),
+  start: Joi.string()
+    .pattern(/[0-2][0-9]:[0-5][0-9]:00/)
+    .allow(null),
   duration: Joi.number().min(15).max(800),
-  week: Joi.string().pattern(/A|B/)
+  week: Joi.string().pattern(/A|B/).allow(null)
 });
 
 TimeBlock.validate = data => validationSchema.validateAsync(data);
