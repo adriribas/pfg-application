@@ -126,12 +126,14 @@ const getTimeBlockColSpan = (timeBlock, colIndex, cols) => {
   return colSpan;
 };
 
+const isGeneric = ({ subject }) => !subject;
+
 const getTimeBlockLeft = (colIndex, timeBlockGroup) => (colIndex / timeBlockGroup.length) * 100;
 
 const getTimeBlockWidth = (timeBlock, colIndex, timeBlockGroup) =>
   (getTimeBlockColSpan(timeBlock, colIndex, timeBlockGroup) / timeBlockGroup.length) * 100;
 
-const getStylingGetters = groupType => ({
+const getStylingGetters = (groupType = 'generic') => ({
   getColor: el => {
     const { timeBlockColorNames: colorNames, timeBlockColorTones: colorSizes } = useConstants();
     return `${colorNames[groupType]}-${colorSizes[el]}`;
@@ -159,6 +161,7 @@ export default () => ({
   layoutTimeBlocks,
   sortTimeBlocks,
   getTimeBlockColSpan,
+  isGeneric,
   getTimeBlockLeft,
   getTimeBlockWidth,
   getStylingGetters

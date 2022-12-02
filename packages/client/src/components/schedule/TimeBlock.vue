@@ -3,6 +3,7 @@ import { ref, computed, watch } from 'vue';
 import _ from 'lodash';
 
 import { useConstants, useCalendar, useGeneral } from '@/util';
+import { useTimeBlockFormatting } from '@/composables';
 
 const props = defineProps({
   timeBlock: Object,
@@ -12,70 +13,43 @@ const props = defineProps({
   left: Number,
   width: Number,
   timeStartPos: Function,
-  timeDurationHeight: Function
+  timeDurationHeight: Function,
+  getColor: Function,
+  getFontSize: Function
 });
 const emit = defineEmits(['press', 'resize']);
 
-const { groupTypeLabels, scheduleIntervalMinutes, timeBlocksSizeLevels } = useConstants();
+const { scheduleIntervalMinutes } = useConstants();
 const {
   timeToMinutes,
   minutesToTime,
   getEndTime,
   getNearestIntervalTime,
   getMinPlaceableTime,
-  getMaxPlaceableTime,
-  getStylingGetters
+  getMaxPlaceableTime
 } = useCalendar();
 const { bg, px, percent, pt } = useGeneral();
 
-const { getColor, getFontSize } = getStylingGetters(props.timeBlock.group.type);
-
-const timeBlockRef = ref(null);
-const calcTop = ref(props.top);
-const calcHeight = ref(props.height);
 const widthPx = ref(0);
+const calcHeight = ref(props.height);
+
+const { sizeLevel, label, subLabel } = useTimeBlockFormatting(
+  computed(() => props.timeBlock),
+  widthPx,
+  calcHeight
+);
+
+const calcTop = ref(props.top);
 const resizing = ref(false);
 
 const endTime = computed(() => getEndTime(props.timeBlock.start, props.timeBlock.duration));
-const classes = computed(() => [bg(getColor('bg')), resizing.value && 'z2 resizing']);
+const classes = computed(() => [bg(props.getColor('bg')), resizing.value && 'z2 resizing']);
 const positionStyles = computed(() => ({
   top: px(calcTop.value),
   height: px(calcHeight.value),
   left: percent(props.left),
   width: percent(props.width)
 }));
-const wide = computed(() => widthPx.value - calcHeight.value > 100);
-const area = computed(() => widthPx.value * calcHeight.value);
-const sizeLevel = computed(() => timeBlocksSizeLevels.findIndex(max => _.inRange(area.value, null, max)) + 1);
-
-const subjectLabelFormatters = [
-  () => {
-    const subject = props.timeBlock.subject;
-    return subject.name.split(' ').some(word => word.length * 6.5 > widthPx.value)
-      ? subject.abv
-      : subject.name;
-  },
-  () =>
-    props.timeBlock.subject.abv
-      .split(' ')
-      .map(word => (word.split('').some(char => char !== 'I') ? word : word.length))
-      .join('')
-      .replaceAll('.', ''),
-  () => props.timeBlock.subject.abv
-];
-const groupLabelFormatters = [
-  () => `Grup ${groupTypeLabels[props.timeBlock.group.type]} ${props.timeBlock.group.number}`,
-  () => `${groupTypeLabels[props.timeBlock.group.type][0]}${props.timeBlock.group.number}`,
-  () =>
-    `${
-      wide.value
-        ? `G. ${groupTypeLabels[props.timeBlock.group.type]} `
-        : groupTypeLabels[props.timeBlock.group.type][0]
-    }${props.timeBlock.group.number}`
-];
-
-const subjectLabel = computed(() => subjectLabelFormatters[sizeLevel.value]());
-const groupLabel = computed(() => groupLabelFormatters[sizeLevel.value]());
 
 const updateWidthPx = newWidth => (widthPx.value = newWidth);
 
@@ -137,21 +111,20 @@ watch(props, (newProps, oldProps) => {
 
 <template>
   <div
-    ref="timeBlockRef"
     @click="$emit('press', { timeBlock, getColor, getFontSize })"
     :class="classes"
     class="absolute border-8 shadow-3 text-center cursor-pointer non-selectable"
     :style="positionStyles">
     <div class="column fit flex-center">
       <span :style="{ fontSize: pt(getFontSize('subject')) }">
-        {{ subjectLabel }}
+        {{ label }}
       </span>
 
       <span
         :class="[sizeLevel === 0 && 'q-mt-xs']"
         class="text-bold"
         :style="{ fontSize: pt(getFontSize('group')) }">
-        {{ groupLabel }}
+        {{ subLabel }}
       </span>
     </div>
 

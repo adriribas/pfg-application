@@ -35,8 +35,8 @@ const timeBlockColorTones = {
   tooltipBg: 9,
   resizer: 5,
   detailTime: 4,
-  detailSubject: 4,
-  detailGroupBg: 5,
+  detailLabel: 4,
+  detailSubLabelBg: 5,
   detailDept: 1,
   detailDeptBg: 6,
   modTimePicker: 7,
@@ -54,8 +54,8 @@ const timeBlockFontSizes = {
   unplacedGroup: 9,
   week: 8,
   detailTime: 12,
-  detailSubject: 12,
-  detailGroup: 11,
+  detailLabel: 12,
+  detailSubLabel: 11,
   week: 10
 };
 const timeBlocksSizeLevels = [2499, 10749];

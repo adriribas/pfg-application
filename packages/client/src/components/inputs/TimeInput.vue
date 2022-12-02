@@ -41,7 +41,9 @@ const tempValue = ref(props.modelValue);
 
 const externalValue = computed(() => props.modelValue);
 
+const blur = () => inputRef.value.blur();
 const emitIfValid = () => {
+  console.log('emit');
   if (inputRef.value.validate(tempValue.value)) {
     emit('update:model-value', tempValue.value);
   }
@@ -60,10 +62,7 @@ const onUpdate = value => {
   updateTempValue(value);
   emitIfValid();
 };
-const onCloseTimePicker = () => {
-  emitIfValid();
-  setTimeout(inputRef.value.blur, 120);
-};
+const onCloseTimePicker = () => setTimeout(blur, 120);
 
 watch(externalValue, newExternalValue => updateTempValue(newExternalValue));
 </script>
@@ -88,7 +87,7 @@ watch(externalValue, newExternalValue => updateTempValue(newExternalValue));
     @update:model-value="onUpdate"
     @focus="() => inputRef.select()"
     @blur="emitIfValid"
-    @keypress.prevent.enter="emitIfValid">
+    @keypress.prevent.enter="blur">
     <template #append v-if="timePicker">
       <q-icon name="history_toggle_off" :color="inputColor" :size="iconSize" class="q-ml-xs cursor-pointer">
         <q-popup-proxy cover transition-show="scale" transition-hide="scale">

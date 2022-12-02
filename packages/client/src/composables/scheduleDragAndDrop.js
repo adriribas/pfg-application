@@ -2,17 +2,21 @@ import { ref, computed, watch } from 'vue';
 import { useQuasar } from 'quasar';
 import _ from 'lodash';
 
-import { timeBlocksApi } from '@/api';
+import { timeBlocksApi, genericTimeBlocksApi } from '@/api';
 import { useTimeBlockPlacing } from '@/composables';
 import { useConstants, useCalendar, useGeneral } from '@/util';
 
-const doUpdateApiCall = (id, { day, start, duration, week }) => {
+const doUpdateApiCall = (isGeneric, id, { day, start, duration, week }) => {
   const data = {};
+
   day !== undefined && (data.day = day);
   start !== undefined && (data.start = start);
   duration !== undefined && (data.duration = duration);
   week !== undefined && (data.week = week === 'general' ? null : week);
-  return _.isEmpty(data) ? Promise.resolve() : timeBlocksApi.update(id, data);
+
+  return _.isEmpty(data)
+    ? Promise.resolve()
+    : (isGeneric ? genericTimeBlocksApi : timeBlocksApi).update(id, data);
 };
 
 export default (placedTimeBlocks, unplacedTimeBlocks) => {
@@ -38,13 +42,14 @@ export default (placedTimeBlocks, unplacedTimeBlocks) => {
       elem.style.animationName = timeBlockShakeAnimation;
     });
 
-  const onDragStart = (event, id, weekDay = -1, duration, action = 'place') => {
+  const onDragStart = (event, id, duration, isGeneric, weekDay = -1, action = 'place') => {
     event.dataTransfer.dropEffect = 'move';
     event.dataTransfer.effectAllowed = 'move';
     event.dataTransfer.setData('action', action);
     event.dataTransfer.setData('id', id);
     event.dataTransfer.setData('weekDay', weekDay);
     event.dataTransfer.setData('duration', duration);
+    event.dataTransfer.setData('isGeneric', +isGeneric);
 
     setTimeout(async () => {
       if (action === 'place') {
@@ -96,6 +101,7 @@ export default (placedTimeBlocks, unplacedTimeBlocks) => {
     const id = +event.dataTransfer.getData('id');
     const weekDay = +event.dataTransfer.getData('weekDay');
     const duration = +event.dataTransfer.getData('duration');
+    const isGeneric = +event.dataTransfer.getData('isGeneric');
 
     const maxPlaceableMinutes = timeToMinutes(getMaxPlaceableTime());
     const newStart =
@@ -108,7 +114,7 @@ export default (placedTimeBlocks, unplacedTimeBlocks) => {
         doPlace(id, newWeekDay - 1, newStart, newWeek);
 
         try {
-          await doUpdateApiCall(id, { day: newWeekDay - 1, start: newStart, week: newWeek });
+          await doUpdateApiCall(isGeneric, id, { day: newWeekDay - 1, start: newStart, week: newWeek });
         } catch (e) {
           doUnplace(id, newWeekDay - 1);
           throw e;
@@ -117,7 +123,7 @@ export default (placedTimeBlocks, unplacedTimeBlocks) => {
         const oldData = doMove(id, weekDay, newWeekDay - 1, newStart, newWeek);
 
         try {
-          await doUpdateApiCall(id, { day: newWeekDay - 1, start: newStart, week: newWeek });
+          await doUpdateApiCall(isGeneric, id, { day: newWeekDay - 1, start: newStart, week: newWeek });
         } catch (e) {
           doMove(id, newWeekDay - 1, weekDay, oldData.start, oldData.duration);
           throw e;
@@ -140,10 +146,11 @@ export default (placedTimeBlocks, unplacedTimeBlocks) => {
 
     const id = +event.dataTransfer.getData('id');
     const weekDay = +event.dataTransfer.getData('weekDay');
+    const isGeneric = +event.dataTransfer.getData('isGeneric');
 
     const oldData = doUnplace(id, weekDay);
     try {
-      await doUpdateApiCall(id, { day: null, start: null, week: null });
+      await doUpdateApiCall(isGeneric, id, { day: null, start: null, week: null });
     } catch (e) {
       doPlace(id, weekDay, oldData.start, oldData.week);
 

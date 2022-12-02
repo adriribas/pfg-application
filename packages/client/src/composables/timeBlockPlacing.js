@@ -1,14 +1,24 @@
+import { useCalendar } from '@/util';
+
 export default (placedTimeBlocks, unplacedTimeBlocks) => {
   const refreshPlacedTimeBlocks = () => (placedTimeBlocks.value = [...placedTimeBlocks.value]);
 
-  const getPlaced = subjectCode =>
+  const getSubjectPlaced = subjectCode =>
     placedTimeBlocks.value.reduce(
       (accum, weekDayTimeBlocks) => [
         ...accum,
-        ...weekDayTimeBlocks.filter(({ subject: { code } }) => code === subjectCode)
+        ...weekDayTimeBlocks.filter(({ subject }) => subject?.code === subjectCode)
       ],
       []
     );
+  const getGenericPlaced = () => {
+    const { isGeneric } = useCalendar();
+
+    return placedTimeBlocks.value.reduce(
+      (accum, weekDayTimeBlocks) => [...accum, ...weekDayTimeBlocks.filter(isGeneric)],
+      []
+    );
+  };
   const findPlaced = (weekDay, id) => {
     const index = placedTimeBlocks.value[weekDay].findIndex(timeBlock => timeBlock.id === id);
 
@@ -25,8 +35,13 @@ export default (placedTimeBlocks, unplacedTimeBlocks) => {
     });
   const removeFromPlaced = (weekDay, index) => placedTimeBlocks.value[weekDay].splice(index, 1);
 
-  const getUnplaced = subjectCode =>
-    unplacedTimeBlocks.value.filter(({ subject: { code } }) => code === subjectCode);
+  const getSubjectUnplaced = subjectCode =>
+    unplacedTimeBlocks.value.filter(({ subject }) => subject?.code === subjectCode);
+  const getGenericUnplaced = () => {
+    const { isGeneric } = useCalendar();
+
+    return unplacedTimeBlocks.value.filter(isGeneric);
+  };
   const findUnplaced = id => {
     const index = unplacedTimeBlocks.value.findIndex(timeBlock => timeBlock.id === id);
 
@@ -68,11 +83,13 @@ export default (placedTimeBlocks, unplacedTimeBlocks) => {
 
   return {
     refreshPlacedTimeBlocks,
-    getPlaced,
+    getSubjectPlaced,
+    getGenericPlaced,
     findPlaced,
     addToPlaced,
     removeFromPlaced,
-    getUnplaced,
+    getSubjectUnplaced,
+    getGenericUnplaced,
     findUnplaced,
     addToUnplaced,
     removeFromUnplaced,

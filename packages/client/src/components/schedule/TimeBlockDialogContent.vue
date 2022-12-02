@@ -1,17 +1,15 @@
 <script setup>
-import { useConstants, useGeneral } from '@/util';
+import { useGeneral } from '@/util';
 
 const props = defineProps({
-  group: Object,
-  subject: Object,
-  roomType: Object,
-  professor: Object,
   getColor: Function,
   getFontSize: Function
 });
 
-const { groupTypeLabels } = useConstants();
-const { text, bg, pt } = useGeneral();
+const { text, pt } = useGeneral();
+
+const getContainerProps = margin => ({ class: `row ${margin ? 'q-mt-md' : ''}` });
+const getIconProps = name => ({ name, size: '20pt', color: props.getColor('headerIcons'), class: 'q-mr-md' });
 </script>
 
 <template>
@@ -22,19 +20,11 @@ const { text, bg, pt } = useGeneral();
           :class="text(getColor('detailTime'))"
           class="text-bold"
           :style="{ 'font-size': pt(getFontSize('detailTime')) }">
-          <!-- <div class="row items-center q-mb-sm">
-            <q-icon name="today" size="20pt" :color="getColor('headerIcons')" class="q-mr-sm" />
-
-            <slot name="week-day" />
-          </div> -->
-
           <div class="row items-center">
             <q-icon name="schedule" size="20pt" :color="getColor('headerIcons')" class="q-mr-sm" />
-
             <slot name="start-time" />
 
             <q-icon name="arrow_right" size="15pt" :color="getColor('headerIcons')" class="q-mx-xs" />
-
             <slot name="end-time" />
           </div>
 
@@ -42,98 +32,52 @@ const { text, bg, pt } = useGeneral();
             <q-icon name="hourglass_top" size="20pt" :color="getColor('headerIcons')" class="q-mr-sm" />
             <slot name="duration" />
           </div>
-
-          <!-- <div class="row items-center q-mt-sm">
-            <q-icon name="today" size="20pt" :color="getColor('headerIcons')" class="q-mr-sm" />
-
-            <slot name="week-day" />
-          </div> -->
         </div>
 
         <q-separator vertical :color="getColor('headerIcons')" class="q-ml-lg q-mr-md" />
 
         <div class="q-mt-xs">
-          <div
-            :class="text(getColor('detailSubject'))"
-            :style="{ 'font-size': pt(getFontSize('detailSubject')) }">
-            {{ subject.name }}
-          </div>
+          <slot
+            name="label"
+            :container-props="{
+              class: text(getColor('detailLabel')),
+              style: { fontSize: pt(getFontSize('detailLabel')) }
+            }">
+          </slot>
 
-          <q-badge
-            :label="`Grup ${groupTypeLabels[group.type]} ${group.number}`"
-            :color="getColor('detailGroupBg')"
-            class="q-mt-sm q-py-xs text-bold text-b7"
-            :style="{ 'font-size': pt(getFontSize('detailGroup')) }" />
+          <slot
+            name="sub-label"
+            :badge-props="{
+              color: getColor('detailSubLabelBg'),
+              class: 'q-mt-sm q-py-xs text-bold text-b7',
+              style: { fontSize: pt(getFontSize('detailSubLabel')) }
+            }">
+          </slot>
         </div>
       </div>
 
-      <div class="">
-        <slot name="week" />
-      </div>
+      <slot name="week" />
     </q-card-section>
 
     <q-card-section :class="[text(getColor('data'))]" class="row justify-around q-mx-md">
       <div class="column col-auto">
-        <div class="row">
-          <q-icon name="room" size="20pt" :color="getColor('headerIcons')" class="q-mr-md" />
-          {{ roomType?.name || 'Espai no assignat' }}
-        </div>
+        <slot name="room-type" :container-props="getContainerProps()" :icon-props="getIconProps('room')" />
 
-        <div class="row q-mt-md">
-          <q-icon name="domain" size="20pt" :color="getColor('headerIcons')" />
-
-          <q-list bordered dark class="q-ml-md border-8">
-            <q-item v-for="{ abv, name, department } in subject.areas">
-              <q-item-section>
-                <q-item-label :class="[text(getColor('data'))]">{{ abv }}</q-item-label>
-
-                <q-item-label caption :class="[name ? text(getColor('captions')) : 'text-warning']">
-                  {{ name || 'Nom no especificat' }}
-                </q-item-label>
-              </q-item-section>
-
-              <q-item-section side>
-                <q-badge :color="getColor('detailDeptBg')" class="q-ml-sm q-py-xs">
-                  <span :class="text(getColor('detailDept'))">{{ department.abv }}</span>
-
-                  <q-tooltip
-                    anchor="center right"
-                    self="center left"
-                    transition-show="jump-right"
-                    transition-hide="jump-left"
-                    :class="bg(getColor('detailDeptBg'))">
-                    <span :class="text(getColor('detailDept'))">{{ department.name }}</span>
-                  </q-tooltip>
-                </q-badge>
-              </q-item-section>
-            </q-item>
-          </q-list>
-        </div>
+        <slot name="areas" :container-props="getContainerProps(true)" :icon-props="getIconProps('domain')" />
       </div>
 
       <div class="column col-auto">
-        <div class="row">
-          <q-icon name="person" size="20pt" :color="getColor('headerIcons')" class="q-mr-md" />
-          {{ professor?.fullName || 'Professor no assignat' }}
-        </div>
+        <slot name="professor" :container-props="getContainerProps()" :icon-props="getIconProps('person')" />
 
-        <div v-if="subject.sharedBy.length > 1" class="row q-mt-md">
-          <q-icon name="school" size="20pt" :color="getColor('headerIcons')" class="q-mr-md" />
+        <slot
+          name="sharing"
+          :container-props="getContainerProps(true)"
+          :icon-props="getIconProps('school')" />
 
-          <slot name="sharing" />
-        </div>
-
-        <div v-if="group.type === 'small'" class="row q-mt-md">
-          <q-icon name="science" size="20pt" :color="getColor('headerIcons')" />
-
-          <q-list bordered dense dark class="col q-ml-md border-8">
-            <q-item v-for="{ name } in subject.labTypes">
-              <q-item-section>
-                <q-item-label :class="[text(getColor('data'))]">{{ name }}</q-item-label>
-              </q-item-section>
-            </q-item>
-          </q-list>
-        </div>
+        <slot
+          name="lab-types"
+          :container-props="getContainerProps(true)"
+          :icon-props="getIconProps('science')" />
       </div>
     </q-card-section>
 

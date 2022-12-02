@@ -4,13 +4,14 @@ import { useQuasar } from 'quasar';
 import _ from 'lodash';
 
 import { useScheduleDragAndDrop, useTimeBlockPlacing } from '@/composables';
-import { groupsApi, timeBlocksApi } from '@/api';
+import { groupsApi, timeBlocksApi, genericTimeBlocksApi } from '@/api';
 import { useConstants, useCalendar, useGeneral } from '@/util';
 import Schedule from '@/components/schedule/Schedule.vue';
 import TimeBlock from '@/components/schedule/TimeBlock.vue';
 import TimeBlocksSection from '@/components/schedule/studies/modification/TimeBlocksSection.vue';
 import SettingsSection from '@/components/schedule/studies/modification/SettingsSection.vue';
 import TimeBlockModificationDialog from '@/components/dialogs/TimeBlockModificationDialog.vue';
+import GenericTimeBlockModificationDialog from '@/components/dialogs/GenericTimeBlockModificationDialog.vue';
 
 const props = defineProps({
   study: Object,
@@ -22,7 +23,7 @@ const props = defineProps({
 
 const $q = useQuasar();
 const { courseLabels, semesterLabels, groupTypeLabels } = useConstants();
-const { getEndTime } = useCalendar();
+const { getEndTime, isGeneric, getStylingGetters } = useCalendar();
 const {} = useGeneral();
 
 const splitterWidth = ref(75);
@@ -43,16 +44,21 @@ const filters = computed(() => {
     );
   return filters;
 });
-const applyFilters = timeBlock => filters.value.every(filter => filter(timeBlock));
+const applyFilters = timeBlock => isGeneric(timeBlock) || filters.value.every(filter => filter(timeBlock));
 const filteredPlacedTimeBlocks = computed(() =>
   placedTimeBlocks.value.map(weekDayTimeBlocks => weekDayTimeBlocks.filter(applyFilters))
 );
 //const filteredUnplacedTimeBlocks = computed(() => unplacedTimeBlocks.value.filter(applyFilters));
 
-const { refreshPlacedTimeBlocks, getPlaced, getUnplaced, findPlaced, findUnplaced } = useTimeBlockPlacing(
-  placedTimeBlocks,
-  unplacedTimeBlocks
-);
+const {
+  refreshPlacedTimeBlocks,
+  getSubjectPlaced,
+  getGenericPlaced,
+  getSubjectUnplaced,
+  getGenericUnplaced,
+  findPlaced,
+  findUnplaced
+} = useTimeBlockPlacing(placedTimeBlocks, unplacedTimeBlocks);
 const {
   dragging,
   onDragStart,
@@ -88,59 +94,105 @@ const onResize = async (weekDay, id, { start, duration }) => {
   }
   refreshPlacedTimeBlocks();
   try {
-    await timeBlocksApi.update(id, { duration, ...(start ? { start } : {}) });
+    await timeBlocksApi.update(id, updateData);
   } catch (e) {
     timeBlock.start = currentStart;
     timeBlock.duration = currentDuration;
     refreshPlacedTimeBlocks();
   }
 };
-const openTimeBlockModification = ({
-  timeBlock: { id, start, duration, week, group, subject },
-  weekDay,
-  getColor,
-  getFontSize
-}) =>
-  $q
-    .dialog({
-      component: TimeBlockModificationDialog,
-      componentProps: {
-        start,
-        end: start ? getEndTime(start, duration) : null,
-        duration,
-        week,
-        group,
-        subject,
-        getColor,
-        getFontSize
-      }
-    })
-    .onOk(async ({ sharedBy, ...timeBlockData }) => {
-      const { timeBlock } = start ? findPlaced(weekDay, id) : findUnplaced(id);
 
-      timeBlock.start = timeBlockData.start;
-      timeBlock.duration = timeBlockData.duration;
-      timeBlock.week = timeBlockData.week;
-      refreshPlacedTimeBlocks();
+const updateTimeBlock = async (id, weekDay, { sharedBy: modSharedBy, ...modTimeData }, timeData) => {
+  const { timeBlock } = timeData.start ? findPlaced(weekDay, id) : findUnplaced(id);
 
+  timeBlock.start = modTimeData.start;
+  timeBlock.duration = modTimeData.duration;
+  timeBlock.week = modTimeData.week;
+  refreshPlacedTimeBlocks();
+
+  await groupsApi.update(timeBlock.group.id, { studies: modSharedBy.map(({ abv }) => abv) });
+  timeBlock.group.studies = modSharedBy;
+  try {
+    await timeBlocksApi.update(id, modTimeData);
+  } catch (e) {
+    timeBlock.start = timeData.start;
+    timeBlock.duration = timeData.duration;
+    timeBlock.week = timeData.week;
+    refreshPlacedTimeBlocks();
+    throw e;
+  }
+};
+const updateGenericTimeBlock = async (id, weekDay, modData, timeData) => {
+  const { timeBlock } = timeData.start ? findPlaced(weekDay, id) : findUnplaced(id);
+
+  timeBlock.start = modData.start;
+  timeBlock.duration = modData.duration;
+  timeBlock.week = modData.week;
+  timeBlock.label = modData.label;
+  timeBlock.subLabel = modData.subLabel;
+  refreshPlacedTimeBlocks();
+
+  try {
+    await genericTimeBlocksApi.update(id, modData);
+  } catch (e) {
+    timeBlock.start = timeData.start;
+    timeBlock.duration = timeData.duration;
+    timeBlock.week = timeData.week;
+    timeBlock.label = timeData.label;
+    timeBlock.subLabel = timeData.subLabel;
+    refreshPlacedTimeBlocks();
+    throw e;
+  }
+};
+
+const openModification = ({ timeBlock, weekDay, getColor, getFontSize }) => {
+  const { start, duration, week } = timeBlock;
+  const commonProps = {
+    start,
+    end: start && getEndTime(start, duration),
+    duration,
+    week,
+    getColor,
+    getFontSize
+  };
+
+  if (isGeneric(timeBlock)) {
+    const { label, subLabel } = timeBlock;
+    $q.dialog({
+      component: GenericTimeBlockModificationDialog,
+      componentProps: { label, subLabel, ...commonProps }
+    }).onOk(async modData => {
       try {
-        await groupsApi.update(group.id, { studies: sharedBy.map(({ abv }) => abv) });
-        timeBlock.group.studies = sharedBy;
-        try {
-          await timeBlocksApi.update(id, timeBlockData);
-          $q.notify({
-            type: 'success',
-            message: 'Bloc horari modificat correctament',
-            caption: `${subject.name} - Grup ${groupTypeLabels[group.type]} ${group.number}`,
-            color: getColor('successNotif')
-          });
-        } catch (e) {
-          timeBlock.start = start;
-          timeBlock.duration = duration;
-          timeBlock.week = week;
-          refreshPlacedTimeBlocks();
-          throw e;
-        }
+        await updateGenericTimeBlock(timeBlock.id, weekDay, modData, { start, duration, week });
+        $q.notify({
+          type: 'success',
+          message: 'Bloc horari genèric modificat correctament',
+          caption: `${modData.label} - ${modData.subLabel}`,
+          color: getColor('successNotif')
+        });
+      } catch (e) {
+        console.error(e);
+        $q.notify({
+          type: 'error',
+          message: 'Error en la modificació del bloc horari genèric',
+          caption: e.message
+        });
+      }
+    });
+  } else {
+    const { group, subject, roomType, professor } = timeBlock;
+    $q.dialog({
+      component: TimeBlockModificationDialog,
+      componentProps: { group, subject, roomType, professor, ...commonProps }
+    }).onOk(async modData => {
+      try {
+        await updateTimeBlock(timeBlock.id, weekDay, modData, { start, duration, week });
+        $q.notify({
+          type: 'success',
+          message: 'Bloc horari modificat correctament',
+          caption: `${subject.name} - Grup ${groupTypeLabels[group.type]} ${group.number}`,
+          color: getColor('successNotif')
+        });
       } catch (e) {
         console.error(e);
         $q.notify({
@@ -150,6 +202,8 @@ const openTimeBlockModification = ({
         });
       }
     });
+  }
+};
 </script>
 
 <template>
@@ -179,9 +233,23 @@ const openTimeBlockModification = ({
               :="props"
               enable-resizers
               draggable="true"
-              @press="data => openTimeBlockModification({ weekDay, ...data })"
+              :get-color="
+                getStylingGetters(isGeneric(props.timeBlock) ? 'generic' : props.timeBlock.group.type)
+                  .getColor
+              "
+              :get-font-size="getStylingGetters().getFontSize"
+              @press="data => openModification({ weekDay, ...data })"
               @resize="resizeData => onResize(weekDay, props.timeBlock.id, resizeData)"
-              @dragstart="onDragStart($event, props.timeBlock.id, weekDay, props.timeBlock.duration, 'move')"
+              @dragstart="
+                onDragStart(
+                  $event,
+                  props.timeBlock.id,
+                  props.timeBlock.duration,
+                  isGeneric(props.timeBlock),
+                  weekDay,
+                  'move'
+                )
+              "
               @dragend="onDragEnd"
               @dragover.stop />
           </template>
@@ -230,12 +298,14 @@ const openTimeBlockModification = ({
             <TimeBlocksSection
               :subjects="subjects"
               :dragging="dragging"
-              :get-placed="subjectCode => getPlaced(subjectCode).filter(applyFilters)"
-              :get-unplaced="subjectCode => getUnplaced(subjectCode).filter(applyFilters)"
+              :get-subject-placed="subjectCode => getSubjectPlaced(subjectCode).filter(applyFilters)"
+              :get-generic-placed="getGenericPlaced"
+              :get-subject-unplaced="subjectCode => getSubjectUnplaced(subjectCode).filter(applyFilters)"
+              :get-generic-unplaced="getGenericUnplaced"
               @drag-start="onDragStart"
               @drag-end="onDragEnd"
               @drop="onDropUnplacedZone"
-              @press="openTimeBlockModification" />
+              @press="openModification" />
           </q-expansion-item>
         </q-list>
       </div>

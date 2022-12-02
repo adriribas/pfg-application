@@ -32,7 +32,9 @@ const {
   calcIntervalCount,
   layoutTimeBlocks,
   getTimeBlockLeft,
-  getTimeBlockWidth
+  getTimeBlockWidth,
+  isGeneric,
+  getStylingGetters
 } = useCalendar();
 
 const calendarRef = ref(null);
@@ -145,6 +147,10 @@ watchEffect(() => updateCalendarLayout(week.value));
                     :width="getTimeBlockWidth(timeBlock, colIndex, timeBlockGroup)"
                     :time-start-pos="timeStartPos"
                     :time-duration-height="timeDurationHeight"
+                    :get-color="
+                      getStylingGetters(isGeneric(timeBlock) ? 'generic' : timeBlock.group.type).getColor
+                    "
+                    :get-font-size="getStylingGetters().getFontSize"
                     @press="data => $emit('press-time-block', { weekDay: weekday - 1, ...data })" />
                 </slot>
               </template>

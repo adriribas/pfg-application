@@ -38,7 +38,7 @@ const goToStudyChoosing = () => {
 
     study.value = studyData.study;
     subjects.value = studyData.subjects;
-    timeBlocks.value = classifyTimeBlocks(subjects.value);
+    timeBlocks.value = classifyTimeBlocks(subjects.value, study.value.genericTimeBlocks);
   } catch (e) {
     console.error(e);
     goToStudyChoosing();

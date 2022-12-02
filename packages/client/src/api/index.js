@@ -9,3 +9,4 @@ export * as labTypesApi from './labTypes.api.js';
 export * as usersApi from './users.api.js';
 export * as groupsApi from './groups.api.js';
 export * as timeBlocksApi from './timeBlocks.api.js';
+export * as genericTimeBlocksApi from './genericTimeBlocks.api.js';
