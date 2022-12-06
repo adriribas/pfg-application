@@ -113,7 +113,7 @@ watch(props, (newProps, oldProps) => {
   <div
     @click="$emit('press', { timeBlock, getColor, getFontSize })"
     :class="classes"
-    class="absolute border-8 shadow-3 text-center cursor-pointer non-selectable"
+    class="absolute border-8 shadow-3 text-center cursor-pointer non-selectable container"
     :style="positionStyles">
     <div class="column fit flex-center">
       <span :style="{ fontSize: pt(getFontSize('subject')) }">
@@ -182,6 +182,8 @@ watch(props, (newProps, oldProps) => {
 </template>
 
 <style lang="sass" scoped>
+.container:hover
+  filter: brightness(1.25)
 .week
   top: 0
   left: 0

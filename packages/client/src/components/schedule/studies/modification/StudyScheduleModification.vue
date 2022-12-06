@@ -57,7 +57,11 @@ const {
   getSubjectUnplaced,
   getGenericUnplaced,
   findPlaced,
-  findUnplaced
+  removeFromPlaced,
+  findUnplaced,
+  addToUnplaced,
+  removeFromUnplaced,
+  findTimeBlock
 } = useTimeBlockPlacing(placedTimeBlocks, unplacedTimeBlocks);
 const {
   dragging,
@@ -99,6 +103,76 @@ const onResize = async (weekDay, id, { start, duration }) => {
     timeBlock.start = currentStart;
     timeBlock.duration = currentDuration;
     refreshPlacedTimeBlocks();
+  }
+};
+
+const createGenericTimeBlock = async data => {
+  try {
+    const { data: timeBlock } = await genericTimeBlocksApi.create({
+      study: props.study.abv,
+      course: props.course,
+      semester: props.semester,
+      ...data
+    });
+    $q.notify({
+      type: 'success',
+      message: 'Bloc horari genèric creat correctament',
+      caption: `${data.label} - ${data.subLabel}`,
+      color: getStylingGetters('generic').getColor('successNotif')
+    });
+    addToUnplaced(
+      _.pick(timeBlock, ['id', 'label', 'labelAbv', 'subLabel', 'day', 'start', 'duration', 'week'])
+    );
+  } catch (e) {
+    console.error(e);
+    $q.notify({
+      type: 'error',
+      message: `Error en la creació del bloc horari genèric (${data.label} - ${data.subLabel})`,
+      caption: e.message
+    });
+  }
+};
+const updateGenericTimeBlock2 = async (id, data) => {
+  const { timeBlock } = data.start ? findPlaced(weekDay, id) : findUnplaced(id);
+  try {
+    await genericTimeBlocksApi.update(id, data);
+    $q.notify({
+      type: 'success',
+      message: 'Bloc horari genèric modificat correctament',
+      caption: `${data.label} - ${data.subLabel}`,
+      color: getStylingGetters('generic').getColor('successNotif')
+    });
+    timeBlock.label = data.label;
+    timeBlock.subLabel = data.subLabel;
+    timeBlock.duration = data.duration;
+  } catch (e) {
+    $q.notify({
+      type: 'error',
+      message: `Error en la modificació del bloc horari genèric (${timeBlock.label} - ${timeBlock.subLabel})`,
+      caption: e.message
+    });
+  }
+};
+const removeGenericTimeBlock = async id => {
+  const { timeBlock, index, weekDay } = findTimeBlock(id);
+  try {
+    await genericTimeBlocksApi.remove(id);
+    $q.notify({
+      type: 'success',
+      message: 'Bloc horari genèric esborrat correctament',
+      color: getStylingGetters('generic').getColor('successNotif')
+    });
+    if (weekDay === -1) {
+      removeFromUnplaced(index);
+    } else {
+      removeFromPlaced(weekDay, index);
+    }
+  } catch (e) {
+    $q.notify({
+      type: 'error',
+      message: `Error en l'eliminació del bloc horari genèric (${timeBlock.label} - ${timeBlock.subLabel})`,
+      caption: e.message
+    });
   }
 };
 
@@ -275,7 +349,10 @@ const openModification = ({ timeBlock, weekDay, getColor, getFontSize }) => {
               v-model:study-filter="toggleStudyFilter"
               :study="study"
               :get-placed-time-blocks="() => placedTimeBlocks"
-              :get-unplaced-time-blocks="() => unplacedTimeBlocks" />
+              :get-unplaced-time-blocks="() => unplacedTimeBlocks"
+              @create:generic-time-block="createGenericTimeBlock"
+              @update:generic-time-block="updateGenericTimeBlock2"
+              @remove:generic-time-block="removeGenericTimeBlock" />
           </q-expansion-item>
 
           <!-- <q-expansion-item

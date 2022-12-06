@@ -46,6 +46,22 @@ const getMaxPlaceableTime = () => {
   );
 };
 
+const getDurationMaxMinutes = () =>
+  timeToMinutes(getMaxPlaceableTime()) - timeToMinutes(getMinPlaceableTime());
+
+const isValidDurationMinutes = (durationMinutes, startTime) => {
+  const { scheduleIntervalStartTime, scheduleIntervalEndTime, scheduleDurationMin } = useConstants();
+
+  return _.inRange(
+    durationMinutes,
+    scheduleDurationMin,
+    timeToMinutes(scheduleIntervalEndTime) - timeToMinutes(startTime || scheduleIntervalStartTime)
+  );
+};
+
+const isValidDurationTime = (durationTime, startTime) =>
+  isValidDurationMinutes(timeToMinutes(durationTime), startTime);
+
 const clampMinutes = minutes =>
   _.clamp(minutes, timeToMinutes(getMinPlaceableTime()), timeToMinutes(getMaxPlaceableTime()));
 
@@ -156,6 +172,9 @@ export default () => ({
   getNearestIntervalTime,
   getMinPlaceableTime,
   getMaxPlaceableTime,
+  getDurationMaxMinutes,
+  isValidDurationMinutes,
+  isValidDurationTime,
   clampMinutes,
   collide,
   layoutTimeBlocks,

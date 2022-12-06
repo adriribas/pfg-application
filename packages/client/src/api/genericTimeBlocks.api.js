@@ -6,6 +6,8 @@ export const get = (id, params) => axios.get(`/generic-time-blocks/${id}`, { par
 export const list = ({ params, filterData, associations } = {}) =>
   axios.post('/generic-time-blocks/filter', formatFilter(filterData, associations), { params });
 
-export const create = data => axios.create('/generic-time-blocks', data);
+export const create = data => axios.post('/generic-time-blocks', data);
 
 export const update = (id, data) => axios.patch(`/generic-time-blocks/${id}`, data);
+
+export const remove = id => axios.delete(`/generic-time-blocks/${id}`);

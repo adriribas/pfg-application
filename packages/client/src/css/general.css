@@ -30,6 +30,9 @@
 .bordered-1 {
   border: 1px solid !important;
 }
+.dotted-border {
+  border: dashed 0.5px !important;
+}
 
 .cursor-grabbing {
   cursor: grabbing !important;

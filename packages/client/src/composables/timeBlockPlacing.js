@@ -53,6 +53,20 @@ export default (placedTimeBlocks, unplacedTimeBlocks) => {
   const addToUnplaced = timeBlock => unplacedTimeBlocks.value.push({ ...timeBlock, start: null, week: null });
   const removeFromUnplaced = index => unplacedTimeBlocks.value.splice(index, 1);
 
+  const findTimeBlock = id => {
+    const unplaced = findUnplaced(id);
+    if (unplaced.index !== -1) {
+      return unplaced;
+    }
+
+    for (let i = 0; i < 5; i++) {
+      const placed = findPlaced(i, id);
+      if (placed.index !== -1) {
+        return { ...placed, weekDay: i };
+      }
+    }
+  };
+
   const doPlace = (id, weekDay, start, week) => {
     const { index, timeBlock } = findUnplaced(id);
 
@@ -93,6 +107,7 @@ export default (placedTimeBlocks, unplacedTimeBlocks) => {
     findUnplaced,
     addToUnplaced,
     removeFromUnplaced,
+    findTimeBlock,
     doPlace,
     doUnplace,
     doMove

@@ -18,10 +18,6 @@ const { bg, pt } = useGeneral();
 <template>
   <q-expansion-item :disable="!timeBlocks.length" default-opened class="q-mb-md">
     <template #header>
-      <!-- <q-item-section avatar>
-        <q-avatar icon="auto_stories" color="transparent" text-color="" />
-      </q-item-section> -->
-
       <q-item-section>
         <q-item-label :lines="2">{{ label }}</q-item-label>
 
@@ -39,6 +35,7 @@ const { bg, pt } = useGeneral();
         row-key="id"
         hide-header
         hide-pagination
+        :pagination="{ rowsPerPage: 0 }"
         card-container-class="justify-center q-gutter-sm"
         class="col-11">
         <template #item="{ row }">
@@ -49,7 +46,7 @@ const { bg, pt } = useGeneral();
             @dragover.stop
             @click="$emit('press', { timeBlock: row, getColor: getColorGetter(row), getFontSize })"
             :class="[bg(getColorGetter(row)('bg'))]"
-            class="col-5 q-py-xs border-8 shadow-2 cursor-pointer text-center animated non-selectable"
+            class="col-5 q-py-xs border-8 shadow-2 cursor-pointer text-center animated non-selectable container"
             :style="{ fontSize: pt(getFontSize('unplacedGroup')) }">
             <span class="text-bold">{{ getTimeBlockLabel(row) }}</span>
 
@@ -65,4 +62,7 @@ const { bg, pt } = useGeneral();
   </q-expansion-item>
 </template>
 
-<style lang="sass" scoped></style>
+<style lang="sass" scoped>
+.container:hover
+  filter: brightness(1.25)
+</style>
