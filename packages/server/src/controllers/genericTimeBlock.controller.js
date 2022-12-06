@@ -7,6 +7,8 @@ import { GenericTimeBlock as Model, Study as StudyModel } from '#r/models';
 const { buildWhere, isValidUpdateData, updateFields, resError, isForeignKeyError } = reqProcessing;
 const debug = createDebugger('pfgs:genericTimeBlockController');
 
+const studyScope = ({ study: { abv: studyAbv } }) => Model.scope({ method: ['study', studyAbv] });
+
 export const get = async (req, res) => {
   const {
     params: { id },
@@ -109,4 +111,27 @@ export const update = async (req, res) => {
   res.json(genTimeBlock);
 };
 
-export const remove = async (req, res) => {};
+export const remove = async (req, res) => {
+  const {
+    user: currentUserData,
+    params: { id }
+  } = req;
+  if (!id) {
+    return resError(
+      res,
+      400,
+      'KEY_NOT_PROVIDED',
+      "No s'ha proporcionat l'identificador del bloc horari genèric."
+    );
+  }
+  debug('%o', currentUserData);
+
+  const genTimeBlock = await studyScope(currentUserData).findByPk(id);
+  if (!genTimeBlock) {
+    return resError(res, 404);
+  }
+
+  await genTimeBlock.destroy();
+
+  res.status(204).json();
+};

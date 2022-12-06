@@ -6,33 +6,43 @@ import { stringsUtil } from '#r/utils';
 
 const { abreviate } = stringsUtil;
 
-const GenericTimeBlock = sequelize.define('GenericTimeBlock', {
-  course: {
-    type: DataTypes.TINYINT,
-    allowNull: false
+const GenericTimeBlock = sequelize.define(
+  'GenericTimeBlock',
+  {
+    course: {
+      type: DataTypes.TINYINT,
+      allowNull: false
+    },
+    semester: {
+      type: DataTypes.TINYINT,
+      allowNull: false
+    },
+    label: DataTypes.STRING,
+    labelAbv: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        return abreviate(this.getDataValue('label').split(' '));
+      }
+    },
+    subLabel: DataTypes.STRING,
+    day: DataTypes.TINYINT,
+    start: {
+      type: DataTypes.TIME,
+      get() {
+        return this.getDataValue('start')?.substring(0, 5) || null;
+      }
+    },
+    duration: DataTypes.SMALLINT,
+    week: DataTypes.ENUM('A', 'B')
   },
-  semester: {
-    type: DataTypes.TINYINT,
-    allowNull: false
-  },
-  label: DataTypes.STRING,
-  labelAbv: {
-    type: DataTypes.VIRTUAL,
-    get() {
-      return abreviate(this.getDataValue('label').split(' '));
+  {
+    scopes: {
+      study(studyAbv) {
+        return { where: { study: studyAbv } };
+      }
     }
-  },
-  subLabel: DataTypes.STRING,
-  day: DataTypes.TINYINT,
-  start: {
-    type: DataTypes.TIME,
-    get() {
-      return this.getDataValue('start')?.substring(0, 5) || null;
-    }
-  },
-  duration: DataTypes.SMALLINT,
-  week: DataTypes.ENUM('A', 'B')
-});
+  }
+);
 
 GenericTimeBlock.associate = ({ Study }) => {
   GenericTimeBlock.belongsTo(Study, { foreignKey: 'study' });
