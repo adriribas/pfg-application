@@ -56,7 +56,7 @@ export default (placedTimeBlocks, unplacedTimeBlocks) => {
   const findTimeBlock = id => {
     const unplaced = findUnplaced(id);
     if (unplaced.index !== -1) {
-      return unplaced;
+      return { ...unplaced, weekDay: -1 };
     }
 
     for (let i = 0; i < 5; i++) {

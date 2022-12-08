@@ -4,22 +4,23 @@ import _ from 'lodash';
 
 import { useCalendar } from '@/util';
 import GenericTimeBlocksCreationDialog from '@/components/dialogs/GenericTimeBlocksCreationDialog.vue';
+import TimeBlocksCreationDialog from '@/components/dialogs/TimeBlocksCreationDialog.vue';
 
 const props = defineProps({
   assignationFilter: Boolean,
   studyFilter: Boolean,
   study: Object,
+  subjects: Array,
   getPlacedTimeBlocks: Function,
-  getUnplacedTimeBlocks: Function
+  getSubjectPlacedTimeBlocks: Function,
+  getUnplacedTimeBlocks: Function,
+  getSubjectUnplacedTimeBlocks: Function
 });
 const emit = defineEmits([
   'update:assignation-filter',
   'update:study-filter',
-  'create:time-block',
-  'remove:time-block',
-  'create:generic-time-block',
-  'update:generic-time-block',
-  'remove:generic-time-block'
+  'modify-time-blocks',
+  'modify-generic-time-blocks'
 ]);
 
 const $q = useQuasar();
@@ -35,16 +36,27 @@ const openGenericTimeBlocksCreation = () =>
         )
       }
     })
-    .onOk(({ create, modify, remove }) => {
-      create.forEach(timeBlock =>
-        emit('create:generic-time-block', _.pick(timeBlock, ['label', 'subLabel', 'duration']))
+    .onOk(({ create, update, remove }) => {
+      emit(
+        'modify-generic-time-blocks',
+        create.map(timeBlock => _.pick(timeBlock, ['label', 'subLabel', 'duration'])),
+        update.map(timeBlock => _.pick(timeBlock, ['id', 'label', 'subLabel', 'duration'])),
+        remove
       );
-      modify.forEach(timeBlock =>
-        emit('update:generic-time-block', timeBlock.id, _.pick(timeBlock, ['label', 'subLabel', 'duration']))
-      );
-      remove.forEach(id => emit('remove:generic-time-block', id));
     });
-const openTimeBlocksCreation = () => {};
+const openTimeBlocksCreation = () =>
+  $q
+    .dialog({
+      component: TimeBlocksCreationDialog,
+      componentProps: {
+        studyAbv: props.study.abv,
+        subjects: props.subjects.map(subject => _.pick(subject, ['code', 'name', 'groups', 'sharedBy'])),
+        timeBlocks: [..._.flatten(props.getPlacedTimeBlocks()), ...props.getUnplacedTimeBlocks()].filter(
+          timeBlock => !isGeneric(timeBlock)
+        )
+      }
+    })
+    .onOk(({ create, remove }) => emit('modify-time-blocks', create, remove));
 </script>
 
 <template>
@@ -72,14 +84,14 @@ const openTimeBlocksCreation = () => {};
     <q-item-label header>Gestió de Blocs Horaris</q-item-label>
 
     <MenuItemAction
-      label="Blocs genèrics"
-      caption="Crea, modifica o esborra blocs horaris genèrics"
-      @press="openGenericTimeBlocksCreation" />
-
-    <MenuItemAction
       label="Blocs lectius"
       caption="Crea o esborra blocs horaris pertanyents a un grup concret"
       @press="openTimeBlocksCreation" />
+
+    <MenuItemAction
+      label="Blocs genèrics"
+      caption="Crea, modifica o esborra blocs horaris genèrics"
+      @press="openGenericTimeBlocksCreation" />
   </q-list>
 </template>
 

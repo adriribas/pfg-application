@@ -45,54 +45,48 @@ const removeTimeBlock = index => {
 </script>
 
 <template>
-  <q-dialog
-    ref="dialogRef"
-    no-backdrop-dismiss
-    no-esc-dismiss
-    transition-show="rotate"
-    transition-hide="rotate"
-    @hide="onDialogHide">
+  <q-dialog ref="dialogRef" persistent transition-show="rotate" transition-hide="rotate" @hide="onDialogHide">
     <q-card dark class="bg-b7 dialog-size">
-      <q-card-section>
-        <div class="overflow-auto scroll-area">
-          <q-list v-auto-animate dark>
-            <q-item v-if="!creatingTimeBlock">
-              <q-item-section>
-                <q-btn
-                  icon="add"
-                  unelevated
-                  :text-color="getColor('headerIcons')"
-                  @click="creatingTimeBlock = true"
-                  class="border-8 dotted-border add-btn" />
-              </q-item-section>
-            </q-item>
+      <q-card-section class="q-mb-xs overflow-auto scroll-area">
+        <q-list v-auto-animate dark>
+          <q-item v-if="!creatingTimeBlock">
+            <q-item-section>
+              <q-btn
+                icon="add"
+                unelevated
+                :text-color="getColor('headerIcons')"
+                @click="creatingTimeBlock = true"
+                class="border-8 dotted-border add-btn" />
+            </q-item-section>
+          </q-item>
 
-            <GenericTimeBlockCreationItem
-              v-else
-              create-mode
-              @remove="creatingTimeBlock = false"
-              @save="addNewTimeBlock" />
+          <GenericTimeBlockCreationItem
+            v-else
+            create-mode
+            show-new-indicator
+            @remove="creatingTimeBlock = false"
+            @save="addNewTimeBlock" />
 
-            <GenericTimeBlockCreationItem
-              v-for="({ id, label, subLabel, day, start, duration, week }, index) in timeBlocksMod"
-              :key="id"
-              :modify-mode="modTimeBlockIndex === index"
-              :is-placed="!!start"
-              :label="label"
-              :sub-label="subLabel"
-              :duration="duration"
-              :day="day"
-              :start="start"
-              :week="week"
-              @remove="removeTimeBlock(index)"
-              @enable-modify="modTimeBlockIndex = index"
-              @save="modifyTimeBlock"
-              @cancel-mod="modTimeBlockIndex = -1" />
-          </q-list>
-        </div>
+          <GenericTimeBlockCreationItem
+            v-for="({ id, label, subLabel, day, start, duration, week, create }, index) in timeBlocksMod"
+            :key="id"
+            :modify-mode="modTimeBlockIndex === index"
+            :is-placed="!!start"
+            :label="label"
+            :sub-label="subLabel"
+            :duration="duration"
+            :day="day"
+            :start="start"
+            :week="week"
+            :show-new-indicator="create"
+            @remove="removeTimeBlock(index)"
+            @enable-modify="modTimeBlockIndex = index"
+            @save="modifyTimeBlock"
+            @cancel-mod="modTimeBlockIndex = -1" />
+        </q-list>
       </q-card-section>
 
-      <q-card-actions align="right" class="q-mb-sm q-mr-xs">
+      <q-card-actions align="right" class="q-mr-xs">
         <q-btn label="Cancel·lar" no-caps unelevated @click="onDialogCancel" />
 
         <q-btn
@@ -102,7 +96,7 @@ const removeTimeBlock = index => {
           @click="
             onDialogOK({
               create: timeBlocksMod.filter(({ create }) => create),
-              modify: timeBlocksMod.filter(({ create, mod }) => !create && mod),
+              update: timeBlocksMod.filter(({ create, mod }) => !create && mod),
               remove: removedTimeBlocks
             })
           "
@@ -114,13 +108,13 @@ const removeTimeBlock = index => {
 
 <style lang="sass" scoped>
 .dialog-size
-  min-width: 550px
+  width: 550px
   max-width: 98vw
   height: 760px
   max-height: 90vh
 .scroll-area
-  height: 668px
-  max-height: calc(90vh - 92px)
+  height: 700px
+  max-height: calc(90vh - 60px)
 .add-btn
   height: 62px
   margin-left: 2px

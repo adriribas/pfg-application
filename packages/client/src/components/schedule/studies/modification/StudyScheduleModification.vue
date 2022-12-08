@@ -48,7 +48,7 @@ const applyFilters = timeBlock => isGeneric(timeBlock) || filters.value.every(fi
 const filteredPlacedTimeBlocks = computed(() =>
   placedTimeBlocks.value.map(weekDayTimeBlocks => weekDayTimeBlocks.filter(applyFilters))
 );
-//const filteredUnplacedTimeBlocks = computed(() => unplacedTimeBlocks.value.filter(applyFilters));
+const filteredUnplacedTimeBlocks = computed(() => unplacedTimeBlocks.value.filter(applyFilters));
 
 const {
   refreshPlacedTimeBlocks,
@@ -106,73 +106,185 @@ const onResize = async (weekDay, id, { start, duration }) => {
   }
 };
 
-const createGenericTimeBlock = async data => {
-  try {
-    const { data: timeBlock } = await genericTimeBlocksApi.create({
-      study: props.study.abv,
-      course: props.course,
-      semester: props.semester,
-      ...data
-    });
-    $q.notify({
-      type: 'success',
-      message: 'Bloc horari genèric creat correctament',
-      caption: `${data.label} - ${data.subLabel}`,
-      color: getStylingGetters('generic').getColor('successNotif')
-    });
-    addToUnplaced(
-      _.pick(timeBlock, ['id', 'label', 'labelAbv', 'subLabel', 'day', 'start', 'duration', 'week'])
+const createTimeBlocks = ({ subjectCode, id: groupId, amount }) => {
+  const subject = props.subjects.find(({ code }) => code === subjectCode);
+  if (!subject) {
+    return;
+  }
+  const group = subject.groups.find(({ id }) => id === groupId);
+  if (!group) {
+    return;
+  }
+  const creationPromises = [];
+  for (let i = 0; i < amount; i++) {
+    creationPromises.push(
+      new Promise(async (res, rej) => {
+        try {
+          const { data: timeBlock } = await timeBlocksApi.create({ group: groupId });
+          $q.notify({
+            type: 'success',
+            message: 'Bloc horari creat correctament',
+            caption: `${subject.name} - Grup ${groupTypeLabels[group.type]} ${group.number}`,
+            color: getStylingGetters(group.type).getColor('successNotif')
+          });
+          res({ ...timeBlock, subject, group });
+        } catch (e) {
+          $q.notify({
+            type: 'error',
+            message: `Error en la creació del bloc horari (${subject.name} - Grup ${
+              groupTypeLabels[group.type]
+            })`,
+            caption: e.message
+          });
+          rej(e);
+        }
+      })
     );
-  } catch (e) {
-    console.error(e);
-    $q.notify({
-      type: 'error',
-      message: `Error en la creació del bloc horari genèric (${data.label} - ${data.subLabel})`,
-      caption: e.message
-    });
   }
+  return creationPromises;
 };
-const updateGenericTimeBlock2 = async (id, data) => {
-  const { timeBlock } = data.start ? findPlaced(weekDay, id) : findUnplaced(id);
-  try {
-    await genericTimeBlocksApi.update(id, data);
-    $q.notify({
-      type: 'success',
-      message: 'Bloc horari genèric modificat correctament',
-      caption: `${data.label} - ${data.subLabel}`,
-      color: getStylingGetters('generic').getColor('successNotif')
-    });
-    timeBlock.label = data.label;
-    timeBlock.subLabel = data.subLabel;
-    timeBlock.duration = data.duration;
-  } catch (e) {
-    $q.notify({
-      type: 'error',
-      message: `Error en la modificació del bloc horari genèric (${timeBlock.label} - ${timeBlock.subLabel})`,
-      caption: e.message
-    });
-  }
-};
-const removeGenericTimeBlock = async id => {
-  const { timeBlock, index, weekDay } = findTimeBlock(id);
-  try {
-    await genericTimeBlocksApi.remove(id);
-    $q.notify({
-      type: 'success',
-      message: 'Bloc horari genèric esborrat correctament',
-      color: getStylingGetters('generic').getColor('successNotif')
-    });
-    if (weekDay === -1) {
-      removeFromUnplaced(index);
-    } else {
-      removeFromPlaced(weekDay, index);
+const removeTimeBlocks = timeBlockIds =>
+  timeBlockIds.map(async id => {
+    const { timeBlock } = findTimeBlock(id);
+    try {
+      await timeBlocksApi.remove(id);
+      $q.notify({
+        type: 'success',
+        message: 'Bloc horari esborrat correctament',
+        caption: `${timeBlock.subject.name} - Grup ${groupTypeLabels[timeBlock.group.type]} ${
+          timeBlock.group.number
+        }`,
+        color: getStylingGetters(timeBlock.group.type).getColor('successNotif')
+      });
+      return id;
+    } catch (e) {
+      $q.notify({
+        type: 'error',
+        message: `Error en l'eliminació del bloc horari (${timeBlock.subject.name} - Grup ${
+          groupTypeLabels[timeBlock.group.type]
+        })`,
+        caption: e.message
+      });
     }
-  } catch (e) {
-    $q.notify({
-      type: 'error',
-      message: `Error en l'eliminació del bloc horari genèric (${timeBlock.label} - ${timeBlock.subLabel})`,
-      caption: e.message
-    });
+  });
+const modifyTimeBlocksSync = async (toCreate, toRemove) => {
+  const createdTimeBlocks = toCreate.map(createTimeBlocks);
+  const removedTimeBlocks = removeTimeBlocks(toRemove);
+
+  for (const newGroupTimeBlocks of createdTimeBlocks) {
+    for (const promise of newGroupTimeBlocks) {
+      try {
+        addToUnplaced(await promise);
+      } catch ({}) {}
+    }
+  }
+  for (const promise of removedTimeBlocks) {
+    try {
+      const { index, weekDay } = findTimeBlock(await promise);
+      if (weekDay === -1) {
+        removeFromUnplaced(index);
+      } else {
+        removeFromPlaced(weekDay, index);
+      }
+    } catch ({}) {}
+  }
+};
+
+const createGenericTimeBlocks = toCreateTimeBlocksData =>
+  toCreateTimeBlocksData.map(async data => {
+    try {
+      const { data: timeBlock } = await genericTimeBlocksApi.create({
+        study: props.study.abv,
+        course: props.course,
+        semester: props.semester,
+        ...data
+      });
+      $q.notify({
+        type: 'success',
+        message: 'Bloc horari genèric creat correctament',
+        caption: `${data.label} - ${data.subLabel}`,
+        color: getStylingGetters('generic').getColor('successNotif')
+      });
+      return timeBlock;
+    } catch (e) {
+      console.error(e);
+      $q.notify({
+        type: 'error',
+        message: `Error en la creació del bloc horari genèric (${data.label} - ${data.subLabel})`,
+        caption: e.message
+      });
+    }
+  });
+
+const updateGenericTimeBlocks = toUpdateTimeBlocksData =>
+  toUpdateTimeBlocksData.map(async ({ id, label, subLabel, start, duration }) => {
+    const { timeBlock } = start ? findPlaced(weekDay, id) : findUnplaced(id);
+    try {
+      await genericTimeBlocksApi.update(id, { label, subLabel, duration });
+      $q.notify({
+        type: 'success',
+        message: 'Bloc horari genèric modificat correctament',
+        caption: `${label} - ${subLabel}`,
+        color: getStylingGetters('generic').getColor('successNotif')
+      });
+      return { timeBlock, label, subLabel, duration };
+    } catch (e) {
+      $q.notify({
+        type: 'error',
+        message: `Error en la modificació del bloc horari genèric (${timeBlock.label} - ${timeBlock.subLabel})`,
+        caption: e.message
+      });
+    }
+  });
+const removeGenericTimeBlocks = timeBlockIds =>
+  timeBlockIds.map(async id => {
+    const { timeBlock } = findTimeBlock(id);
+    try {
+      await genericTimeBlocksApi.remove(id);
+      $q.notify({
+        type: 'success',
+        message: 'Bloc horari genèric esborrat correctament',
+        caption: `${timeBlock.label} - ${timeBlock.subLabel}`,
+        color: getStylingGetters('generic').getColor('successNotif')
+      });
+      return id;
+    } catch (e) {
+      $q.notify({
+        type: 'error',
+        message: `Error en l'eliminació del bloc horari genèric (${timeBlock.label} - ${timeBlock.subLabel})`,
+        caption: e.message
+      });
+    }
+  });
+const modifyGenericTimeBlocksSync = async (toCreate, toUpdate, toRemove) => {
+  const createdTimeBlocks = createGenericTimeBlocks(toCreate);
+  const updatedTimeBlocks = updateGenericTimeBlocks(toUpdate);
+  const removedTimeBlocks = removeGenericTimeBlocks(toRemove);
+
+  for (const promise of createdTimeBlocks) {
+    try {
+      addToUnplaced(
+        _.pick(await promise, ['id', 'label', 'labelAbv', 'subLabel', 'day', 'start', 'duration', 'week'])
+      );
+    } catch ({}) {}
+  }
+  for (const promise of updatedTimeBlocks) {
+    try {
+      const { timeBlock, label, subLabel, duration } = await promise;
+      timeBlock.label = label;
+      timeBlock.subLabel = subLabel;
+      timeBlock.duration = duration;
+    } catch ({}) {}
+  }
+  for (const promise of removedTimeBlocks) {
+    try {
+      const { index, weekDay } = findTimeBlock(await promise);
+      if (weekDay === -1) {
+        removeFromUnplaced(index);
+      } else {
+        removeFromPlaced(weekDay, index);
+      }
+    } catch ({}) {}
   }
 };
 
@@ -347,12 +459,14 @@ const openModification = ({ timeBlock, weekDay, getColor, getFontSize }) => {
             <SettingsSection
               v-model:assignation-filter="toggleAssignationFilter"
               v-model:study-filter="toggleStudyFilter"
+              :subjects="subjects"
               :study="study"
               :get-placed-time-blocks="() => placedTimeBlocks"
+              :get-subject-placed-time-blocks="getSubjectPlaced"
               :get-unplaced-time-blocks="() => unplacedTimeBlocks"
-              @create:generic-time-block="createGenericTimeBlock"
-              @update:generic-time-block="updateGenericTimeBlock2"
-              @remove:generic-time-block="removeGenericTimeBlock" />
+              :get-subject-unplaced-time-blocks="getSubjectUnplaced"
+              @modify-time-blocks="modifyTimeBlocksSync"
+              @modify-generic-time-blocks="modifyGenericTimeBlocksSync" />
           </q-expansion-item>
 
           <!-- <q-expansion-item

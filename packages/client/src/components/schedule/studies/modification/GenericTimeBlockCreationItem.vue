@@ -22,9 +22,10 @@ const props = defineProps({
   },
   day: Number,
   start: String,
-  week: String
+  week: String,
+  showNewIndicator: Boolean
 });
-const emit = defineEmits(['remove', 'enable-modify', 'save', 'cancel-mod']);
+defineEmits(['remove', 'enable-modify', 'save', 'cancel-mod']);
 
 const { scheduleDurationMin } = useConstants();
 const {
@@ -65,6 +66,13 @@ watch(
 <template>
   <q-item>
     <div class="row col q-pa-sm border-8 shadow-5 bg-b5">
+      <q-badge
+        v-if="showNewIndicator"
+        label="Nou!"
+        floating
+        :color="getColor('newIndicator')"
+        class="q-mt-sm q-mr-md" />
+
       <q-item-section v-if="createMode || !modifyMode" side>
         <q-btn icon="close" size="sm" round unelevated @click="$emit('remove')" />
       </q-item-section>
@@ -121,17 +129,18 @@ watch(
 
           <q-separator vertical :color="getColor('headerIcons')" class="q-ml-md q-mr-md" />
 
+          <q-icon name="today" size="xs" :color="getColor('headerIcons')" />
           <template v-if="isPlaced">
-            <q-icon name="today" size="xs" :color="getColor('headerIcons')" />
             <span class="q-ml-xs">Dll</span>
             <span v-if="week">, {{ week }}</span>
 
-            <q-icon name="schedule" size="xs" :color="getColor('headerIcons')" class="q-ml-sm" />
+            <q-icon name="schedule" size="xs" :color="getColor('headerIcons')" class="q-ml-md" />
             <span class="q-ml-xs">{{ start }}h</span>
           </template>
+          <span v-else class="q-ml-xs">No col·locat</span>
 
           <TimeInput
-            v-else-if="isEditable"
+            v-if="isEditable && !isPlaced"
             v-model="durationTimeMod"
             label="Duració"
             :min-value="minutesToTime(scheduleDurationMin)"
@@ -142,11 +151,9 @@ watch(
             dense
             :input-color="getColor('headerIcons')"
             :input-text-color="getColor('data')"
-            class="duration-input" />
+            class="q-ml-md duration-input" />
 
-          <span v-else class="q-ml-xs">No col·locat</span>
-
-          <span v-if="isPlaced" class="q-ml-sm">
+          <span v-else class="q-ml-md">
             <q-icon name="hourglass_top" size="xs" :color="getColor('headerIcons')" />
             <span class="q-ml-xs">{{ minutesToTime(duration) }}h</span>
           </span>

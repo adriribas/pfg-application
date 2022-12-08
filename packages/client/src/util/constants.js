@@ -15,6 +15,18 @@ const groupTypeLabels = {
   small: 'Petit',
   generic: 'Genèric'
 };
+const pluralizedGroupTypeLabels = {
+  big: 'Grans',
+  medium: 'Mitjans',
+  small: 'Petits',
+  generic: 'Genèrics'
+};
+const timeBlockDefaults = {
+  big: { duration: 120 },
+  medium: { duration: 60 },
+  small: { duration: 120 },
+  generic: { duration: 120 }
+};
 const scheduleIntervalStart = 7.5;
 const scheduleIntervalStartTime = '07:30';
 const scheduleIntervalEnd = 20.5;
@@ -27,7 +39,8 @@ const timeBlockColorNames = {
   big: 'orange',
   medium: 'green',
   small: 'indigo',
-  generic: 'red'
+  generic: 'red',
+  default: 'teal'
 };
 const timeBlockColorTones = {
   bg: 7,
@@ -45,7 +58,9 @@ const timeBlockColorTones = {
   week: 11,
   data: 1,
   captions: 2,
+  newIndicator: 7,
   okBtn: 8,
+  warning: 13,
   successNotif: 9
 };
 const timeBlockFontSizes = {
@@ -69,6 +84,8 @@ export default () => ({
   weekDays,
   workingDaysShort,
   groupTypeLabels,
+  pluralizedGroupTypeLabels,
+  timeBlockDefaults,
   scheduleIntervalStart,
   scheduleIntervalStartTime,
   scheduleIntervalEnd,

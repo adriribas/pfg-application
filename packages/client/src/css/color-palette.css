@@ -182,6 +182,12 @@
 .bg-b9 {
   background: #101010 !important;
 }
+.text-b10 {
+  color: #080808 !important;
+}
+.bg-b10 {
+  background: #080808 !important;
+}
 
 /* Gray scale */
 .text-g1 {
