@@ -17,23 +17,38 @@ const GenericTimeBlock = sequelize.define(
       type: DataTypes.TINYINT,
       allowNull: false
     },
-    label: DataTypes.STRING,
+    label: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
     labelAbv: {
       type: DataTypes.VIRTUAL,
       get() {
         return abreviate(this.getDataValue('label').split(' '));
       }
     },
-    subLabel: DataTypes.STRING,
-    day: DataTypes.TINYINT,
+    subLabel: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    day: {
+      type: DataTypes.TINYINT,
+      defaultValue: null
+    },
     start: {
       type: DataTypes.TIME,
       get() {
         return this.getDataValue('start')?.substring(0, 5) || null;
       }
     },
-    duration: DataTypes.SMALLINT,
-    week: DataTypes.ENUM('A', 'B')
+    duration: {
+      type: DataTypes.SMALLINT,
+      allowNull: false
+    },
+    week: {
+      type: DataTypes.ENUM('A', 'B'),
+      defaultValue: null
+    }
   },
   {
     scopes: {

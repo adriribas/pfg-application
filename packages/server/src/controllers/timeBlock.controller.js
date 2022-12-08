@@ -1,10 +1,11 @@
 import _ from 'lodash';
+import config from 'config';
 import createDebugger from 'debug';
 
 import { reqProcessing } from '#r/utils';
-import { TimeBlock as Model } from '#r/models';
+import { TimeBlock as Model, Group as GroupModel } from '#r/models';
 
-const { buildWhere, isValidUpdateData, updateFields, resError } = reqProcessing;
+const { buildWhere, isValidUpdateData, updateFields, resError, isForeignKeyError } = reqProcessing;
 const debug = createDebugger('pfgs:timeBlockController');
 
 export const get = async (req, res) => {
@@ -33,7 +34,29 @@ export const filter = async (req, res) => {
   res.json(await Model.findAll({ where: buildWhere(filterData), attributes: fields }));
 };
 
-export const create = async (req, res) => {};
+export const create = async (req, res) => {
+  const {
+    body: { group: groupId }
+  } = req;
+
+  if (!groupId) {
+    return resError(res, 400, 'INVALID_DATA', "No s'ha proporcionat l'identificador del grup.");
+  }
+
+  try {
+    await Model.validate({ group: groupId });
+  } catch (e) {
+    return resError(res, 400, 'INVALID_DATA', e.message);
+  }
+
+  const group = await GroupModel.findByPk(groupId);
+  if (!group) {
+    return resError(res, 400, 'INVALID_RELATION_KEYS', 'Algun dels identificadors de relacions no és vàlid.');
+  }
+
+  const timeBlock = await group.createTimeBlock({ ...config.get(`defaultData.timeBlock.${group.type}`) });
+  res.status(201).json(_.pick(timeBlock, ['id', 'day', 'start', 'duration', 'week']));
+};
 
 export const update = async (req, res) => {
   const {
@@ -59,4 +82,20 @@ export const update = async (req, res) => {
   res.json(timeBlock);
 };
 
-export const remove = async (req, res) => {};
+export const remove = async (req, res) => {
+  const {
+    params: { id }
+  } = req;
+  if (!id) {
+    return resError(res, 400, 'KEY_NOT_PROVIDED', "No s'ha proporcionat l'identificador del bloc horari.");
+  }
+
+  const timeBlock = await Model.findByPk(id);
+  if (!timeBlock) {
+    return resError(res, 404);
+  }
+
+  await timeBlock.destroy();
+
+  res.status(204).json();
+};

@@ -63,7 +63,10 @@ export const create = async (req, res) => {
   }
 
   try {
-    res.status(201).json(await Model.create(data));
+    const genTimeBlock = await Model.create(data);
+    res
+      .status(201)
+      .json(_.pick(genTimeBlock, ['id', 'label', 'subLabel', 'day', 'start', 'duration', 'week']));
   } catch (e) {
     if (isForeignKeyError(e)) {
       return resError(
@@ -124,7 +127,6 @@ export const remove = async (req, res) => {
       "No s'ha proporcionat l'identificador del bloc horari genèric."
     );
   }
-  debug('%o', currentUserData);
 
   const genTimeBlock = await studyScope(currentUserData).findByPk(id);
   if (!genTimeBlock) {
