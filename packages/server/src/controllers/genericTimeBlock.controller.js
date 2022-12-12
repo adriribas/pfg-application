@@ -63,10 +63,7 @@ export const create = async (req, res) => {
   }
 
   try {
-    const genTimeBlock = await Model.create(data);
-    res
-      .status(201)
-      .json(_.pick(genTimeBlock, ['id', 'label', 'subLabel', 'day', 'start', 'duration', 'week']));
+    res.status(201).json(await Model.create(data));
   } catch (e) {
     if (isForeignKeyError(e)) {
       return resError(
