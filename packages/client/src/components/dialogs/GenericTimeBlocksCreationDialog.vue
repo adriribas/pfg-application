@@ -64,7 +64,7 @@ const removeTimeBlock = index => {
             v-else
             create-mode
             show-new-indicator
-            @remove="creatingTimeBlock = false"
+            @cancel-create="creatingTimeBlock = false"
             @save="addNewTimeBlock" />
 
           <GenericTimeBlockCreationItem

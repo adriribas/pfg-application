@@ -25,7 +25,7 @@ const props = defineProps({
   week: String,
   showNewIndicator: Boolean
 });
-defineEmits(['remove', 'enable-modify', 'save', 'cancel-mod']);
+defineEmits(['remove', 'enable-modify', 'save', 'cancel-mod', 'cancel-create']);
 
 const { scheduleDurationMin } = useConstants();
 const {
@@ -73,7 +73,7 @@ watch(
         :color="getColor('newIndicator')"
         class="q-mt-sm q-mr-md" />
 
-      <q-item-section v-if="createMode || !modifyMode" side>
+      <q-item-section v-if="!isEditable" side>
         <q-btn icon="close" size="sm" round unelevated @click="$emit('remove')" />
       </q-item-section>
 
@@ -173,7 +173,17 @@ watch(
           class="q-mb-sm" />
 
         <q-btn
-          v-if="!isEditable"
+          v-else-if="createMode"
+          icon="close"
+          dense
+          round
+          unelevated
+          :text-color="getColor('headerIcons')"
+          @click="$emit('cancel-create')"
+          class="q-mb-sm" />
+
+        <q-btn
+          v-else
           icon="edit"
           no-caps
           dense
@@ -183,7 +193,7 @@ watch(
           @click="$emit('enable-modify')" />
 
         <q-btn
-          v-else
+          v-if="isEditable"
           :disable="!isValidData"
           icon="save"
           no-caps

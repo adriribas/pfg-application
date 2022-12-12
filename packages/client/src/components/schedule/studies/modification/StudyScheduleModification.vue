@@ -188,6 +188,8 @@ const modifyTimeBlocksSync = async (toCreate, toRemove) => {
       }
     } catch ({}) {}
   }
+
+  refreshPlacedTimeBlocks();
 };
 
 const createGenericTimeBlocks = toCreateTimeBlocksData =>
@@ -220,14 +222,14 @@ const updateGenericTimeBlocks = toUpdateTimeBlocksData =>
   toUpdateTimeBlocksData.map(async ({ id, label, subLabel, start, duration }) => {
     const { timeBlock } = start ? findPlaced(weekDay, id) : findUnplaced(id);
     try {
-      await genericTimeBlocksApi.update(id, { label, subLabel, duration });
+      const { data: updatedTimeBlock } = await genericTimeBlocksApi.update(id, { label, subLabel, duration });
       $q.notify({
         type: 'success',
         message: 'Bloc horari genèric modificat correctament',
         caption: `${label} - ${subLabel}`,
         color: getStylingGetters('generic').getColor('successNotif')
       });
-      return { timeBlock, label, subLabel, duration };
+      return { id, ...updatedTimeBlock };
     } catch (e) {
       $q.notify({
         type: 'error',
@@ -270,8 +272,10 @@ const modifyGenericTimeBlocksSync = async (toCreate, toUpdate, toRemove) => {
   }
   for (const promise of updatedTimeBlocks) {
     try {
-      const { timeBlock, label, subLabel, duration } = await promise;
+      const { id, label, labelAbv, subLabel, duration } = await promise;
+      const { timeBlock } = findTimeBlock(id);
       timeBlock.label = label;
+      timeBlock.labelAbv = labelAbv;
       timeBlock.subLabel = subLabel;
       timeBlock.duration = duration;
     } catch ({}) {}
@@ -286,6 +290,8 @@ const modifyGenericTimeBlocksSync = async (toCreate, toUpdate, toRemove) => {
       }
     } catch ({}) {}
   }
+
+  refreshPlacedTimeBlocks();
 };
 
 const updateTimeBlock = async (id, weekDay, { sharedBy: modSharedBy, ...modTimeData }, timeData) => {
