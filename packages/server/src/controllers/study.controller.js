@@ -140,33 +140,24 @@ export const create = async (req, res) => {
           }
           await subject.setAreas(areaInstances, { transaction });
         }
+
         if (labTypes instanceof Array) {
-          const labTypeInstances = [];
-          for (const labTypeData of labTypes) {
-            const [labType] = await createOrUpdate(
-              LabTypeModel,
-              { name: labTypeData.name },
-              labTypeData,
-              transaction
-            );
-            if (!labTypeInstances.find(({ name }) => name === labType.name)) {
-              labTypeInstances.push(labType);
-            }
-          }
+          const labTypeInstances = !labTypes.length
+            ? []
+            : await LabTypeModel.findAll({ where: buildWhere({ name: labTypes }) }, { transaction });
           await subject.setLabTypes(labTypeInstances, { transaction });
         }
 
         await study.addSubject(subject, { through: { course: rawSubjectData.course }, transaction });
       }
 
-      await school.addDepartments(
-        await Promise.all(
-          departmentInstances.filter(
-            async department => !(await school.hasDepartment(department, { transaction }))
-          )
-        ),
-        { transaction }
-      );
+      const toAddDepartments = [];
+      for (const department of departmentInstances) {
+        if (!(await school.hasDepartment(department, { transaction }))) {
+          toAddDepartments.push(department);
+        }
+      }
+      await school.addDepartments(toAddDepartments, { transaction });
 
       return study;
     });

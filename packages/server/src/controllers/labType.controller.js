@@ -4,7 +4,7 @@ import createDebugger from 'debug';
 import { LabType as Model } from '#r/models';
 import { reqProcessing } from '#r/utils';
 
-const { buildWhere, updateFields, isValidUpdateData, resError } = reqProcessing;
+const { buildWhere, updateFields, isValidUpdateData, resError, isDuplicationError } = reqProcessing;
 const debug = createDebugger('pfgs:labTypeController');
 
 export const get = async (req, res) => {
@@ -41,6 +41,25 @@ export const filter = async (req, res) => {
       attributes: fields
     })
   );
+};
+
+export const create = async (req, res) => {
+  const { body: data } = req;
+
+  try {
+    await Model.validate(data);
+  } catch (e) {
+    return resError(res, 400, 'INVALID_DATA', e.message);
+  }
+
+  try {
+    res.status(201).json(await Model.create(data));
+  } catch (e) {
+    if (isDuplicationError(e)) {
+      return resError(res, 400, 'DUPLICATION', 'Ja existeix un tipus de laboratori amb aquest nom.');
+    }
+    throw e;
+  }
 };
 
 export const update = async (req, res) => {

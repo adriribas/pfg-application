@@ -54,8 +54,7 @@ export const create = async (req, res) => {
     return resError(res, 400, 'INVALID_RELATION_KEYS', 'Algun dels identificadors de relacions no és vàlid.');
   }
 
-  const timeBlock = await group.createTimeBlock({ ...config.get(`defaultData.timeBlock.${group.type}`) });
-  res.status(201).json(_.pick(timeBlock, ['id', 'day', 'start', 'duration', 'week']));
+  res.status(201).json(await group.createTimeBlock({ ...config.get(`defaultData.timeBlock.${group.type}`) }));
 };
 
 export const update = async (req, res) => {

@@ -28,7 +28,7 @@ router
   .use('/schools', auth, generateScopes, schoolsRouter)
   .use('/departments', auth, generateScopes, deparmentsRouter)
   .use('/areas', auth, generateScopes, areasRouter)
-  .use('/labTypes', auth, generateScopes, labTypesRouter)
+  .use('/lab-types', auth, generateScopes, labTypesRouter)
   .use('/groups', auth, generateScopes, groupRouter)
   .use('/time-blocks', auth, generateScopes, timeBlocksRouter)
   .use('/generic-time-blocks', auth, generateScopes, genericTimeBlocksRouter);
