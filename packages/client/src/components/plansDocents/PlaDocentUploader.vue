@@ -1,11 +1,13 @@
 <script setup>
 import { ref, watch } from 'vue';
+import { useQuasar } from 'quasar';
 
 import { usePlaDocent } from '@/composables';
 import { useSchoolsStore } from '@/stores';
 
 const emit = defineEmits(['startUpload', 'uploaded']);
 
+const $q = useQuasar();
 const schoolsStore = useSchoolsStore();
 
 const file = ref(null);
@@ -19,7 +21,13 @@ watch(uploading, newUploading => {
   }
 
   fileToUpload.value = null;
-  if (!error.value) {
+  if (error.value) {
+    $q.notify({
+      type: 'error',
+      message: 'Error en la pujada del pla docent',
+      caption: error.value
+    });
+  } else {
     emit('uploaded');
   }
 });
@@ -33,10 +41,6 @@ watch(uploading, newUploading => {
       <div class="text-h6 text-m5 q-py-sm q-px-md bg-b6 course-years">
         {{ schoolsStore.nextStartYear }} - {{ schoolsStore.nextEndYear }}
       </div>
-    </div>
-
-    <div v-if="error" class="text-center text-negative">
-      S'ha produït un error mentre es pujava el pla docent.
     </div>
 
     <q-file
@@ -80,7 +84,8 @@ watch(uploading, newUploading => {
 
 <style lang="sass" scoped>
 .container
-  max-width: 700px
+  width: 615px
+  max-width: 90vw
   border-radius: 8px
 .course-years
   border-radius: 10px

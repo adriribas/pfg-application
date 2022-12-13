@@ -62,7 +62,7 @@ const removeArea = areaAbv => (areas.value = areas.value.filter(({ abv }) => abv
     transition-show="rotate"
     transition-hide="rotate"
     @hide="onDialogHide">
-    <q-card dark class="dialog-size">
+    <q-card dark class="bg-b7 dialog-size">
       <q-card-section>
         <q-card-section>
           <span class="text-h6 q-mr-md">{{ subject.name }}</span>
@@ -134,6 +134,17 @@ const removeArea = areaAbv => (areas.value = areas.value.filter(({ abv }) => abv
             filled
             dark
             color="m6">
+            <template #option="{ itemProps, opt: { name } }">
+              <q-item :="itemProps">
+                <q-item-section avatar>
+                  <q-avatar icon="science" />
+                </q-item-section>
+
+                <q-item-section>
+                  <q-item-label>{{ name }}</q-item-label>
+                </q-item-section>
+              </q-item>
+            </template>
           </q-select>
         </DataTableModificationDialogSection>
       </q-card-section>
@@ -166,13 +177,6 @@ const removeArea = areaAbv => (areas.value = areas.value.filter(({ abv }) => abv
 .dialog-size
   width: 700px
   max-width: 90vw
-.dotted-border
-  border: dashed 0.5px
 .save-btn
   width: 80px
-</style>
-
-<style lang="sass">
-.group-input input
-  text-align: center
 </style>
