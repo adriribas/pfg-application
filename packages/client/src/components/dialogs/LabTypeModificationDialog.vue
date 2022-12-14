@@ -32,13 +32,13 @@ const capacity = ref(props.labType.capacity);
 
         <DataTableModificationDialogSection title="Quantitat d'aules">
           <div class="row justify-around">
-            <StepInput v-model="amount" title="" :min="0" :max="99" />
+            <StepInput v-model="amount" :min="0" :max="999" />
           </div>
         </DataTableModificationDialogSection>
 
         <DataTableModificationDialogSection title="Capacitat d'alumnes">
           <div class="row justify-around">
-            <StepInput v-model="capacity" title="" :min="0" :max="99" />
+            <StepInput v-model="capacity" :min="0" :max="999" />
           </div>
         </DataTableModificationDialogSection>
       </q-card-section>

@@ -3,16 +3,16 @@ import _ from 'lodash';
 
 const props = defineProps({
   modelValue: Number,
-  title: String,
+  title: {
+    type: String,
+    default: ''
+  },
   min: Number,
   max: Number
 });
-const emit = defineEmits(['update:model-value']);
+defineEmits(['update:model-value']);
 
 const clamp = value => _.clamp(value, props.min, props.max);
-const increment = () => emit('update:model-value', clamp(props.modelValue + 1));
-
-const decrement = () => emit('update:model-value', clamp(props.modelValue - 1));
 </script>
 
 <template>
@@ -20,7 +20,7 @@ const decrement = () => emit('update:model-value', clamp(props.modelValue - 1));
     <span class="col q-mb-xs">{{ title }}</span>
     <q-input
       :model-value="modelValue"
-      :mask="'#'.repeat(String(max).match(/\d/g).length)"
+      :mask="'#'.repeat(max.toString().length)"
       standout="bg-g9"
       dense
       dark
@@ -29,11 +29,21 @@ const decrement = () => emit('update:model-value', clamp(props.modelValue - 1));
       @focus="input => input?.target?.select()"
       @blur="!modelValue && $emit('update:model-value', 0)">
       <template #prepend>
-        <q-btn icon="remove" size="sm" round unelevated @click="decrement" />
+        <q-btn
+          icon="remove"
+          size="sm"
+          round
+          unelevated
+          @click="$emit('update:model-value', clamp(modelValue - 1))" />
       </template>
 
       <template #append>
-        <q-btn icon="add" size="sm" round unelevated @click="increment" />
+        <q-btn
+          icon="add"
+          size="sm"
+          round
+          unelevated
+          @click="$emit('update:model-value', clamp(modelValue + 1))" />
       </template>
     </q-input>
   </div>
