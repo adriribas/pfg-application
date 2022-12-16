@@ -17,30 +17,55 @@ export const useOverlappingStore = defineStore('overlapping', {
   }),
   getters: {
     labTypeNames: state => state.labTypes.map(({ name }) => name),
-    overlappingStripes: state => day => {
-      const { getDuration } = useCalendar();
-      const overlappingStripes = [];
+    labType: state => labTypeName => state.labTypes.find(({ name }) => name === labTypeName),
+    labTypeOccupationStripes: state => (week, day, labTypeName) => {
+      const labTypeOccupation = state.labTypesOccupation[day].find(({ name }) => name === labTypeName);
 
-      if (state.selDay === -1 || day === state.selDay) {
-        state.selLabTypes.forEach(labTypeName => {
-          const labTypeOccupation = state.labTypesOccupation[day].find(({ name }) => name === labTypeName);
-          if (!labTypeOccupation) {
-            return;
-          }
-          const { amount } = state.labTypes.find(({ name }) => name === labTypeName);
-
-          labTypeOccupation.stripes[state.selWeek].forEach(({ start, end, timeBlocks }) => {
-            if (timeBlocks.length >= amount) {
-              overlappingStripes.push({ start, duration: getDuration(start, end) });
-            }
-          });
-        });
-      }
-
-      return overlappingStripes;
+      return labTypeOccupation?.stripes[week] || [];
     },
-    overlapsWith: state => (week, day, start, end, labTypes) => {
-      // Retorna array d'estudis ({abv,name,course}) amb els que es solapa.
+    overlappingStripes(state) {
+      const { getDuration } = useCalendar();
+
+      return day => {
+        const overlappingStripes = [];
+
+        if (state.selDay === -1 || day === state.selDay) {
+          state.selLabTypes.forEach(labTypeName => {
+            const { amount } = this.labType(labTypeName);
+
+            overlappingStripes.push(
+              ...this.labTypeOccupationStripes(state.selWeek, day, labTypeName).reduce(
+                (accum, { start, end, timeBlocks }) =>
+                  timeBlocks.length < amount
+                    ? accum
+                    : [...accum, { start, duration: getDuration(start, end) }],
+                []
+              )
+            );
+          });
+        }
+
+        return overlappingStripes;
+      };
+    },
+    overlapsWith() {
+      const { timeElemsCollide } = useCalendar();
+
+      return (week, day, start, end, labTypes) => {
+        const affectingStudies = [];
+
+        labTypes.forEach(({ name: labTypeName }) => {
+          const { amount } = this.labType(labTypeName);
+
+          this.labTypeOccupationStripes(week, day, labTypeName)
+            .filter(stripe => timeElemsCollide(stripe, { start, end }) && stripe.timeBlocks.length > amount)
+            .forEach(({ timeBlocks }) =>
+              timeBlocks.forEach(({ studies }) => affectingStudies.push(...studies))
+            );
+        });
+
+        return _.uniqBy(affectingStudies, 'abv');
+      };
     }
   },
   actions: {
@@ -82,17 +107,17 @@ export const useOverlappingStore = defineStore('overlapping', {
         filterData: { semester: this.semester },
         associations: { labType: this.labTypeNames }
       });
-      debug('subjects', subjects);
+
       return subjects;
     },
     getDayByDayTimeBlocks: subjects => {
       const { getEndTime } = useCalendar();
       const dayByDayTimeBlocks = [[], [], [], [], []];
 
-      subjects.forEach(({ LabTypes: labTypes, Groups: groups, Studies: subjectStudies }) => {
+      subjects.forEach(({ LabTypes: labTypes, Groups: groups, Studies: subjectStudies }) =>
         groups
           .filter(({ type }) => type === 'small')
-          .forEach(({ TimeBlocks: timeBlocks, Studies: groupStudies }) => {
+          .forEach(({ TimeBlocks: timeBlocks, Studies: groupStudies }) =>
             timeBlocks.forEach(({ day, start, duration, week }) => {
               if (day || day === 0) {
                 dayByDayTimeBlocks[day].push({
@@ -100,19 +125,26 @@ export const useOverlappingStore = defineStore('overlapping', {
                   end: getEndTime(start, duration),
                   week,
                   labTypes: labTypes.map(({ name }) => name),
-                  studies: groupStudies.map(groupStudy => {
-                    const subjectStudy = subjectStudies.find(({ abv }) => abv === groupStudy.abv);
-                    return {
-                      abv: groupStudy.abv,
-                      name: groupStudy.name,
-                      course: !subjectStudy ? 0 : subjectStudy.StudySubject.course
-                    };
-                  })
+                  studies:
+                    subjectStudies.length === 1 || !groupStudies.length
+                      ? subjectStudies.map(({ abv, name, StudySubject: { course } }) => ({
+                          abv,
+                          name,
+                          course
+                        }))
+                      : groupStudies.map(({ abv, name }) => {
+                          const subjectStudy = subjectStudies.find(study => abv === study.abv);
+                          return {
+                            abv,
+                            name,
+                            course: !subjectStudy ? 0 : subjectStudy.StudySubject.course
+                          };
+                        })
                 });
               }
-            });
-          });
-      });
+            })
+          )
+      );
 
       return dayByDayTimeBlocks;
     },

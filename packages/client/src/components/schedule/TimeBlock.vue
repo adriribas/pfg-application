@@ -46,6 +46,15 @@ const calcTop = ref(props.top);
 const resizing = ref(false);
 
 const endTime = computed(() => getEndTime(props.timeBlock.start, props.timeBlock.duration));
+const labTypesOverlapping = computed(() =>
+  overlappingStore.overlapsWith(
+    props.timeBlock.week || 'general',
+    props.day,
+    props.timeBlock.start,
+    endTime.value,
+    props.timeBlock.subject.labTypes
+  )
+);
 const classes = computed(() => [bg(props.getColor('bg')), resizing.value && 'z2 resizing']);
 const positionStyles = computed(() => ({
   top: px(calcTop.value),
@@ -125,7 +134,7 @@ watch(
 
 <template>
   <div
-    @click="$emit('press', { timeBlock, getColor, getFontSize })"
+    @click="$emit('press', { timeBlock, labTypesOverlapping, getColor, getFontSize })"
     :class="classes"
     class="absolute border-8 shadow-3 text-center cursor-pointer non-selectable container"
     :style="positionStyles">
@@ -140,6 +149,16 @@ watch(
         :style="{ fontSize: pt(getFontSize('group')) }">
         {{ subLabel }}
       </span>
+
+      <!-- Overlapping icons: dashboard, science, person, room -->
+
+      <div class="row flex-center q-mt-sm">
+        <q-icon
+          v-if="timeBlock.group.type === 'small' && labTypesOverlapping.length"
+          name="science"
+          size=""
+          color="negative" />
+      </div>
     </div>
 
     <q-badge
@@ -201,9 +220,6 @@ watch(
 .week
   top: 0
   left: 0
-.overlapping
-  top: 0
-  right: 2px
 .resizer-outer
   width: 100%
   height: 10px
