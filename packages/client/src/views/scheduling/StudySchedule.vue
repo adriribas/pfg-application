@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
-import { useAuthStore } from '@/stores';
+import { useAuthStore, useOverlappingStore } from '@/stores';
 import { useStudySchedule } from '@/composables';
 import { useConstants } from '@/util';
 import StudyScheduleVisualization from '@/components/schedule/studies/StudyScheduleVisualization.vue';
@@ -17,6 +17,7 @@ const props = defineProps({
 
 const router = useRouter();
 const authStore = useAuthStore();
+const overLappingStore = useOverlappingStore();
 const { loadStudyData, classifyTimeBlocks } = useStudySchedule();
 const {} = useConstants();
 
@@ -39,6 +40,9 @@ const goToStudyChoosing = () => {
     study.value = studyData.study;
     subjects.value = studyData.subjects;
     timeBlocks.value = classifyTimeBlocks(subjects.value, study.value.genericTimeBlocks);
+    if (props.editMode) {
+      overLappingStore.initLabTypesOverlapping(props.semester, subjects.value);
+    }
   } catch (e) {
     console.error(e);
     goToStudyChoosing();

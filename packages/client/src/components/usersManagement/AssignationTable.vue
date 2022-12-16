@@ -201,7 +201,7 @@ loadData();
               </q-td>
 
               <q-td key="user" :props="props" class="user-column">
-                <v-slot name="user-cell" :q-td-props="props">
+                <slot name="user-cell" :q-td-props="props">
                   <q-select
                     v-if="!props.row.user"
                     v-model="props.row.selectedUser"
@@ -263,7 +263,7 @@ loadData();
 
                     <q-btn icon="person_remove" size="sm" color="negative" @click="unassignUser(props.row)" />
                   </div>
-                </v-slot>
+                </slot>
               </q-td>
             </q-tr>
           </template>

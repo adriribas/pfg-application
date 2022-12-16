@@ -41,7 +41,7 @@ const { bg, pt } = useGeneral();
         <template #item="{ row }">
           <div
             draggable="true"
-            @dragstart="$emit('drag-start', $event, row.id, row.duration)"
+            @dragstart="$emit('drag-start', $event, row /* .id, row.duration */)"
             @dragend="dragEndData => $emit('drag-end', dragEndData)"
             @dragover.stop
             @click="$emit('press', { timeBlock: row, getColor: getColorGetter(row), getFontSize })"

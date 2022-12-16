@@ -155,6 +155,12 @@ watchEffect(() => updateCalendarLayout(week.value));
                 </slot>
               </template>
             </template>
+
+            <slot
+              name="overlapping"
+              :day="weekday - 1"
+              :time-start-pos="timeStartPos"
+              :time-duration-height="timeDurationHeight" />
           </template>
         </template>
 

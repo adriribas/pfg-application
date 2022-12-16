@@ -2,6 +2,7 @@ import { ref, computed, watch } from 'vue';
 import { useQuasar } from 'quasar';
 import _ from 'lodash';
 
+import { useOverlappingStore } from '@/stores';
 import { timeBlocksApi, genericTimeBlocksApi } from '@/api';
 import { useTimeBlockPlacing } from '@/composables';
 import { useConstants, useCalendar, useGeneral } from '@/util';
@@ -21,6 +22,7 @@ const doUpdateApiCall = (isGeneric, id, { day, start, duration, week }) => {
 
 export default (placedTimeBlocks, unplacedTimeBlocks) => {
   const $q = useQuasar();
+  const overlappingStore = useOverlappingStore();
   const { timeBlockShakeAnimation, draggingCursor } = useConstants();
   const { timeToMinutes, minutesToTime, getMaxPlaceableTime } = useCalendar();
   const { stop, prevent, stopPrevent } = useGeneral();
@@ -42,13 +44,13 @@ export default (placedTimeBlocks, unplacedTimeBlocks) => {
       elem.style.animationName = timeBlockShakeAnimation;
     });
 
-  const onDragStart = (event, id, duration, isGeneric, weekDay = -1, action = 'place') => {
+  const onDragStart = (event, timeBlock /* id, duration */, isGeneric, weekDay = -1, action = 'place') => {
     event.dataTransfer.dropEffect = 'move';
     event.dataTransfer.effectAllowed = 'move';
     event.dataTransfer.setData('action', action);
-    event.dataTransfer.setData('id', id);
+    event.dataTransfer.setData('id', timeBlock.id);
     event.dataTransfer.setData('weekDay', weekDay);
-    event.dataTransfer.setData('duration', duration);
+    event.dataTransfer.setData('duration', timeBlock.duration);
     event.dataTransfer.setData('isGeneric', +isGeneric);
 
     setTimeout(async () => {
@@ -56,6 +58,9 @@ export default (placedTimeBlocks, unplacedTimeBlocks) => {
         placing.value = true;
       } else {
         moving.value = true;
+      }
+      if (timeBlock.group.type === 'small') {
+        overlappingStore.setSelectedLabTypes(timeBlock.subject.labTypes);
       }
       //await doShakeAnimation(event.target);
       event.target.style.display = 'none';
@@ -69,6 +74,7 @@ export default (placedTimeBlocks, unplacedTimeBlocks) => {
     //doShakeAnimation(event.target);
     placing.value = false;
     moving.value = false;
+    overlappingStore.clear();
   };
 
   const onDragEnter = (event, type) => {

@@ -21,6 +21,8 @@ const getEndMinutes = (startTime, duration) => timeToMinutes(startTime) + durati
 
 const getEndTime = (startTime, duration) => minutesToTime(getEndMinutes(startTime, duration));
 
+const getDuration = (startTime, endTime) => timeToMinutes(endTime) - timeToMinutes(startTime);
+
 const getNearestIntervalTime = pxValue => {
   const { scheduleIntervalStartTime, scheduleIntervalMinutes, scheduleIntervalHeight } = useConstants();
   return minutesToTime(
@@ -65,9 +67,10 @@ const isValidDurationTime = (durationTime, startTime) =>
 const clampMinutes = minutes =>
   _.clamp(minutes, timeToMinutes(getMinPlaceableTime()), timeToMinutes(getMaxPlaceableTime()));
 
-const collide = (timeBlock1, timeBlock2) =>
-  getEndTime(timeBlock1.start, timeBlock1.duration) > timeBlock2.start &&
-  timeBlock1.start < getEndTime(timeBlock2.start, timeBlock2.duration);
+const timeElemsCollide = ({ start: s1, end: e1 }, { start: s2, end: e2 }) => e1 > s2 && s1 < e2;
+
+const collide = ({ start: s1, duration: d1 }, { start: s2, duration: d2 }) =>
+  timeElemsCollide({ start: s1, end: getEndTime(s1, d1) }, { start: s2, end: getEndTime(s2, d2) });
 
 const layoutTimeBlocks = timeBlocks => {
   const groups = [];
@@ -78,7 +81,7 @@ const layoutTimeBlocks = timeBlocks => {
     .sort((tb1, tb2) => {
       const startDiff = timeToMinutes(tb1.start) - timeToMinutes(tb2.start);
 
-      if (startDiff !== 0) {
+      if (startDiff) {
         return startDiff;
       }
 
@@ -129,6 +132,9 @@ const sortTimeBlocks = timeBlocks =>
     return id1 - id2;
   });
 
+const sortTimeBlocksByStart = timeBlocks =>
+  timeBlocks.sort(({ start: s1 }, { start: s2 }) => timeToMinutes(s1) - timeToMinutes(s2));
+
 const getTimeBlockColSpan = (timeBlock, colIndex, cols) => {
   let colSpan = 1;
 
@@ -169,6 +175,7 @@ export default () => ({
   minutesToTime,
   getEndMinutes,
   getEndTime,
+  getDuration,
   getNearestIntervalTime,
   getMinPlaceableTime,
   getMaxPlaceableTime,
@@ -176,9 +183,11 @@ export default () => ({
   isValidDurationMinutes,
   isValidDurationTime,
   clampMinutes,
+  timeElemsCollide,
   collide,
   layoutTimeBlocks,
   sortTimeBlocks,
+  sortTimeBlocksByStart,
   getTimeBlockColSpan,
   isGeneric,
   getTimeBlockLeft,

@@ -2,11 +2,13 @@
 import { ref, computed, watch } from 'vue';
 import _ from 'lodash';
 
-import { useConstants, useCalendar, useGeneral } from '@/util';
+import { useOverlappingStore } from '@/stores';
 import { useTimeBlockFormatting } from '@/composables';
+import { useConstants, useCalendar, useGeneral } from '@/util';
 
 const props = defineProps({
   timeBlock: Object,
+  day: Number,
   enableResizers: Boolean,
   top: Number,
   height: Number,
@@ -19,6 +21,7 @@ const props = defineProps({
 });
 const emit = defineEmits(['press', 'resize']);
 
+const overlappingStore = useOverlappingStore();
 const { scheduleIntervalMinutes } = useConstants();
 const {
   timeToMinutes,
@@ -52,9 +55,16 @@ const positionStyles = computed(() => ({
 }));
 
 const updateWidthPx = newWidth => (widthPx.value = newWidth);
-
-const resizeFromTop = ({ delta: { y: delta }, isFinal }) => {
+const enableOverlappingMarkers = () => {
+  overlappingStore.setSelectedDay(props.day);
+  overlappingStore.setSelectedLabTypes(props.timeBlock.subject.labTypes);
+};
+const disableOverlappingMarkers = () => overlappingStore.clear();
+const resizeFromTop = ({ delta: { y: delta }, isFirst, isFinal }) => {
   resizing.value = true;
+  if (isFirst) {
+    enableOverlappingMarkers();
+  }
   if (
     calcHeight.value - delta >= props.timeDurationHeight(scheduleIntervalMinutes) &&
     calcTop.value + delta >= props.timeStartPos(getMinPlaceableTime())
@@ -74,12 +84,15 @@ const resizeFromTop = ({ delta: { y: delta }, isFinal }) => {
       start: newStartTime,
       duration: timeToMinutes(endTime.value) - timeToMinutes(newStartTime)
     });
+    disableOverlappingMarkers();
     resizing.value = false;
   }
 };
-
-const resizeFromBottom = ({ delta: { y: delta }, isFinal }) => {
+const resizeFromBottom = ({ delta: { y: delta }, isFirst, isFinal }) => {
   resizing.value = true;
+  if (isFirst) {
+    enableOverlappingMarkers();
+  }
   if (
     calcHeight.value + delta >= props.timeDurationHeight(scheduleIntervalMinutes) &&
     props.timeStartPos(props.timeBlock.start) + calcHeight.value + delta <=
@@ -95,18 +108,19 @@ const resizeFromBottom = ({ delta: { y: delta }, isFinal }) => {
     calcHeight.value += props.timeStartPos(newEndTime) - currentEndTimePx;
 
     emit('resize', { duration: timeToMinutes(newEndTime) - timeToMinutes(props.timeBlock.start) });
+    disableOverlappingMarkers();
     resizing.value = false;
   }
 };
 
-watch(props, (newProps, oldProps) => {
-  if (newProps.top !== oldProps.top) {
-    calcTop.value = newProps.top;
-  }
-  if (newProps.height !== oldProps.height) {
-    calcHeight.value = newProps.height;
-  }
-});
+watch(
+  () => props.top,
+  newTop => (calcTop.value = newTop)
+);
+watch(
+  () => props.height,
+  newHeight => (calcHeight.value = newHeight)
+);
 </script>
 
 <template>
@@ -187,6 +201,9 @@ watch(props, (newProps, oldProps) => {
 .week
   top: 0
   left: 0
+.overlapping
+  top: 0
+  right: 2px
 .resizer-outer
   width: 100%
   height: 10px

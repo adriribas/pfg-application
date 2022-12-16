@@ -15,7 +15,7 @@ defineProps({
     default: 'Contrasenya'
   }
 });
-defineEmits('update:model-value');
+defineEmits(['update:model-value']);
 
 const hidden = ref(true);
 </script>

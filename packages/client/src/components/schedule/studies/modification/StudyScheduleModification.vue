@@ -3,6 +3,7 @@ import { ref, computed } from 'vue';
 import { useQuasar } from 'quasar';
 import _ from 'lodash';
 
+import { useOverlappingStore } from '@/stores';
 import { useScheduleDragAndDrop, useTimeBlockPlacing } from '@/composables';
 import { groupsApi, timeBlocksApi, genericTimeBlocksApi } from '@/api';
 import { useConstants, useCalendar, useGeneral } from '@/util';
@@ -10,6 +11,7 @@ import Schedule from '@/components/schedule/Schedule.vue';
 import TimeBlock from '@/components/schedule/TimeBlock.vue';
 import TimeBlocksSection from '@/components/schedule/studies/modification/TimeBlocksSection.vue';
 import SettingsSection from '@/components/schedule/studies/modification/SettingsSection.vue';
+import OverlappingMarker from '@/components/schedule/studies/modification/OverlappingMarker.vue';
 import TimeBlockModificationDialog from '@/components/dialogs/TimeBlockModificationDialog.vue';
 import GenericTimeBlockModificationDialog from '@/components/dialogs/GenericTimeBlockModificationDialog.vue';
 
@@ -22,6 +24,7 @@ const props = defineProps({
 });
 
 const $q = useQuasar();
+const overLappingStore = useOverlappingStore();
 const { courseLabels, semesterLabels, groupTypeLabels } = useConstants();
 const { getEndTime, isGeneric, getStylingGetters } = useCalendar();
 const {} = useGeneral();
@@ -423,6 +426,7 @@ const openModification = ({ timeBlock, weekDay, getColor, getFontSize }) => {
           <template #time-block="{ weekDay, props }">
             <TimeBlock
               :="props"
+              :day="weekDay"
               enable-resizers
               draggable="true"
               :get-color="
@@ -432,18 +436,16 @@ const openModification = ({ timeBlock, weekDay, getColor, getFontSize }) => {
               :get-font-size="getStylingGetters().getFontSize"
               @press="data => openModification({ weekDay, ...data })"
               @resize="resizeData => onResize(weekDay, props.timeBlock.id, resizeData)"
-              @dragstart="
-                onDragStart(
-                  $event,
-                  props.timeBlock.id,
-                  props.timeBlock.duration,
-                  isGeneric(props.timeBlock),
-                  weekDay,
-                  'move'
-                )
-              "
+              @dragstart="onDragStart($event, props.timeBlock, isGeneric(props.timeBlock), weekDay, 'move')"
               @dragend="onDragEnd"
               @dragover.stop />
+          </template>
+
+          <template #overlapping="{ day, timeStartPos, timeDurationHeight }">
+            <OverlappingMarker
+              v-for="{ start, duration } in overLappingStore.overlappingStripes(day)"
+              :top="timeStartPos(start)"
+              :height="timeDurationHeight(duration)" />
           </template>
         </Schedule>
       </div>

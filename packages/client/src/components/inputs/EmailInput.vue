@@ -5,7 +5,7 @@ defineProps({
     required: true
   }
 });
-defineEmits('update:model-value');
+defineEmits(['update:model-value']);
 </script>
 
 <template>

@@ -37,7 +37,9 @@ export default () => {
         labTypes: labTypes,
         sharedBy: studies.reduce((accum, { abv, name, Subjects: subjects }) => {
           const sharedSubject = subjects.find(({ code }) => code === subject.code);
-          return sharedSubject ? [...accum, { abv, name, course: sharedSubject.StudySubject.course }] : accum;
+          return !sharedSubject
+            ? accum
+            : [...accum, { abv, name, course: sharedSubject.StudySubject.course }];
         }, [])
       }))
     };
@@ -59,13 +61,15 @@ export default () => {
       )
     );
 
-    genericTimeBlocks.forEach(({ day, ...genericTimeBlock }) => {
-      if (day === null || day < 0 || day > 4) {
-        unplaced.push(genericTimeBlock);
-      } else {
-        placed[day].push(genericTimeBlock);
-      }
-    });
+    if (genericTimeBlocks) {
+      genericTimeBlocks.forEach(({ day, ...genericTimeBlock }) => {
+        if (day === null || day < 0 || day > 4) {
+          unplaced.push(genericTimeBlock);
+        } else {
+          placed[day].push(genericTimeBlock);
+        }
+      });
+    }
 
     return { placed, unplaced };
   };

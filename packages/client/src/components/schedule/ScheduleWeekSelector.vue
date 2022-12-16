@@ -1,13 +1,19 @@
 <script setup>
-defineProps({
+import { watch } from 'vue';
+import { useOverlappingStore } from '@/stores';
+
+const props = defineProps({
   modelValue: String,
   dense: Boolean
 });
 defineEmits(['update:model-value']);
+
+const overlappingStore = useOverlappingStore();
+
+watch(() => props.modelValue, overlappingStore.setSelectedWeek);
 </script>
 
 <template>
-  <!-- Canviar-ho per button toggle -->
   <q-tabs
     :model-value="modelValue"
     dense
