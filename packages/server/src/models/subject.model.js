@@ -71,7 +71,6 @@ Subject.associate = ({ Area, AreaSubject, Study, StudySubject, LabType, SubjectL
   Subject.allowedInclusions = [Area, LabType, Study, Group];
 };
 
-Subject.requiredFilterFields = ['study'];
 Subject.updatableFields = ['bigGroups', 'mediumGroups', 'smallGroups', 'areas', 'labTypes'];
 
 const validationSchema = Joi.object({

@@ -33,7 +33,7 @@ const buildInclude = ({ Area, LabType, Study, Group }) => {
     include.push({
       model: LabType,
       through: { attributes: [] },
-      attributes: ['name']
+      attributes: ['name', 'amount']
     });
   Study &&
     include.push({
@@ -61,6 +61,33 @@ const buildInclude = ({ Area, LabType, Study, Group }) => {
   return include;
 };
 
+const buildAssociationInclude = ({ study, labType }) => {
+  const include = [];
+
+  study.abv &&
+    include.push({
+      model: StudyModel,
+      where: buildWhere({ abv: study.abv }),
+      through: {
+        where: study.course && buildWhere({ course: study.course }),
+        attributes: ['course']
+      },
+      attributes: ['abv', 'name']
+    });
+
+  labType.name &&
+    include.push({
+      model: LabTypeModel,
+      where: buildWhere({ name: labType.name }),
+      through: {
+        attributes: []
+      },
+      attributes: ['name']
+    });
+
+  return include;
+};
+
 export const get = async (req, res) => {
   const {
     params: { code },
@@ -83,21 +110,25 @@ export const filter = async (req, res) => {
     query: { fields, include },
     body: {
       data: filterData,
-      associations: { study: studyAbv },
+      associations: { study, labType },
       specialOptions
     }
   } = req;
   const course = specialOptions?.course;
 
-  if (studyAbv && include.Study) {
-    delete include.study;
+  if (study && include.Study) {
+    delete include.Study;
+  }
+  if (labType && include.LabType) {
+    delete include.LabType;
   }
 
   res.json(
     await Model.findAll({
       where: buildWhere(filterData),
       include: [
-        {
+        ...buildAssociationInclude({ study: { abv: study, course }, labType: { name: labType } }),
+        /* {
           model: StudyModel,
           where: buildWhere({ abv: studyAbv }),
           through: {
@@ -106,6 +137,14 @@ export const filter = async (req, res) => {
           },
           attributes: ['abv', 'name']
         },
+        {
+          model: LabTypeModel,
+          where: buildWhere({ name: labTypeName }),
+          through: {
+            attributes: []
+          },
+          attributes: ['name']
+        }, */
         ...buildInclude(include)
       ],
       attributes: fields
