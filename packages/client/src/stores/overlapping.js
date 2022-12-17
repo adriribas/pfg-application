@@ -51,21 +51,38 @@ export const useOverlappingStore = defineStore('overlapping', {
     overlapsWith() {
       const { timeElemsCollide } = useCalendar();
 
-      return (week, day, start, end, labTypes) => {
-        const affectingStudies = [];
+      return (week, day, start, end, labTypeName) => {
+        const { amount } = this.labType(labTypeName);
+        const stripes = this.labTypeOccupationStripes(week, day, labTypeName).filter(
+          stripe => timeElemsCollide(stripe, { start, end }) && stripe.timeBlocks.length > amount
+        );
+        const notAssignedAmount = this.overlappedTimeBlocksAmount('', stripes);
+        const studies = _.uniqBy(
+          stripes.reduce(
+            (accum, { timeBlocks }) => [
+              ...accum,
+              ...timeBlocks.reduce((accum, { studies }) => [...accum, ...studies], [])
+            ],
+            []
+          ),
+          'abv'
+        ).map(study => ({
+          ...study,
+          amount: this.overlappedTimeBlocksAmount(study.abv, stripes)
+        }));
 
-        labTypes.forEach(({ name: labTypeName }) => {
-          const { amount } = this.labType(labTypeName);
-
-          this.labTypeOccupationStripes(week, day, labTypeName)
-            .filter(stripe => timeElemsCollide(stripe, { start, end }) && stripe.timeBlocks.length > amount)
-            .forEach(({ timeBlocks }) =>
-              timeBlocks.forEach(({ studies }) => affectingStudies.push(...studies))
-            );
-        });
-
-        return _.uniqBy(affectingStudies, 'abv');
+        return notAssignedAmount ? [...studies, { notAssigned: true, amount: notAssignedAmount }] : studies;
       };
+    },
+    overlappedTimeBlocksAmount: () => (studyAbv, stripes) => {
+      const filter = studyAbv
+        ? ({ studies }) => studies.find(({ abv }) => abv === studyAbv)
+        : ({ studies }) => !studies.length;
+
+      return _.uniqBy(
+        stripes.reduce((accum, { timeBlocks }) => [...accum, ...timeBlocks.filter(filter)], []),
+        'id'
+      ).length;
     }
   },
   actions: {
@@ -118,15 +135,16 @@ export const useOverlappingStore = defineStore('overlapping', {
         groups
           .filter(({ type }) => type === 'small')
           .forEach(({ TimeBlocks: timeBlocks, Studies: groupStudies }) =>
-            timeBlocks.forEach(({ day, start, duration, week }) => {
+            timeBlocks.forEach(({ id, day, start, duration, week }) => {
               if (day || day === 0) {
                 dayByDayTimeBlocks[day].push({
+                  id,
                   start,
                   end: getEndTime(start, duration),
                   week,
                   labTypes: labTypes.map(({ name }) => name),
                   studies:
-                    subjectStudies.length === 1 || !groupStudies.length
+                    subjectStudies.length === 1 /* || !groupStudies.length */
                       ? subjectStudies.map(({ abv, name, StudySubject: { course } }) => ({
                           abv,
                           name,

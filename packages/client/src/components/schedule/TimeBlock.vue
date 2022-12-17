@@ -10,6 +10,10 @@ const props = defineProps({
   timeBlock: Object,
   day: Number,
   enableResizers: Boolean,
+  showTimeBlocksOverlapping: Boolean,
+  showLabTypesOverlapping: Boolean,
+  showProfessorsOverlapping: Boolean,
+  showRoomsOverlapping: Boolean,
   top: Number,
   height: Number,
   left: Number,
@@ -47,15 +51,37 @@ const resizing = ref(false);
 
 const endTime = computed(() => getEndTime(props.timeBlock.start, props.timeBlock.duration));
 const labTypesOverlapping = computed(() =>
-  overlappingStore.overlapsWith(
-    props.timeBlock.week || 'general',
-    props.day,
-    props.timeBlock.start,
-    endTime.value,
-    props.timeBlock.subject.labTypes
-  )
+  props.timeBlock.subject.labTypes.map(({ name }) => ({
+    name,
+    studies: overlappingStore.overlapsWith(
+      props.timeBlock.week || 'general',
+      props.day,
+      props.timeBlock.start,
+      endTime.value,
+      name
+    )
+  }))
 );
-const classes = computed(() => [bg(props.getColor('bg')), resizing.value && 'z2 resizing']);
+const hasTimeBlockslapping = computed(() => props.showTimeBlockslapping);
+const hasLabTypesOverlapping = computed(
+  () =>
+    props.showLabTypesOverlapping &&
+    props.timeBlock.group.type === 'small' &&
+    labTypesOverlapping.value.some(({ studies }) => studies.length)
+);
+const hasProfessorslapping = computed(() => props.showProfessorslapping);
+const hasRoomslapping = computed(() => props.showRoomslapping);
+const isOverlapped = computed(
+  () =>
+    hasTimeBlockslapping.value ||
+    hasLabTypesOverlapping.value ||
+    hasProfessorslapping.value ||
+    hasRoomslapping.value
+);
+const classes = computed(() => [
+  bg(props.getColor(isOverlapped.value ? 'bgOverlapped' : 'bg')),
+  resizing.value && 'z2 resizing'
+]);
 const positionStyles = computed(() => ({
   top: px(calcTop.value),
   height: px(calcHeight.value),
@@ -138,7 +164,7 @@ watch(
     :class="classes"
     class="absolute border-8 shadow-3 text-center cursor-pointer non-selectable container"
     :style="positionStyles">
-    <div class="column fit flex-center">
+    <div :class="isOverlapped && 'text-negative'" class="column fit flex-center">
       <span :style="{ fontSize: pt(getFontSize('subject')) }">
         {{ label }}
       </span>
@@ -149,22 +175,12 @@ watch(
         :style="{ fontSize: pt(getFontSize('group')) }">
         {{ subLabel }}
       </span>
-
-      <!-- Overlapping icons: dashboard, science, person, room -->
-
-      <div class="row flex-center q-mt-sm">
-        <q-icon
-          v-if="timeBlock.group.type === 'small' && labTypesOverlapping.length"
-          name="science"
-          size=""
-          color="negative" />
-      </div>
     </div>
 
     <q-badge
       v-if="timeBlock.week"
       :label="timeBlock.week"
-      :class="bg(getColor('weekBg'))"
+      :class="bg(getColor(isOverlapped ? 'weekBgOverlapped' : 'weekBg'))"
       class="absolute border-8 week"
       :style="{
         fontSize: pt(getFontSize('week')),
@@ -201,14 +217,18 @@ watch(
         v-touch-pan.prevent.mouse.vertical="resizeFromTop"
         class="row absolute justify-center cursor-ns-resize resizer-outer"
         :style="{ top: 0 }">
-        <div :class="[bg(getColor('resizer'))]" class="col-5 top-resizer resizer-inner" />
+        <div
+          :class="[bg(getColor(isOverlapped ? 'resizerOverlapped' : 'resizer'))]"
+          class="col-5 top-resizer resizer-inner" />
       </div>
 
       <div
         v-touch-pan.prevent.mouse.vertical="resizeFromBottom"
         class="row absolute justify-center items-end cursor-ns-resize resizer-outer"
         :style="{ bottom: 0 }">
-        <div :class="[bg(getColor('resizer'))]" class="col-5 bottom-resizer resizer-inner" />
+        <div
+          :class="[bg(getColor(isOverlapped ? 'resizerOverlapped' : 'resizer'))]"
+          class="col-5 bottom-resizer resizer-inner" />
       </div>
     </template>
   </div>

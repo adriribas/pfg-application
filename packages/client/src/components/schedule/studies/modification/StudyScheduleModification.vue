@@ -32,6 +32,10 @@ const {} = useGeneral();
 const splitterWidth = ref(75);
 const toggleStudyFilter = ref(true);
 const toggleAssignationFilter = ref(false);
+const showTimeBlocksOverlapping = ref(true);
+const showLabTypesOverlapping = ref(true);
+const showProfessorsOverlapping = ref(true);
+const showRoomsOverlapping = ref(true);
 const placedTimeBlocks = ref(props.timeBlocks.placed);
 const unplacedTimeBlocks = ref(props.timeBlocks.unplaced);
 
@@ -87,6 +91,14 @@ const breadcrumbsData = [
   { label: courseLabels[props.course - 1] },
   { label: `${semesterLabels[props.semester - 1]} Q` }
 ];
+
+const overlappingMarkers = computed(() => day => {
+  const markers = [];
+
+  showLabTypesOverlapping.value && markers.push(...overLappingStore.overlappingStripes(day));
+
+  return markers;
+});
 
 const onResize = async (weekDay, id, { start, duration }) => {
   const { timeBlock } = findPlaced(weekDay, id);
@@ -340,7 +352,7 @@ const updateGenericTimeBlock = async (id, weekDay, modData, timeData) => {
   }
 };
 
-const openModification = ({ timeBlock, weekDay, getColor, getFontSize }) => {
+const openModification = ({ timeBlock, labTypesOverlapping, weekDay, getColor, getFontSize }) => {
   const { start, duration, week } = timeBlock;
   const commonProps = {
     start,
@@ -378,7 +390,7 @@ const openModification = ({ timeBlock, weekDay, getColor, getFontSize }) => {
     const { group, subject, roomType, professor } = timeBlock;
     $q.dialog({
       component: TimeBlockModificationDialog,
-      componentProps: { group, subject, roomType, professor, ...commonProps }
+      componentProps: { labTypesOverlapping, group, subject, roomType, professor, ...commonProps }
     }).onOk(async modData => {
       try {
         await updateTimeBlock(timeBlock.id, weekDay, modData, { start, duration, week });
@@ -428,6 +440,10 @@ const openModification = ({ timeBlock, weekDay, getColor, getFontSize }) => {
               :="props"
               :day="weekDay"
               enable-resizers
+              :show-time-blocks-overlapping="showTimeBlocksOverlapping"
+              :show-lab-types-overlapping="showLabTypesOverlapping"
+              :show-professors-overlapping="showProfessorsOverlapping"
+              :show-rooms-overlapping="showRoomsOverlapping"
               draggable="true"
               :get-color="
                 getStylingGetters(isGeneric(props.timeBlock) ? 'generic' : props.timeBlock.group.type)
@@ -443,7 +459,7 @@ const openModification = ({ timeBlock, weekDay, getColor, getFontSize }) => {
 
           <template #overlapping="{ day, timeStartPos, timeDurationHeight }">
             <OverlappingMarker
-              v-for="{ start, duration } in overLappingStore.overlappingStripes(day)"
+              v-for="{ start, duration } in overlappingMarkers(day)"
               :top="timeStartPos(start)"
               :height="timeDurationHeight(duration)" />
           </template>
@@ -467,6 +483,10 @@ const openModification = ({ timeBlock, weekDay, getColor, getFontSize }) => {
             <SettingsSection
               v-model:assignation-filter="toggleAssignationFilter"
               v-model:study-filter="toggleStudyFilter"
+              v-model:time-blocks-overlapping="showTimeBlocksOverlapping"
+              v-model:lab-types-overlapping="showLabTypesOverlapping"
+              v-model:professors-overlapping="showProfessorsOverlapping"
+              v-model:rooms-overlapping="showRoomsOverlapping"
               :subjects="subjects"
               :study="study"
               :get-placed-time-blocks="() => placedTimeBlocks"

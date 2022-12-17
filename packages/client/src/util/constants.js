@@ -44,9 +44,12 @@ const timeBlockColorNames = {
 };
 const timeBlockColorTones = {
   bg: 7,
+  bgOverlapped: 8,
   weekBg: 5,
+  weekBgOverlapped: 7,
   tooltipBg: 9,
   resizer: 5,
+  resizerOverlapped: 7,
   detailTime: 4,
   detailLabel: 4,
   detailSubLabelBg: 5,

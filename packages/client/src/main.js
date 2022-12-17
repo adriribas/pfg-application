@@ -15,6 +15,7 @@ import router from '@/router';
 import ViewLoadingSpinner from '@/components/ViewLoadingSpinner.vue';
 import MenuItemToggle from '@/components/menuItems/MenuItemToggle.vue';
 import MenuItemAction from '@/components/menuItems/MenuItemAction.vue';
+import MenuItemCheck from '@/components/menuItems/MenuItemCheck.vue';
 import Breadcrumbs from '@/components/Breadcrumbs.vue';
 import StepInput from '@/components/inputs/StepInput.vue';
 import EmailInput from '@/components/inputs/EmailInput.vue';
@@ -37,6 +38,7 @@ app
   .component('ViewLoadingSpinner', ViewLoadingSpinner)
   .component('MenuItemToggle', MenuItemToggle)
   .component('MenuItemAction', MenuItemAction)
+  .component('MenuItemCheck', MenuItemCheck)
   .component('Breadcrumbs', Breadcrumbs)
   .component('StepInput', StepInput)
   .component('EmailInput', EmailInput)

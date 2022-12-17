@@ -9,6 +9,10 @@ import TimeBlocksCreationDialog from '@/components/dialogs/TimeBlocksCreationDia
 const props = defineProps({
   assignationFilter: Boolean,
   studyFilter: Boolean,
+  timeBlocksOverlapping: Boolean,
+  labTypesOverlapping: Boolean,
+  professorsOverlapping: Boolean,
+  roomsOverlapping: Boolean,
   study: Object,
   subjects: Array,
   getPlacedTimeBlocks: Function,
@@ -19,6 +23,10 @@ const props = defineProps({
 const emit = defineEmits([
   'update:assignation-filter',
   'update:study-filter',
+  'update:time-blocks-overlapping',
+  'update:lab-types-overlapping',
+  'update:professors-overlapping',
+  'update:rooms-overlapping',
   'modify-time-blocks',
   'modify-generic-time-blocks'
 ]);
@@ -92,6 +100,41 @@ const openTimeBlocksCreation = () =>
       label="Blocs genèrics"
       caption="Crea, modifica o esborra blocs horaris genèrics"
       @press="openGenericTimeBlocksCreation" />
+
+    <q-separator spaced dark />
+
+    <q-item-label header>Control de Solapaments</q-item-label>
+
+    <MenuItemCheck
+      :model-value="false && timeBlocksOverlapping"
+      disable
+      label="Solapaments de blocs horaris"
+      caption="Indica a l'horari els els solapaments causats per blocs horaris del mateix grup"
+      color="m6"
+      @update:model-value="value => $emit('update:time-blocks-overlapping', value)" />
+
+    <MenuItemCheck
+      :model-value="labTypesOverlapping"
+      label="Solapaments de laboratoris"
+      caption="Indica a l'horari els els solapaments causats per l'excés de tipus laboratoris ocupats al mateix temps"
+      color="m6"
+      @update:model-value="value => $emit('update:lab-types-overlapping', value)" />
+
+    <MenuItemCheck
+      :model-value="false && professorsOverlapping"
+      disable
+      label="Solapaments de professors"
+      caption="Indica a l'horari els els solapaments causats per la distribució de professors"
+      color="m6"
+      @update:model-value="value => $emit('update:professors-overlapping', value)" />
+
+    <MenuItemCheck
+      :model-value="false && roomsOverlapping"
+      disable
+      label="Solapaments d'aules"
+      caption="Indica a l'horari els els solapaments causats per la distribució d'aules"
+      color="m6"
+      @update:model-value="value => $emit('update:rooms-overlapping', value)" />
   </q-list>
 </template>
 

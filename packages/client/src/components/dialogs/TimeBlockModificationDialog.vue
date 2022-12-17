@@ -15,13 +15,14 @@ const props = defineProps({
   subject: Object,
   roomType: Object,
   professor: Object,
+  labTypesOverlapping: Array,
   getColor: Function,
   getFontSize: Function
 });
 defineEmits([...useDialogPluginComponent.emits]);
 
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } = useDialogPluginComponent();
-const { groupTypeLabels } = useConstants();
+const { courseLabels, groupTypeLabels } = useConstants();
 const { text, bg } = useGeneral();
 
 const sharedBySelectRef = ref(null);
@@ -36,8 +37,13 @@ const addSharedBy = study => {
   sharedBySelectRef.value.blur();
 };
 const removeSharedBy = index => sharedByMod.value.splice(index, 1);
+const getOverlappingStudies = labTypeName => {
+  const labType = props.labTypesOverlapping.find(({ name }) => name === labTypeName);
 
-// Fer el disable del botó de guardar si hi ha errors de validació i fer el guardar.
+  return labType?.studies || [];
+};
+
+// Fer el disable del botó de guardar si hi ha errors de validació.
 </script>
 
 <template>
@@ -81,7 +87,6 @@ const removeSharedBy = index => sharedByMod.value.splice(index, 1);
             <q-item v-for="{ abv, name, department } in subject.areas">
               <q-item-section>
                 <q-item-label :class="[text(getColor('data'))]">{{ abv }}</q-item-label>
-
                 <q-item-label caption :class="[name ? text(getColor('captions')) : 'text-warning']">
                   {{ name || 'Nom no especificat' }}
                 </q-item-label>
@@ -174,11 +179,49 @@ const removeSharedBy = index => sharedByMod.value.splice(index, 1);
         <div v-if="group.type === 'small'" :="containerProps">
           <q-icon :="iconProps" />
 
-          <q-list bordered dense dark class="col border-8">
-            <q-item v-for="{ name } in subject.labTypes">
+          <q-list bordered dark class="col border-8">
+            <q-item v-for="{ name, amount } in subject.labTypes">
               <q-item-section>
                 <q-item-label :class="[text(getColor('data'))]">{{ name }}</q-item-label>
+                <q-item-label caption :class="[text(getColor('captions'))]">
+                  {{ amount }} laboratori{{ amount > 1 ? 's' : '' }}
+                </q-item-label>
               </q-item-section>
+
+              <template v-if="getOverlappingStudies(name).length">
+                <q-item-section avatar>
+                  <q-icon name="join_left" color="negative" />
+                </q-item-section>
+
+                <q-tooltip
+                  anchor="center right"
+                  self="center left"
+                  transition-show="jump-right"
+                  transition-hide="jump-left"
+                  class="bg-negative">
+                  <q-list dark>
+                    <q-item v-for="study of getOverlappingStudies(name)" class="no-padding">
+                      <q-item-section>
+                        <q-item-label class="row items-center fs-10">
+                          <span>{{ study.notAssigned ? 'NO ASSIGNATS' : study.abv }}</span>
+                          <q-icon name="circle" size="5pt" color="g5" class="q-ml-sm q-mr-xs" />
+                          <span class="fs-8 text-g5">
+                            {{ study.amount }} bloc{{ study.amount > 1 ? 's' : '' }}
+                          </span>
+                        </q-item-label>
+
+                        <q-item-label caption class="fs-8">
+                          {{ study.notAssigned ? 'Blocs de grups no assignats a cap estudi' : study.name }}
+                        </q-item-label>
+                      </q-item-section>
+
+                      <q-item-section v-if="!study.notAssigned" side>
+                        <q-badge :label="courseLabels[study.course]" outline color="white" class="q-py-xs" />
+                      </q-item-section>
+                    </q-item>
+                  </q-list>
+                </q-tooltip>
+              </template>
             </q-item>
           </q-list>
         </div>
