@@ -19,8 +19,8 @@ const getIconProps = name => ({ name, size: '20pt', color: props.getColor('heade
         <div
           :class="text(getColor('detailTime'))"
           class="text-bold"
-          :style="{ 'font-size': pt(getFontSize('detailTime')) }">
-          <div class="row items-center">
+          :style="{ fontSize: pt(getFontSize('detailTime')) }">
+          <div class="row items-center q-mt-sm">
             <q-icon name="schedule" size="20pt" :color="getColor('headerIcons')" class="q-mr-sm" />
             <slot name="start-time" />
 
@@ -59,7 +59,12 @@ const getIconProps = name => ({ name, size: '20pt', color: props.getColor('heade
       <slot name="week" />
     </q-card-section>
 
-    <q-card-section :class="[text(getColor('data'))]" class="row justify-around q-mx-md">
+    <q-card-section class="row flex-center no-padding">
+      <q-icon name="calendar_today" size="20pt" :color="getColor('headerIcons')" class="q-mr-sm" />
+      <slot name="week-day" />
+    </q-card-section>
+
+    <q-card-section :class="[text(getColor('data'))]" class="row justify-around q-mx-md q-mt-md">
       <div class="column col-auto">
         <slot name="room-type" :container-props="getContainerProps()" :icon-props="getIconProps('room')" />
 

@@ -68,7 +68,10 @@ const {
   findUnplaced,
   addToUnplaced,
   removeFromUnplaced,
-  findTimeBlock
+  findTimeBlock,
+  doPlace,
+  doUnplace,
+  doMove
 } = useTimeBlockPlacing(placedTimeBlocks, unplacedTimeBlocks);
 const {
   dragging,
@@ -309,23 +312,40 @@ const modifyGenericTimeBlocksSync = async (toCreate, toUpdate, toRemove) => {
   refreshPlacedTimeBlocks();
 };
 
+const updateWeekDay = (id, currentWeekDay, newWeekDay, start, week) => {
+  if (currentWeekDay === newWeekDay) {
+    if (currentWeekDay !== -1) {
+      refreshPlacedTimeBlocks();
+    }
+    return;
+  }
+
+  if (newWeekDay === -1) {
+    doUnplace(id, currentWeekDay);
+  } else if (currentWeekDay === -1) {
+    doPlace(id, newWeekDay, start, week);
+  } else {
+    doMove(id, currentWeekDay, newWeekDay, start, week);
+  }
+};
+
 const updateTimeBlock = async (id, weekDay, { sharedBy: modSharedBy, ...modTimeData }, timeData) => {
   const { timeBlock } = timeData.start ? findPlaced(weekDay, id) : findUnplaced(id);
 
   timeBlock.start = modTimeData.start;
   timeBlock.duration = modTimeData.duration;
   timeBlock.week = modTimeData.week;
-  refreshPlacedTimeBlocks();
+  updateWeekDay(id, weekDay, modTimeData.day, modTimeData.start, modTimeData.week);
 
   await groupsApi.update(timeBlock.group.id, { studies: modSharedBy.map(({ abv }) => abv) });
   timeBlock.group.studies = modSharedBy;
   try {
-    await timeBlocksApi.update(id, modTimeData);
+    await timeBlocksApi.update(id, { ...modTimeData, day: modTimeData.day === -1 ? null : modTimeData.day });
   } catch (e) {
     timeBlock.start = timeData.start;
     timeBlock.duration = timeData.duration;
     timeBlock.week = timeData.week;
-    refreshPlacedTimeBlocks();
+    updateWeekDay(id, modTimeData.day, weekDay, timeData.start, timeData.week);
     throw e;
   }
 };
@@ -337,17 +357,20 @@ const updateGenericTimeBlock = async (id, weekDay, modData, timeData) => {
   timeBlock.week = modData.week;
   timeBlock.label = modData.label;
   timeBlock.subLabel = modData.subLabel;
-  refreshPlacedTimeBlocks();
+  updateWeekDay(id, weekDay, modData.day, modData.start, modData.week);
 
   try {
-    await genericTimeBlocksApi.update(id, modData);
+    await genericTimeBlocksApi.update(id, {
+      ...modData,
+      day: modData.day === -1 ? null : modData.day
+    });
   } catch (e) {
     timeBlock.start = timeData.start;
     timeBlock.duration = timeData.duration;
     timeBlock.week = timeData.week;
     timeBlock.label = timeData.label;
     timeBlock.subLabel = timeData.subLabel;
-    refreshPlacedTimeBlocks();
+    updateWeekDay(id, modData.day, weekDay, modData.start, modData.week);
     throw e;
   }
 };
@@ -355,6 +378,7 @@ const updateGenericTimeBlock = async (id, weekDay, modData, timeData) => {
 const openModification = ({ timeBlock, labTypesOverlapping, weekDay, getColor, getFontSize }) => {
   const { start, duration, week } = timeBlock;
   const commonProps = {
+    day: weekDay,
     start,
     end: start && getEndTime(start, duration),
     duration,

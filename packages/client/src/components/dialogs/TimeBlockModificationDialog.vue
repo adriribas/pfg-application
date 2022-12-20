@@ -7,6 +7,7 @@ import { useConstants, useGeneral } from '@/util';
 import TimeBlockModificationDialogContent from '@/components/schedule/TimeBlockModificationDialogContent.vue';
 
 const props = defineProps({
+  day: Number,
   start: String,
   end: String,
   duration: Number,
@@ -55,6 +56,7 @@ const getOverlappingStudies = labTypeName => {
     transition-hide="rotate"
     @hide="onDialogHide">
     <TimeBlockModificationDialogContent
+      :day="day"
       :start="start"
       :end="end"
       :duration="duration"
@@ -188,7 +190,7 @@ const getOverlappingStudies = labTypeName => {
                 </q-item-label>
               </q-item-section>
 
-              <template v-if="getOverlappingStudies(name).length">
+              <template v-if="day !== -1 && getOverlappingStudies(name).length">
                 <q-item-section avatar>
                   <q-icon name="join_left" color="negative" />
                 </q-item-section>

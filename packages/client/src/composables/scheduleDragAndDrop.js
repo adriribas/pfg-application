@@ -59,7 +59,7 @@ export default (placedTimeBlocks, unplacedTimeBlocks) => {
       } else {
         moving.value = true;
       }
-      if (timeBlock.group.type === 'small') {
+      if (timeBlock.group?.type === 'small') {
         overlappingStore.setSelectedLabTypes(timeBlock.subject.labTypes);
       }
       //await doShakeAnimation(event.target);

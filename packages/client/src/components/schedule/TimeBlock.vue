@@ -33,7 +33,8 @@ const {
   getEndTime,
   getNearestIntervalTime,
   getMinPlaceableTime,
-  getMaxPlaceableTime
+  getMaxPlaceableTime,
+  isGeneric
 } = useCalendar();
 const { bg, px, percent, pt } = useGeneral();
 
@@ -50,33 +51,36 @@ const calcTop = ref(props.top);
 const resizing = ref(false);
 
 const endTime = computed(() => getEndTime(props.timeBlock.start, props.timeBlock.duration));
-const labTypesOverlapping = computed(() =>
-  props.timeBlock.subject.labTypes.map(({ name }) => ({
-    name,
-    studies: overlappingStore.overlapsWith(
-      props.timeBlock.week || 'general',
-      props.day,
-      props.timeBlock.start,
-      endTime.value,
-      name
-    )
-  }))
+const labTypesOverlapping = computed(
+  () =>
+    !isGeneric(props.timeBlock) &&
+    props.timeBlock.subject.labTypes.map(({ name }) => ({
+      name,
+      studies: overlappingStore.overlapsWith(
+        props.timeBlock.week || 'general',
+        props.day,
+        props.timeBlock.start,
+        endTime.value,
+        name
+      )
+    }))
 );
-const hasTimeBlockslapping = computed(() => props.showTimeBlockslapping);
+const hasTimeBlocksOverlapping = computed(() => props.showTimeBlocksOverlapping && false);
 const hasLabTypesOverlapping = computed(
   () =>
     props.showLabTypesOverlapping &&
+    !isGeneric(props.timeBlock) &&
     props.timeBlock.group.type === 'small' &&
     labTypesOverlapping.value.some(({ studies }) => studies.length)
 );
-const hasProfessorslapping = computed(() => props.showProfessorslapping);
-const hasRoomslapping = computed(() => props.showRoomslapping);
+const hasProfessorsOverlapping = computed(() => props.showProfessorsOverlapping && false);
+const hasRoomsOverlapping = computed(() => props.showRoomsOverlapping && false);
 const isOverlapped = computed(
   () =>
-    hasTimeBlockslapping.value ||
+    hasTimeBlocksOverlapping.value ||
     hasLabTypesOverlapping.value ||
-    hasProfessorslapping.value ||
-    hasRoomslapping.value
+    hasProfessorsOverlapping.value ||
+    hasRoomsOverlapping.value
 );
 const classes = computed(() => [
   bg(props.getColor(isOverlapped.value ? 'bgOverlapped' : 'bg')),
@@ -91,10 +95,16 @@ const positionStyles = computed(() => ({
 
 const updateWidthPx = newWidth => (widthPx.value = newWidth);
 const enableOverlappingMarkers = () => {
-  overlappingStore.setSelectedDay(props.day);
-  overlappingStore.setSelectedLabTypes(props.timeBlock.subject.labTypes);
+  if (!isGeneric(props.timeBlock)) {
+    overlappingStore.setSelectedDay(props.day);
+    overlappingStore.setSelectedLabTypes(props.timeBlock.subject.labTypes);
+  }
 };
-const disableOverlappingMarkers = () => overlappingStore.clear();
+const disableOverlappingMarkers = () => {
+  if (!isGeneric(props.timeBlock)) {
+    overlappingStore.clear();
+  }
+};
 const resizeFromTop = ({ delta: { y: delta }, isFirst, isFinal }) => {
   resizing.value = true;
   if (isFirst) {

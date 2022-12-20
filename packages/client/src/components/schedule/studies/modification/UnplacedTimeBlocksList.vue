@@ -41,10 +41,12 @@ const { bg, pt } = useGeneral();
         <template #item="{ row }">
           <div
             draggable="true"
-            @dragstart="$emit('drag-start', $event, row /* .id, row.duration */)"
+            @dragstart="$emit('drag-start', $event, row)"
             @dragend="dragEndData => $emit('drag-end', dragEndData)"
             @dragover.stop
-            @click="$emit('press', { timeBlock: row, getColor: getColorGetter(row), getFontSize })"
+            @click="
+              $emit('press', { weekDay: -1, timeBlock: row, getColor: getColorGetter(row), getFontSize })
+            "
             :class="[bg(getColorGetter(row)('bg'))]"
             class="col-5 q-py-xs border-8 shadow-2 cursor-pointer text-center animated non-selectable container"
             :style="{ fontSize: pt(getFontSize('unplacedGroup')) }">

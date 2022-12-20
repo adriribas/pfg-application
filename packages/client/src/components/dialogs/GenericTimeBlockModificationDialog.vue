@@ -7,6 +7,7 @@ import { useGeneral } from '@/util';
 import TimeBlockModificationDialogContent from '@/components/schedule/TimeBlockModificationDialogContent.vue';
 
 const props = defineProps({
+  day: Number,
   start: String,
   end: String,
   duration: Number,
@@ -26,7 +27,7 @@ const subLabelInputRef = ref(null);
 const labelMod = ref(props.label);
 const subLabelMod = ref(props.subLabel);
 
-// Fer el disable del botó de guardar si hi ha errors de validació i fer el guardar.
+const hasError = computed(() => labelInputRef.value?.hasError || subLabelInputRef.value?.hasError);
 </script>
 
 <template>
@@ -38,6 +39,8 @@ const subLabelMod = ref(props.subLabel);
     transition-hide="rotate"
     @hide="onDialogHide">
     <TimeBlockModificationDialogContent
+      :external-errors="hasError"
+      :day="day"
       :start="start"
       :end="end"
       :duration="duration"
@@ -52,9 +55,7 @@ const subLabelMod = ref(props.subLabel);
           v-model="labelMod"
           type="text"
           label="Descripció"
-          lazy-rules
           :rules="[value => !!value]"
-          error-message="Aquest camp és obligatori"
           no-error-icon
           dense
           dark
@@ -73,10 +74,8 @@ const subLabelMod = ref(props.subLabel);
           v-model="subLabelMod"
           type="text"
           label="Tipus"
-          lazy-rules
           :rules="[value => !!value]"
           :maxlength="10"
-          error-message="Aquest camp és obligatori"
           no-error-icon
           dense
           dark

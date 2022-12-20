@@ -9,6 +9,8 @@ const props = defineProps({
     type: String,
     required: true
   },
+  disable: Boolean,
+  disableValidation: Boolean,
   label: String,
   timePicker: Boolean,
   timeOptions: Function,
@@ -40,11 +42,11 @@ const inputRef = ref(null);
 const tempValue = ref(props.modelValue);
 
 const externalValue = computed(() => props.modelValue);
+const hasError = computed(() => inputRef.value?.hasError);
 
 const blur = () => inputRef.value.blur();
 const emitIfValid = () => {
-  console.log('emit');
-  if (inputRef.value.validate(tempValue.value)) {
+  if (inputRef.value.validate(tempValue.value) && externalValue.value !== tempValue.value) {
     emit('update:model-value', tempValue.value);
   }
 };
@@ -65,16 +67,19 @@ const onUpdate = value => {
 const onCloseTimePicker = () => setTimeout(blur, 120);
 
 watch(externalValue, newExternalValue => updateTempValue(newExternalValue));
+
+defineExpose({ hasError });
 </script>
 
 <template>
   <q-input
     ref="inputRef"
     :model-value="tempValue"
+    :disable="disable"
     :label="label"
     :placeholder="'- - : - -'"
     mask="time"
-    :rules="['time']"
+    :rules="[!disableValidation && 'time']"
     :suffix="suffix"
     :dense="dense"
     no-error-icon

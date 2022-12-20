@@ -116,7 +116,7 @@ const openTimeBlocksCreation = () =>
     <MenuItemCheck
       :model-value="labTypesOverlapping"
       label="Solapaments de laboratoris"
-      caption="Indica a l'horari els els solapaments causats per l'excés de tipus laboratoris ocupats al mateix temps"
+      caption="Indica a l'horari els els solapaments causats per l'excés de tipus laboratoris ocupats alhora"
       color="m6"
       @update:model-value="value => $emit('update:lab-types-overlapping', value)" />
 

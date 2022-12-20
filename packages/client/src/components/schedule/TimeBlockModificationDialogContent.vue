@@ -1,11 +1,13 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import _ from 'lodash';
 
 import { useConstants, useCalendar, useGeneral } from '@/util';
 import TimeBlockDialogContent from '@/components/schedule/TimeBlockDialogContent.vue';
 
 const props = defineProps({
+  externalErrors: Boolean,
+  day: Number,
   start: String,
   end: String,
   duration: Number,
@@ -13,7 +15,7 @@ const props = defineProps({
   getColor: Function,
   getFontSize: Function
 });
-defineEmits(['ok', 'cancel']);
+const emit = defineEmits(['ok', 'cancel']);
 
 const {
   workingDaysShort,
@@ -27,9 +29,12 @@ const { timeToMinutes, minutesToTime, getMinPlaceableTime, getMaxPlaceableTime, 
   useCalendar();
 const { text } = useGeneral();
 
+const startTimeRef = ref(null);
+const endTimeRef = ref(null);
+const durationRef = ref(null);
 const startTimeMod = ref(props.start || '');
 const endTimeMod = ref(props.end || '');
-const weekDayMod = ref(2);
+const dayMod = ref(props.day || props.day === 0 ? props.day : -1);
 const durationTimeMod = ref(minutesToTime(props.duration));
 const weekMod = ref(props.week || 'general');
 
@@ -80,14 +85,48 @@ const onDurationChange = newDurationTime => {
   startTimeMod.value = minutesToTime(newEndMinutes - newDurationMinutes);
 };
 
-// Fer el disable del botó de guardar si hi ha errors de validació i fer el guardar.
+const disableTimeValidation = computed(() => dayMod.value === -1);
+const errors = computed(
+  () =>
+    props.externalErrors ||
+    startTimeRef.value?.hasError ||
+    endTimeRef.value?.hasError ||
+    durationRef.value?.hasError ||
+    (dayMod.value === -1 && (!!startTimeMod.value || !!endTimeMod.value))
+);
+
+const save = () => {
+  if (!errors.value) {
+    emit('ok', {
+      day: dayMod.value,
+      start: startTimeMod.value || null,
+      duration: timeToMinutes(durationTimeMod.value),
+      week: weekMod.value === 'general' ? null : weekMod.value
+    });
+  }
+};
+
+watch(dayMod, newDay => {
+  if (newDay === -1) {
+    startTimeMod.value = '';
+    endTimeMod.value = '';
+  } else if (!startTimeMod.value) {
+    startTimeMod.value = getMinPlaceableTime();
+    endTimeMod.value = minutesToTime(
+      timeToMinutes(startTimeMod.value) + timeToMinutes(durationTimeMod.value)
+    );
+  }
+});
 </script>
 
 <template>
   <TimeBlockDialogContent :get-color="getColor" :get-font-size="getFontSize">
     <template #start-time>
       <TimeInput
+        ref="startTimeRef"
         v-model="startTimeMod"
+        :disable="dayMod === -1"
+        :disable-validation="disableTimeValidation"
         label="Inici"
         time-picker
         :time-options="startTimeOptions"
@@ -106,7 +145,10 @@ const onDurationChange = newDurationTime => {
 
     <template #end-time>
       <TimeInput
+        ref="endTimeRef"
         v-model="endTimeMod"
+        :disable="dayMod === -1"
+        :disable-validation="disableTimeValidation"
         label="Fi"
         time-picker
         :time-options="endTimeOptions"
@@ -125,6 +167,7 @@ const onDurationChange = newDurationTime => {
 
     <template #duration>
       <TimeInput
+        ref="durationRef"
         v-model="durationTimeMod"
         label="Duració"
         :min-value="minutesToTime(scheduleDurationMin)"
@@ -140,12 +183,17 @@ const onDurationChange = newDurationTime => {
     </template>
 
     <template #week-day>
-      <q-btn-toggle
-        v-model="weekDayMod"
-        :options="workingDaysShort.map((label, index) => ({ label, value: index }))"
+      <q-tabs v-model="dayMod" dense :active-bg-color="getColor('day')" indicator-color="transparent">
+        <q-tab v-for="(label, index) in workingDaysShort" :name="index" :label="label" class="border-8" />
+      </q-tabs>
+
+      <q-btn
+        icon="close"
         unelevated
-        :toggle-color="getColor('week')">
-      </q-btn-toggle>
+        :text-color="getColor('headerIcons')"
+        round
+        @click="dayMod = -1"
+        class="q-ml-sm" />
     </template>
 
     <template #week>
@@ -199,16 +247,11 @@ const onDurationChange = newDurationTime => {
       <q-btn label="Cancel·lar" flat no-caps @click="$emit('cancel')" />
 
       <q-btn
+        :disable="errors"
         label="Guardar"
         :color="getColor('okBtn')"
         no-caps
-        @click="
-          $emit('ok', {
-            start: startTimeMod,
-            duration: timeToMinutes(durationTimeMod),
-            week: weekMod === 'general' ? null : weekMod
-          })
-        "
+        @click="save"
         class="save-btn" />
     </template>
   </TimeBlockDialogContent>
