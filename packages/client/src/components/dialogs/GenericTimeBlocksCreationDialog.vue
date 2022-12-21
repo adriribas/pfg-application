@@ -2,18 +2,19 @@
 import { ref } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
 
+import { useTimeBlocksStore } from '@/stores';
 import { useCalendar } from '@/util';
 import GenericTimeBlockCreationItem from '@/components/schedule/studies/modification/GenericTimeBlockCreationItem.vue';
 
-const props = defineProps({ timeBlocks: Array });
 defineEmits([...useDialogPluginComponent.emits]);
 
 const { dialogRef, onDialogOK, onDialogCancel, onDialogHide } = useDialogPluginComponent();
-const { getStylingGetters } = useCalendar();
+const timeBlocksStore = useTimeBlocksStore();
+const { isGeneric, getStylingGetters } = useCalendar();
 
 const { getColor } = getStylingGetters('generic');
 
-const timeBlocksMod = ref(props.timeBlocks.map(timeBlock => ({ ...timeBlock })));
+const timeBlocksMod = ref(timeBlocksStore.filteredAll(isGeneric).map(timeBlock => ({ ...timeBlock })));
 const modTimeBlockIndex = ref(-1);
 const creatingTimeBlock = ref(false);
 const removedTimeBlocks = ref([]);

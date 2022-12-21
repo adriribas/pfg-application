@@ -313,7 +313,7 @@ const processData = async (file, uploading, percentage, error) => {
   }
 };
 
-export const usePlaDocent = file => {
+export default file => {
   const uploading = ref(false);
   const percentage = ref(0);
   const error = ref('');

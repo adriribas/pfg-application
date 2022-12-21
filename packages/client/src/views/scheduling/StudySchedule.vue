@@ -5,7 +5,6 @@ import _ from 'lodash';
 
 import { useAuthStore, useTimeBlocksStore, useOverlappingStore } from '@/stores';
 import { studiesApi, subjectsApi, genericTimeBlocksApi } from '@/api';
-//import { useStudySchedule } from '@/composables';
 import { useConstants } from '@/util';
 import StudyScheduleVisualization from '@/components/schedule/studies/StudyScheduleVisualization.vue';
 import StudyScheduleModification from '@/components/schedule/studies/modification/StudyScheduleModification.vue';
@@ -21,13 +20,11 @@ const router = useRouter();
 const authStore = useAuthStore();
 const timeBlocksStore = useTimeBlocksStore();
 const overLappingStore = useOverlappingStore();
-//const { loadStudyData, classifyTimeBlocks } = useStudySchedule();
 const {} = useConstants();
 
 const loading = ref(false);
 const study = ref(null);
 const subjects = ref([]);
-//const timeBlocks = ref({});
 
 const goToStudyChoosing = () => router.replace({ name: 'studyScheduleChoosing' });
 
@@ -104,12 +101,12 @@ const load = async () => {
     const processedSubjects = processSubjects(rawSubjects, processedStudies);
     const mainStudy = processedStudies.find(({ abv }) => abv === props.studyAbv);
 
-    console.log('Proc studies', processedStudies);
-    console.log('Proc subjects', processedSubjects);
-
     timeBlocksStore.setTimeBlocks([...getTimeBlocks(processedSubjects), ...(await loadGenericTimeBlocks())]);
     study.value = _.pick(mainStudy, ['abv', 'name']);
-    subjects.value = processedSubjects /* .map(({ groups, ...subject }) => subject) */;
+    subjects.value = processedSubjects.map(({ groups, ...subject }) => ({
+      groups: groups.map(({ timeBlocks, ...group }) => group),
+      ...subject
+    }));
 
     if (props.editMode) {
       overLappingStore.initLabTypesOverlapping(props.semester, subjects.value);

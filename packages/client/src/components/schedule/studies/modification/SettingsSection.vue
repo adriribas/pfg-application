@@ -2,8 +2,6 @@
 import { useQuasar } from 'quasar';
 import _ from 'lodash';
 
-import { useTimeBlocksStore } from '@/stores';
-import { useCalendar } from '@/util';
 import GenericTimeBlocksCreationDialog from '@/components/dialogs/GenericTimeBlocksCreationDialog.vue';
 import TimeBlocksCreationDialog from '@/components/dialogs/TimeBlocksCreationDialog.vue';
 
@@ -29,16 +27,12 @@ const emit = defineEmits([
 ]);
 
 const $q = useQuasar();
-const timeBlocksStore = useTimeBlocksStore();
-const { isGeneric } = useCalendar();
 
 const openGenericTimeBlocksCreation = () =>
   $q
     .dialog({
       component: GenericTimeBlocksCreationDialog,
-      componentProps: {
-        timeBlocks: timeBlocksStore.filteredAll(isGeneric)
-      }
+      componentProps: {}
     })
     .onOk(({ create, update, remove }) => {
       emit(
@@ -54,8 +48,7 @@ const openTimeBlocksCreation = () =>
       component: TimeBlocksCreationDialog,
       componentProps: {
         studyAbv: props.study.abv,
-        subjects: props.subjects.map(subject => _.pick(subject, ['code', 'name', 'groups', 'sharedBy'])),
-        timeBlocks: timeBlocksStore.filteredAll(timeBlock => !isGeneric(timeBlock))
+        subjects: props.subjects
       }
     })
     .onOk(({ create, remove }) => emit('modify-time-blocks', create, remove));

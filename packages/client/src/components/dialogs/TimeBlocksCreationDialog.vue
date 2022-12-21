@@ -3,44 +3,47 @@ import { ref, computed } from 'vue';
 import { useDialogPluginComponent } from 'quasar';
 import _ from 'lodash';
 
+import { useTimeBlocksStore } from '@/stores';
 import { useConstants, useCalendar, useGeneral } from '@/util';
 
 const props = defineProps({
   studyAbv: String,
-  subjects: Array,
-  timeBlocks: Array
+  subjects: Array
 });
 defineEmits([...useDialogPluginComponent.emits]);
 
 const { dialogRef, onDialogOK, onDialogCancel, onDialogHide } = useDialogPluginComponent();
+const timeBlocksStore = useTimeBlocksStore();
 const { groupTypeLabels, pluralizedGroupTypeLabels, timeBlockDefaults } = useConstants();
-const { minutesToTime, getEndTime, getStylingGetters } = useCalendar();
+const { minutesToTime, getEndTime, isGeneric, getStylingGetters } = useCalendar();
 const { text } = useGeneral();
 
-const subjectsMod = props.subjects.map(({ groups, ...subjectData }) => ({
-  ...subjectData,
-  groups: groups.map(({ id, type, number, studies }) => {
-    const timeBlocks = props.timeBlocks.filter(({ group }) => group.id === id);
-    return {
-      id,
-      type,
-      number,
-      timeBlocks,
-      studies: !timeBlocks.length ? studies : timeBlocks[0].group.studies
-    };
-  })
-}));
 const subject = ref(null);
 const groupType = ref('big');
 const newTimeBlocks = ref([]);
 const removedTimeBlocks = ref([]);
 
+const timeBlocks = computed(() => timeBlocksStore.filteredAll(timeBlock => !isGeneric(timeBlock)));
 const groupTypeLabel = computed(() => groupTypeLabels[groupType.value]);
 const pluralizedGroupTypeLabel = computed(() => pluralizedGroupTypeLabels[groupType.value]);
 const getColor = computed(() => getStylingGetters(subject.value ? groupType.value : 'default').getColor);
 const subjectGroups = computed(() =>
   !subject.value ? [] : subject.value.groups.filter(({ type }) => type === groupType.value)
 );
+
+const subjectsMod = props.subjects.map(({ groups, ...subjectData }) => ({
+  ...subjectData,
+  groups: groups.map(({ id, type, number, studies }) => {
+    const groupTimeBlocks = timeBlocks.value.filter(({ group }) => group.id === id);
+    return {
+      id,
+      type,
+      number,
+      timeBlocks: groupTimeBlocks,
+      studies: !groupTimeBlocks.length ? studies : groupTimeBlocks[0].group.studies
+    };
+  })
+}));
 
 const findGroup = groupId => subject.value.groups.find(({ id }) => id === groupId);
 const addNewTimeBlock = groupId => {
@@ -65,8 +68,6 @@ const removeTimeBlock = (groupId, index) => {
   }
   group.timeBlocks.splice(index, 1);
 };
-
-console.log(subjectsMod);
 </script>
 
 <template>
@@ -161,7 +162,7 @@ console.log(subjectsMod);
                 </div>
 
                 <q-item
-                  v-for="({ id: timeBlockId, day, start, duration, week, isNew }, index) in timeBlocks"
+                  v-for="({ id: timeBlockId, start, duration, week, isNew }, index) in timeBlocks"
                   :key="`${timeBlockId}-${index}`">
                   <div class="row col q-pa-sm border-8 shadow-5 bg-b4">
                     <q-badge
