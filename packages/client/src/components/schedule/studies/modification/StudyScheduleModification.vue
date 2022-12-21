@@ -74,6 +74,7 @@ const {
   doMove
 } = useTimeBlockPlacing(placedTimeBlocks, unplacedTimeBlocks);
 const {
+  moving,
   dragging,
   onDragStart,
   onDragEnd,
@@ -95,10 +96,29 @@ const breadcrumbsData = [
   { label: `${semesterLabels[props.semester - 1]} Q` }
 ];
 
+const timeBlocksOverlappingStripes = computed(() => {
+  if (!dragging.value) {
+    return () => [];
+  }
+  const {
+    id: timeBlockId,
+    group: { id: groupId }
+  } = dragging.value;
+
+  return day =>
+    placedTimeBlocks.value[day].reduce(
+      (accum, { id, group, start, duration }) =>
+        group.id !== groupId || id === timeBlockId ? accum : [...accum, { start, duration }],
+      []
+    );
+});
 const overlappingMarkers = computed(() => day => {
   const markers = [];
 
+  showTimeBlocksOverlapping.value && markers.push(...timeBlocksOverlappingStripes.value(day));
   showLabTypesOverlapping.value && markers.push(...overLappingStore.overlappingStripes(day));
+  showProfessorsOverlapping.value && markers.push(...[]);
+  showRoomsOverlapping.value && markers.push(...[]);
 
   return markers;
 });
@@ -454,7 +474,7 @@ const openModification = ({ timeBlock, labTypesOverlapping, weekDay, getColor, g
           :drag-over="onDragOver"
           :drag-leave="onDragLeave"
           :drop="onDropCalendar"
-          :intervals-front="dragging">
+          :intervals-front="!!dragging">
           <template #breadcrumbs>
             <Breadcrumbs :elements="breadcrumbsData" />
           </template>
@@ -540,7 +560,7 @@ const openModification = ({ timeBlock, labTypesOverlapping, weekDay, getColor, g
             class="q-mt-md">
             <TimeBlocksSection
               :subjects="subjects"
-              :dragging="dragging"
+              :dragging="!!dragging"
               :get-subject-placed="subjectCode => getSubjectPlaced(subjectCode).filter(applyFilters)"
               :get-generic-placed="getGenericPlaced"
               :get-subject-unplaced="subjectCode => getSubjectUnplaced(subjectCode).filter(applyFilters)"

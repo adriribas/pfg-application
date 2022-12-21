@@ -4,7 +4,7 @@ import { useDialogPluginComponent } from 'quasar';
 import _ from 'lodash';
 
 import { useConstants, useGeneral } from '@/util';
-import TimeBlockModificationDialogContent from '@/components/schedule/TimeBlockModificationDialogContent.vue';
+import TimeBlockModificationDialogContent from '@/components/schedule/studies/modification/TimeBlockModificationDialogContent.vue';
 
 const props = defineProps({
   day: Number,
@@ -186,7 +186,7 @@ const getOverlappingStudies = labTypeName => {
               <q-item-section>
                 <q-item-label :class="[text(getColor('data'))]">{{ name }}</q-item-label>
                 <q-item-label caption :class="[text(getColor('captions'))]">
-                  {{ amount }} laboratori{{ amount > 1 ? 's' : '' }}
+                  {{ amount }} aul{{ amount > 1 ? 'es' : 'a' }}
                 </q-item-label>
               </q-item-section>
 

@@ -106,8 +106,7 @@ const openTimeBlocksCreation = () =>
     <q-item-label header>Control de Solapaments</q-item-label>
 
     <MenuItemCheck
-      :model-value="false && timeBlocksOverlapping"
-      disable
+      :model-value="timeBlocksOverlapping"
       label="Solapaments de blocs horaris"
       caption="Indica a l'horari els els solapaments causats per blocs horaris del mateix grup"
       color="m6"

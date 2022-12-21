@@ -26,8 +26,8 @@ export default (placedTimeBlocks, unplacedTimeBlocks) => {
   const { timeBlockShakeAnimation, draggingCursor } = useConstants();
   const { timeToMinutes, minutesToTime, getMaxPlaceableTime } = useCalendar();
   const { stop, prevent, stopPrevent } = useGeneral();
-  const placing = ref(false);
-  const moving = ref(false);
+  const placing = ref(null);
+  const moving = ref(null);
   const dragging = computed(() => placing.value || moving.value);
   const { doPlace, doUnplace, doMove } = useTimeBlockPlacing(placedTimeBlocks, unplacedTimeBlocks);
 
@@ -44,7 +44,7 @@ export default (placedTimeBlocks, unplacedTimeBlocks) => {
       elem.style.animationName = timeBlockShakeAnimation;
     });
 
-  const onDragStart = (event, timeBlock /* id, duration */, isGeneric, weekDay = -1, action = 'place') => {
+  const onDragStart = (event, timeBlock, isGeneric, weekDay = -1, action = 'place') => {
     event.dataTransfer.dropEffect = 'move';
     event.dataTransfer.effectAllowed = 'move';
     event.dataTransfer.setData('action', action);
@@ -55,9 +55,9 @@ export default (placedTimeBlocks, unplacedTimeBlocks) => {
 
     setTimeout(async () => {
       if (action === 'place') {
-        placing.value = true;
+        placing.value = timeBlock;
       } else {
-        moving.value = true;
+        moving.value = timeBlock;
       }
       if (timeBlock.group?.type === 'small') {
         overlappingStore.setSelectedLabTypes(timeBlock.subject.labTypes);
@@ -72,8 +72,8 @@ export default (placedTimeBlocks, unplacedTimeBlocks) => {
   const onDragEnd = event => {
     event.target.style.display = 'block';
     //doShakeAnimation(event.target);
-    placing.value = false;
-    moving.value = false;
+    placing.value = null;
+    moving.value = null;
     overlappingStore.clear();
   };
 

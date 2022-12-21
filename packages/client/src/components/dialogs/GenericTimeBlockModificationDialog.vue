@@ -4,7 +4,7 @@ import { useDialogPluginComponent } from 'quasar';
 import _ from 'lodash';
 
 import { useGeneral } from '@/util';
-import TimeBlockModificationDialogContent from '@/components/schedule/TimeBlockModificationDialogContent.vue';
+import TimeBlockModificationDialogContent from '@/components/schedule/studies/modification/TimeBlockModificationDialogContent.vue';
 
 const props = defineProps({
   day: Number,
