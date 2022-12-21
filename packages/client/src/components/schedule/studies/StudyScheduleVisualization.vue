@@ -2,21 +2,22 @@
 import { useQuasar } from 'quasar';
 import _ from 'lodash';
 
+import { useTimeBlocksStore } from '@/stores';
 import { useConstants, useCalendar } from '@/util';
 import Schedule from '@/components/schedule/Schedule.vue';
+import TimeBlock from '@/components/schedule/TimeBlock.vue';
 import TimeBlockDetailDialog from '@/components/dialogs/TimeBlockDetailDialog.vue';
 import GenericTimeBlockDetailDialog from '@/components/dialogs/GenericTimeBlockDetailDialog.vue';
 
 const props = defineProps({
-  studyAbv: String,
+  study: Object,
   course: Number,
-  semester: Number,
-  timeBlocks: Array
+  semester: Number
 });
 const emit = defineEmits([]);
 
 const $q = useQuasar();
-
+const timeBlocksStore = useTimeBlocksStore();
 const { courseLabels, semesterLabels } = useConstants();
 const { getEndTime, isGeneric } = useCalendar();
 
@@ -26,18 +27,19 @@ const breadcrumbsData = [
     to: 'studyScheduleChoosing',
     color: 'm6'
   },
-  { icon: 'school', label: props.studyAbv },
+  { icon: 'school', label: props.study.abv },
   { label: courseLabels[props.course - 1] },
   { label: `${semesterLabels[props.semester - 1]} Q` }
 ];
 
-const isShared = ({ sharedBy }) => sharedBy.length > 1;
-const filter = ({ subject, group: { studies } }) =>
-  !isShared(subject) || studies.some(({ abv }) => abv === props.studyAbv);
+const filter = timeBlock =>
+  isGeneric(timeBlock) ||
+  timeBlock.subject.sharedBy.length <= 1 ||
+  timeBlock.group.studies.some(({ abv }) => abv === props.study.abv);
 
-const openDetail = ({ timeBlock, getColor, getFontSize }) => {
+const openDetail = ({ day, timeBlock, getColor, getFontSize }) => {
   const { start, duration, week } = timeBlock;
-  const commonProps = { start, end: getEndTime(start, duration), duration, week, getColor, getFontSize };
+  const commonProps = { day, start, end: getEndTime(start, duration), duration, week, getColor, getFontSize };
 
   if (isGeneric(timeBlock)) {
     const { label, subLabel } = timeBlock;
@@ -63,15 +65,13 @@ const openDetail = ({ timeBlock, getColor, getFontSize }) => {
 
 <template>
   <div class="border-10 shadow-5 bg-b8 visualization-container">
-    <Schedule
-      :time-blocks="
-        timeBlocks.map(weekDayTimeBlocks =>
-          weekDayTimeBlocks.filter(timeBlock => isGeneric(timeBlock) || filter(timeBlock))
-        )
-      "
-      @press-time-block="openDetail">
+    <Schedule :time-blocks="timeBlocksStore.filteredPlaced(filter)" @press-time-block="openDetail">
       <template #breadcrumbs>
         <Breadcrumbs :elements="breadcrumbsData" />
+      </template>
+
+      <template #time-block="{ weekDay, props }">
+        <TimeBlock :="props" :day="weekDay" @press="data => openDetail({ day: weekDay, ...data })" />
       </template>
     </Schedule>
   </div>

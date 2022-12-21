@@ -15,7 +15,6 @@ const props = defineProps({
   drop: Function,
   intervalsFront: Boolean
 });
-defineEmits(['press-time-block']);
 
 const {
   weekDays,
@@ -137,22 +136,11 @@ watchEffect(() => updateCalendarLayout(week.value));
                     left: getTimeBlockLeft(colIndex, timeBlockGroup),
                     width: getTimeBlockWidth(timeBlock, colIndex, timeBlockGroup),
                     timeStartPos,
-                    timeDurationHeight
-                  }">
-                  <TimeBlock
-                    :time-block="timeBlock"
-                    :top="timeStartPos(timeBlock.start)"
-                    :height="timeDurationHeight(timeBlock.duration)"
-                    :left="getTimeBlockLeft(colIndex, timeBlockGroup)"
-                    :width="getTimeBlockWidth(timeBlock, colIndex, timeBlockGroup)"
-                    :time-start-pos="timeStartPos"
-                    :time-duration-height="timeDurationHeight"
-                    :get-color="
-                      getStylingGetters(isGeneric(timeBlock) ? 'generic' : timeBlock.group.type).getColor
-                    "
-                    :get-font-size="getStylingGetters().getFontSize"
-                    @press="data => $emit('press-time-block', { weekDay: weekday - 1, ...data })" />
-                </slot>
+                    timeDurationHeight,
+                    getColor: getStylingGetters(isGeneric(timeBlock) ? 'generic' : timeBlock.group.type)
+                      .getColor,
+                    getFontSize: getStylingGetters().getFontSize
+                  }" />
               </template>
             </template>
 

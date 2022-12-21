@@ -2,6 +2,7 @@
 import { useQuasar } from 'quasar';
 import _ from 'lodash';
 
+import { useTimeBlocksStore } from '@/stores';
 import { useCalendar } from '@/util';
 import GenericTimeBlocksCreationDialog from '@/components/dialogs/GenericTimeBlocksCreationDialog.vue';
 import TimeBlocksCreationDialog from '@/components/dialogs/TimeBlocksCreationDialog.vue';
@@ -14,11 +15,7 @@ const props = defineProps({
   professorsOverlapping: Boolean,
   roomsOverlapping: Boolean,
   study: Object,
-  subjects: Array,
-  getPlacedTimeBlocks: Function,
-  getSubjectPlacedTimeBlocks: Function,
-  getUnplacedTimeBlocks: Function,
-  getSubjectUnplacedTimeBlocks: Function
+  subjects: Array
 });
 const emit = defineEmits([
   'update:assignation-filter',
@@ -32,6 +29,7 @@ const emit = defineEmits([
 ]);
 
 const $q = useQuasar();
+const timeBlocksStore = useTimeBlocksStore();
 const { isGeneric } = useCalendar();
 
 const openGenericTimeBlocksCreation = () =>
@@ -39,9 +37,7 @@ const openGenericTimeBlocksCreation = () =>
     .dialog({
       component: GenericTimeBlocksCreationDialog,
       componentProps: {
-        timeBlocks: [..._.flatten(props.getPlacedTimeBlocks()), ...props.getUnplacedTimeBlocks()].filter(
-          isGeneric
-        )
+        timeBlocks: timeBlocksStore.filteredAll(isGeneric)
       }
     })
     .onOk(({ create, update, remove }) => {
@@ -59,9 +55,7 @@ const openTimeBlocksCreation = () =>
       componentProps: {
         studyAbv: props.study.abv,
         subjects: props.subjects.map(subject => _.pick(subject, ['code', 'name', 'groups', 'sharedBy'])),
-        timeBlocks: [..._.flatten(props.getPlacedTimeBlocks()), ...props.getUnplacedTimeBlocks()].filter(
-          timeBlock => !isGeneric(timeBlock)
-        )
+        timeBlocks: timeBlocksStore.filteredAll(timeBlock => !isGeneric(timeBlock))
       }
     })
     .onOk(({ create, remove }) => emit('modify-time-blocks', create, remove));

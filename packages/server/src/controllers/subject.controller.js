@@ -128,23 +128,6 @@ export const filter = async (req, res) => {
       where: buildWhere(filterData),
       include: [
         ...buildAssociationInclude({ study: { abv: study, course }, labType: { name: labType } }),
-        /* {
-          model: StudyModel,
-          where: buildWhere({ abv: studyAbv }),
-          through: {
-            where: course && buildWhere({ course }),
-            attributes: ['course']
-          },
-          attributes: ['abv', 'name']
-        },
-        {
-          model: LabTypeModel,
-          where: buildWhere({ name: labTypeName }),
-          through: {
-            attributes: []
-          },
-          attributes: ['name']
-        }, */
         ...buildInclude(include)
       ],
       attributes: fields

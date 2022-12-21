@@ -2,9 +2,8 @@ import { ref, computed, watch } from 'vue';
 import { useQuasar } from 'quasar';
 import _ from 'lodash';
 
-import { useOverlappingStore } from '@/stores';
+import { useTimeBlocksStore, useOverlappingStore } from '@/stores';
 import { timeBlocksApi, genericTimeBlocksApi } from '@/api';
-import { useTimeBlockPlacing } from '@/composables';
 import { useConstants, useCalendar, useGeneral } from '@/util';
 
 const doUpdateApiCall = (isGeneric, id, { day, start, duration, week }) => {
@@ -20,8 +19,9 @@ const doUpdateApiCall = (isGeneric, id, { day, start, duration, week }) => {
     : (isGeneric ? genericTimeBlocksApi : timeBlocksApi).update(id, data);
 };
 
-export default (placedTimeBlocks, unplacedTimeBlocks) => {
+export default () => {
   const $q = useQuasar();
+  const timeBlocksStore = useTimeBlocksStore();
   const overlappingStore = useOverlappingStore();
   const { timeBlockShakeAnimation, draggingCursor } = useConstants();
   const { timeToMinutes, minutesToTime, getMaxPlaceableTime } = useCalendar();
@@ -29,7 +29,6 @@ export default (placedTimeBlocks, unplacedTimeBlocks) => {
   const placing = ref(null);
   const moving = ref(null);
   const dragging = computed(() => placing.value || moving.value);
-  const { doPlace, doUnplace, doMove } = useTimeBlockPlacing(placedTimeBlocks, unplacedTimeBlocks);
 
   const doShakeAnimation = elem =>
     new Promise(res => {
@@ -117,21 +116,21 @@ export default (placedTimeBlocks, unplacedTimeBlocks) => {
 
     try {
       if (action === 'place') {
-        doPlace(id, newWeekDay - 1, newStart, newWeek);
+        timeBlocksStore.place(id, newWeekDay - 1, newStart, newWeek);
 
         try {
           await doUpdateApiCall(isGeneric, id, { day: newWeekDay - 1, start: newStart, week: newWeek });
         } catch (e) {
-          doUnplace(id, newWeekDay - 1);
+          timeBlocksStore.unplace(id, newWeekDay - 1);
           throw e;
         }
       } else {
-        const oldData = doMove(id, weekDay, newWeekDay - 1, newStart, newWeek);
+        const oldData = timeBlocksStore.move(id, weekDay, newWeekDay - 1, newStart, newWeek);
 
         try {
           await doUpdateApiCall(isGeneric, id, { day: newWeekDay - 1, start: newStart, week: newWeek });
         } catch (e) {
-          doMove(id, newWeekDay - 1, weekDay, oldData.start, oldData.duration);
+          timeBlocksStore.move(id, newWeekDay - 1, weekDay, oldData.start, oldData.duration);
           throw e;
         }
       }
@@ -154,11 +153,11 @@ export default (placedTimeBlocks, unplacedTimeBlocks) => {
     const weekDay = +event.dataTransfer.getData('weekDay');
     const isGeneric = +event.dataTransfer.getData('isGeneric');
 
-    const oldData = doUnplace(id, weekDay);
+    const oldData = timeBlocksStore.unplace(id, weekDay);
     try {
       await doUpdateApiCall(isGeneric, id, { day: null, start: null, week: null });
     } catch (e) {
-      doPlace(id, weekDay, oldData.start, oldData.week);
+      timeBlocksStore.place(id, weekDay, oldData.start, oldData.week);
 
       console.error(e);
       $q.notify({

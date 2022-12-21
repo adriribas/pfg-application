@@ -1,8 +1,9 @@
 <script setup>
-import { useCalendar, useGeneral } from '@/util';
+import { useCalendar, useGeneral, useConstants } from '@/util';
 import TimeBlockDialogContent from '@/components/schedule/TimeBlockDialogContent.vue';
 
 const props = defineProps({
+  day: Number,
   start: String,
   end: String,
   duration: Number,
@@ -15,7 +16,8 @@ const props = defineProps({
 defineEmits(['ok']);
 
 const { minutesToTime } = useCalendar();
-const { pt } = useGeneral();
+const { text, pt } = useGeneral();
+const { workingDays } = useConstants();
 </script>
 
 <template>
@@ -28,7 +30,7 @@ const { pt } = useGeneral();
 
     <template #week>
       <q-badge
-        :label="week ? `Setmanes ${week}` : 'Cada setmana'"
+        :label="`${workingDays[day]}, ${week ? `setmanes ${week}` : 'cada setmana'}`"
         outline
         :color="getColor('week')"
         class="q-py-xs"

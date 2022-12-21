@@ -182,18 +182,22 @@ watch(dayMod, newDay => {
         class="time-inputs" />
     </template>
 
-    <template #week-day>
-      <q-tabs v-model="dayMod" dense :active-bg-color="getColor('day')" indicator-color="transparent">
-        <q-tab v-for="(label, index) in workingDaysShort" :name="index" :label="label" class="border-8" />
-      </q-tabs>
+    <template #week-day="{ containerProps, iconProps }">
+     
+        <q-icon :="iconProps" />
 
-      <q-btn
-        icon="close"
-        unelevated
-        :text-color="getColor('headerIcons')"
-        round
-        @click="dayMod = -1"
-        class="q-ml-sm" />
+        <q-tabs v-model="dayMod" dense :active-bg-color="getColor('day')" indicator-color="transparent">
+          <q-tab v-for="(label, index) in workingDaysShort" :name="index" :label="label" class="border-8" />
+        </q-tabs>
+
+        <q-btn
+          icon="close"
+          unelevated
+          :text-color="getColor('headerIcons')"
+          round
+          @click="dayMod = -1"
+          class="q-ml-sm" />
+   
     </template>
 
     <template #week>

@@ -3,8 +3,8 @@ import { ref, computed } from 'vue';
 import { useQuasar } from 'quasar';
 import _ from 'lodash';
 
-import { useOverlappingStore } from '@/stores';
-import { useScheduleDragAndDrop, useTimeBlockPlacing } from '@/composables';
+import { useTimeBlocksStore, useOverlappingStore } from '@/stores';
+import { useScheduleDragAndDrop } from '@/composables';
 import { groupsApi, timeBlocksApi, genericTimeBlocksApi } from '@/api';
 import { useConstants, useCalendar, useGeneral } from '@/util';
 import Schedule from '@/components/schedule/Schedule.vue';
@@ -19,12 +19,23 @@ const props = defineProps({
   study: Object,
   course: Number,
   semester: Number,
-  subjects: Array,
-  timeBlocks: Object
+  subjects: Array
 });
 
 const $q = useQuasar();
+const timeBlocksStore = useTimeBlocksStore();
 const overLappingStore = useOverlappingStore();
+const {
+  moving,
+  dragging,
+  onDragStart,
+  onDragEnd,
+  onDragEnter,
+  onDragOver,
+  onDragLeave,
+  onDropCalendar,
+  onDropUnplacedZone
+} = useScheduleDragAndDrop();
 const { courseLabels, semesterLabels, groupTypeLabels } = useConstants();
 const { getEndTime, isGeneric, getStylingGetters } = useCalendar();
 const {} = useGeneral();
@@ -36,12 +47,12 @@ const showTimeBlocksOverlapping = ref(true);
 const showLabTypesOverlapping = ref(true);
 const showProfessorsOverlapping = ref(true);
 const showRoomsOverlapping = ref(true);
-const placedTimeBlocks = ref(props.timeBlocks.placed);
-const unplacedTimeBlocks = ref(props.timeBlocks.unplaced);
 
 const isShared = ({ sharedBy }) => sharedBy.length > 1;
+
 const filters = computed(() => {
   const filters = [];
+
   toggleAssignationFilter.value &&
     filters.push(({ subject, group: { studies } }) => !isShared(subject) || studies.length);
   toggleStudyFilter.value &&
@@ -49,41 +60,11 @@ const filters = computed(() => {
       ({ subject, group: { studies } }) =>
         !isShared(subject) || !studies.length || studies.some(({ abv }) => abv === props.study.abv)
     );
+
   return filters;
 });
-const applyFilters = timeBlock => isGeneric(timeBlock) || filters.value.every(filter => filter(timeBlock));
-const filteredPlacedTimeBlocks = computed(() =>
-  placedTimeBlocks.value.map(weekDayTimeBlocks => weekDayTimeBlocks.filter(applyFilters))
-);
-const filteredUnplacedTimeBlocks = computed(() => unplacedTimeBlocks.value.filter(applyFilters));
 
-const {
-  refreshPlacedTimeBlocks,
-  getSubjectPlaced,
-  getGenericPlaced,
-  getSubjectUnplaced,
-  getGenericUnplaced,
-  findPlaced,
-  removeFromPlaced,
-  findUnplaced,
-  addToUnplaced,
-  removeFromUnplaced,
-  findTimeBlock,
-  doPlace,
-  doUnplace,
-  doMove
-} = useTimeBlockPlacing(placedTimeBlocks, unplacedTimeBlocks);
-const {
-  moving,
-  dragging,
-  onDragStart,
-  onDragEnd,
-  onDragEnter,
-  onDragOver,
-  onDragLeave,
-  onDropCalendar,
-  onDropUnplacedZone
-} = useScheduleDragAndDrop(placedTimeBlocks, unplacedTimeBlocks);
+const applyFilters = timeBlock => isGeneric(timeBlock) || filters.value.every(filter => filter(timeBlock));
 
 const breadcrumbsData = [
   {
@@ -97,20 +78,19 @@ const breadcrumbsData = [
 ];
 
 const timeBlocksOverlappingStripes = computed(() => {
-  if (!dragging.value) {
+  if (!dragging.value || isGeneric(dragging.value)) {
     return () => [];
   }
+
   const {
     id: timeBlockId,
     group: { id: groupId }
   } = dragging.value;
 
   return day =>
-    placedTimeBlocks.value[day].reduce(
-      (accum, { id, group, start, duration }) =>
-        group.id !== groupId || id === timeBlockId ? accum : [...accum, { start, duration }],
-      []
-    );
+    timeBlocksStore.filteredPlaced(
+      timeBlock => !isGeneric(timeBlock) && timeBlock.group.id === groupId && timeBlock.id !== timeBlockId
+    )[day];
 });
 const overlappingMarkers = computed(() => day => {
   const markers = [];
@@ -124,7 +104,7 @@ const overlappingMarkers = computed(() => day => {
 });
 
 const onResize = async (weekDay, id, { start, duration }) => {
-  const { timeBlock } = findPlaced(weekDay, id);
+  const { timeBlock } = timeBlocksStore.findPlaced(weekDay, id);
   const currentStart = timeBlock.start;
   const currentDuration = timeBlock.duration;
   const updateData = { duration };
@@ -134,13 +114,13 @@ const onResize = async (weekDay, id, { start, duration }) => {
     timeBlock.start = start;
     updateData.start = start;
   }
-  refreshPlacedTimeBlocks();
+  timeBlocksStore.refreshPlaced();
   try {
     await timeBlocksApi.update(id, updateData);
   } catch (e) {
     timeBlock.start = currentStart;
     timeBlock.duration = currentDuration;
-    refreshPlacedTimeBlocks();
+    timeBlocksStore.refreshPlaced();
   }
 };
 
@@ -183,7 +163,7 @@ const createTimeBlocks = ({ subjectCode, id: groupId, amount }) => {
 };
 const removeTimeBlocks = timeBlockIds =>
   timeBlockIds.map(async id => {
-    const { timeBlock } = findTimeBlock(id);
+    const { timeBlock } = timeBlocksStore.findTimeBlock(id);
     try {
       await timeBlocksApi.remove(id);
       $q.notify({
@@ -212,22 +192,22 @@ const modifyTimeBlocksSync = async (toCreate, toRemove) => {
   for (const newGroupTimeBlocks of createdTimeBlocks) {
     for (const promise of newGroupTimeBlocks) {
       try {
-        addToUnplaced(await promise);
+        timeBlocksStore.addToUnplaced(await promise);
       } catch ({}) {}
     }
   }
   for (const promise of removedTimeBlocks) {
     try {
-      const { index, weekDay } = findTimeBlock(await promise);
+      const { index, weekDay } = timeBlocksStore.findTimeBlock(await promise);
       if (weekDay === -1) {
-        removeFromUnplaced(index);
+        timeBlocksStore.removeFromUnplaced(index);
       } else {
-        removeFromPlaced(weekDay, index);
+        timeBlocksStore.removeFromPlaced(weekDay, index);
       }
     } catch ({}) {}
   }
 
-  refreshPlacedTimeBlocks();
+  timeBlocksStore.refreshPlaced();
 };
 
 const createGenericTimeBlocks = toCreateTimeBlocksData =>
@@ -258,7 +238,7 @@ const createGenericTimeBlocks = toCreateTimeBlocksData =>
 
 const updateGenericTimeBlocks = toUpdateTimeBlocksData =>
   toUpdateTimeBlocksData.map(async ({ id, label, subLabel, start, duration }) => {
-    const { timeBlock } = start ? findPlaced(weekDay, id) : findUnplaced(id);
+    const { timeBlock } = start ? timeBlocksStore.findPlaced(weekDay, id) : timeBlocksStore.findUnplaced(id);
     try {
       const { data: updatedTimeBlock } = await genericTimeBlocksApi.update(id, { label, subLabel, duration });
       $q.notify({
@@ -278,7 +258,7 @@ const updateGenericTimeBlocks = toUpdateTimeBlocksData =>
   });
 const removeGenericTimeBlocks = timeBlockIds =>
   timeBlockIds.map(async id => {
-    const { timeBlock } = findTimeBlock(id);
+    const { timeBlock } = timeBlocksStore.findTimeBlock(id);
     try {
       await genericTimeBlocksApi.remove(id);
       $q.notify({
@@ -303,7 +283,7 @@ const modifyGenericTimeBlocksSync = async (toCreate, toUpdate, toRemove) => {
 
   for (const promise of createdTimeBlocks) {
     try {
-      addToUnplaced(
+      timeBlocksStore.addToUnplaced(
         _.pick(await promise, ['id', 'label', 'labelAbv', 'subLabel', 'day', 'start', 'duration', 'week'])
       );
     } catch ({}) {}
@@ -311,7 +291,7 @@ const modifyGenericTimeBlocksSync = async (toCreate, toUpdate, toRemove) => {
   for (const promise of updatedTimeBlocks) {
     try {
       const { id, label, labelAbv, subLabel, duration } = await promise;
-      const { timeBlock } = findTimeBlock(id);
+      const { timeBlock } = timeBlocksStore.findTimeBlock(id);
       timeBlock.label = label;
       timeBlock.labelAbv = labelAbv;
       timeBlock.subLabel = subLabel;
@@ -320,37 +300,39 @@ const modifyGenericTimeBlocksSync = async (toCreate, toUpdate, toRemove) => {
   }
   for (const promise of removedTimeBlocks) {
     try {
-      const { index, weekDay } = findTimeBlock(await promise);
+      const { index, weekDay } = timeBlocksStore.findTimeBlock(await promise);
       if (weekDay === -1) {
-        removeFromUnplaced(index);
+        timeBlocksStore.removeFromUnplaced(index);
       } else {
-        removeFromPlaced(weekDay, index);
+        timeBlocksStore.removeFromPlaced(weekDay, index);
       }
     } catch ({}) {}
   }
 
-  refreshPlacedTimeBlocks();
+  timeBlocksStore.refreshPlaced();
 };
 
 const updateWeekDay = (id, currentWeekDay, newWeekDay, start, week) => {
   if (currentWeekDay === newWeekDay) {
     if (currentWeekDay !== -1) {
-      refreshPlacedTimeBlocks();
+      timeBlocksStore.refreshPlaced();
     }
     return;
   }
 
   if (newWeekDay === -1) {
-    doUnplace(id, currentWeekDay);
+    timeBlocksStore.unplace(id, currentWeekDay);
   } else if (currentWeekDay === -1) {
-    doPlace(id, newWeekDay, start, week);
+    timeBlocksStore.place(id, newWeekDay, start, week);
   } else {
-    doMove(id, currentWeekDay, newWeekDay, start, week);
+    timeBlocksStore.move(id, currentWeekDay, newWeekDay, start, week);
   }
 };
 
 const updateTimeBlock = async (id, weekDay, { sharedBy: modSharedBy, ...modTimeData }, timeData) => {
-  const { timeBlock } = timeData.start ? findPlaced(weekDay, id) : findUnplaced(id);
+  const { timeBlock } = timeData.start
+    ? timeBlocksStore.findPlaced(weekDay, id)
+    : timeBlocksStore.findUnplaced(id);
 
   timeBlock.start = modTimeData.start;
   timeBlock.duration = modTimeData.duration;
@@ -370,7 +352,9 @@ const updateTimeBlock = async (id, weekDay, { sharedBy: modSharedBy, ...modTimeD
   }
 };
 const updateGenericTimeBlock = async (id, weekDay, modData, timeData) => {
-  const { timeBlock } = timeData.start ? findPlaced(weekDay, id) : findUnplaced(id);
+  const { timeBlock } = timeData.start
+    ? timeBlocksStore.findPlaced(weekDay, id)
+    : timeBlocksStore.findUnplaced(id);
 
   timeBlock.start = modData.start;
   timeBlock.duration = modData.duration;
@@ -469,7 +453,7 @@ const openModification = ({ timeBlock, labTypesOverlapping, weekDay, getColor, g
     <template #before>
       <div class="height-definer">
         <Schedule
-          :time-blocks="filteredPlacedTimeBlocks"
+          :time-blocks="timeBlocksStore.filteredPlaced(applyFilters)"
           :drag-enter="onDragEnter"
           :drag-over="onDragOver"
           :drag-leave="onDragLeave"
@@ -489,11 +473,6 @@ const openModification = ({ timeBlock, labTypesOverlapping, weekDay, getColor, g
               :show-professors-overlapping="showProfessorsOverlapping"
               :show-rooms-overlapping="showRoomsOverlapping"
               draggable="true"
-              :get-color="
-                getStylingGetters(isGeneric(props.timeBlock) ? 'generic' : props.timeBlock.group.type)
-                  .getColor
-              "
-              :get-font-size="getStylingGetters().getFontSize"
               @press="data => openModification({ weekDay, ...data })"
               @resize="resizeData => onResize(weekDay, props.timeBlock.id, resizeData)"
               @dragstart="onDragStart($event, props.timeBlock, isGeneric(props.timeBlock), weekDay, 'move')"
@@ -533,22 +512,9 @@ const openModification = ({ timeBlock, labTypesOverlapping, weekDay, getColor, g
               v-model:rooms-overlapping="showRoomsOverlapping"
               :subjects="subjects"
               :study="study"
-              :get-placed-time-blocks="() => placedTimeBlocks"
-              :get-subject-placed-time-blocks="getSubjectPlaced"
-              :get-unplaced-time-blocks="() => unplacedTimeBlocks"
-              :get-subject-unplaced-time-blocks="getSubjectUnplaced"
               @modify-time-blocks="modifyTimeBlocksSync"
               @modify-generic-time-blocks="modifyGenericTimeBlocksSync" />
           </q-expansion-item>
-
-          <!-- <q-expansion-item
-            group="main"
-            icon="join_left"
-            label="Solapaments"
-            header-class="text-m2"
-            expand-icon-class="text-m2"
-            class="q-mt-md">
-          </q-expansion-item> -->
 
           <q-expansion-item
             group="main"
@@ -561,10 +527,7 @@ const openModification = ({ timeBlock, labTypesOverlapping, weekDay, getColor, g
             <TimeBlocksSection
               :subjects="subjects"
               :dragging="!!dragging"
-              :get-subject-placed="subjectCode => getSubjectPlaced(subjectCode).filter(applyFilters)"
-              :get-generic-placed="getGenericPlaced"
-              :get-subject-unplaced="subjectCode => getSubjectUnplaced(subjectCode).filter(applyFilters)"
-              :get-generic-unplaced="getGenericUnplaced"
+              :filter="applyFilters"
               @drag-start="onDragStart"
               @drag-end="onDragEnd"
               @drop="onDropUnplacedZone"

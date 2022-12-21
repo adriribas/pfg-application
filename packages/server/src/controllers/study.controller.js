@@ -37,24 +37,30 @@ export const get = async (req, res) => {
   res.json(study);
 };
 
-const buildFilteredInclude = ({ subjectCode }) => {
+const buildInclude = ({ GenericTimeBlock }) => {
+  const include = [];
+
+  GenericTimeBlock &&
+    include.push({
+      model: GenericTimeBlock,
+      attributes: ['id', 'label', 'subLabel', 'day', 'start', 'duration', 'week']
+    });
+
+  return include;
+};
+
+const buildAssociationInclude = ({ subject }) => {
   const filteredInclude = [];
 
-  subjectCode &&
+  subject.code &&
     filteredInclude.push({
       model: SubjectModel,
-      where: buildWhere({ code: subjectCode }),
+      where: buildWhere({ code: subject.code }),
       through: { attributes: ['course'] },
       attributes: ['code']
     });
 
   return filteredInclude;
-};
-
-const buildInclude = ({}) => {
-  const include = [];
-
-  return include;
 };
 
 export const filter = async (req, res) => {
@@ -63,14 +69,14 @@ export const filter = async (req, res) => {
     query: { fields, include },
     body: {
       data: filterData,
-      associations: { subject: subjectCode }
+      associations: { subject }
     }
   } = req;
 
   res.json(
     await schoolScope(Model).findAll({
       where: buildWhere(filterData),
-      include: [...buildFilteredInclude({ subjectCode }), ...buildInclude(include)],
+      include: [...buildAssociationInclude({ subject: { code: subject } }), ...buildInclude(include)],
       attributes: fields
     })
   );

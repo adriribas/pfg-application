@@ -48,6 +48,8 @@ Study.associate = ({ User, School, Subject, StudySubject, Group, StudyGroup, Gen
   Study.hasMany(StudyGroup, { foreignKey: 'study' });
 
   Study.hasMany(GenericTimeBlock, { foreignKey: 'study' });
+
+  Study.allowedInclusions = [GenericTimeBlock];
 };
 
 Study.updatableFields = ['coordinador'];

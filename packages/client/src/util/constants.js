@@ -8,6 +8,7 @@ const roleMapping = {
 const courseLabels = ['Primer', 'Segon', 'Tercer', 'Quart', 'Cinquè', 'Sisè', 'Setè', 'Vuitè'];
 const semesterLabels = ['1r', '2n'];
 const weekDays = ['Diumenge', 'Dilluns', 'Dimarts', 'Dimecres', 'Dijous', 'Divendres', 'Dissabte'];
+const workingDays = ['Dilluns', 'Dimarts', 'Dimecres', 'Dijous', 'Divendres'];
 const workingDaysShort = ['Dl', 'Dt', 'Dc', 'Dj', 'Dv'];
 const groupTypeLabels = {
   big: 'Gran',
@@ -86,6 +87,7 @@ export default () => ({
   courseLabels,
   semesterLabels,
   weekDays,
+  workingDays,
   workingDaysShort,
   groupTypeLabels,
   pluralizedGroupTypeLabels,

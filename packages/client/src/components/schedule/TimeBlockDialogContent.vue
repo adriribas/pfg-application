@@ -60,8 +60,7 @@ const getIconProps = name => ({ name, size: '20pt', color: props.getColor('heade
     </q-card-section>
 
     <q-card-section class="row flex-center no-padding">
-      <q-icon name="calendar_today" size="20pt" :color="getColor('headerIcons')" class="q-mr-sm" />
-      <slot name="week-day" />
+      <slot name="week-day" :icon-props="getIconProps('calendar_today')" />
     </q-card-section>
 
     <q-card-section :class="[text(getColor('data'))]" class="row justify-around q-mx-md q-mt-md">
