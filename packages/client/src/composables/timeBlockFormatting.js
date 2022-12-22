@@ -1,12 +1,10 @@
-import { ref, computed, watch, watchEffect } from 'vue';
+import { ref, watch } from 'vue';
 import _ from 'lodash';
 
-import { useConstants, useCalendar, useGeneral } from '@/util';
-
-// Fer camp labelAbv virtual a genericTimeBlock (servidor) i afegir-lo a fields studySchedule.js
+import { useConstants, useCalendar } from '@/util';
 
 export default (timeBlock, width, height) => {
-  const { groupTypeLabels, scheduleIntervalMinutes, timeBlocksSizeLevels } = useConstants();
+  const { groupTypeLabels, timeBlocksSizeLevels } = useConstants();
   const { isGeneric } = useCalendar();
 
   const isWide = ref(false);

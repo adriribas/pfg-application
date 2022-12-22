@@ -2,31 +2,18 @@
 import { useQuasar } from 'quasar';
 import _ from 'lodash';
 
+import { useScheduleSettingsStore } from '@/stores';
 import GenericTimeBlocksCreationDialog from '@/components/dialogs/GenericTimeBlocksCreationDialog.vue';
 import TimeBlocksCreationDialog from '@/components/dialogs/TimeBlocksCreationDialog.vue';
 
 const props = defineProps({
-  assignationFilter: Boolean,
-  studyFilter: Boolean,
-  timeBlocksOverlapping: Boolean,
-  labTypesOverlapping: Boolean,
-  professorsOverlapping: Boolean,
-  roomsOverlapping: Boolean,
   study: Object,
   subjects: Array
 });
-const emit = defineEmits([
-  'update:assignation-filter',
-  'update:study-filter',
-  'update:time-blocks-overlapping',
-  'update:lab-types-overlapping',
-  'update:professors-overlapping',
-  'update:rooms-overlapping',
-  'modify-time-blocks',
-  'modify-generic-time-blocks'
-]);
+const emit = defineEmits(['modify-time-blocks', 'modify-generic-time-blocks']);
 
 const $q = useQuasar();
+const scheduleSettingsStore = useScheduleSettingsStore();
 
 const openGenericTimeBlocksCreation = () =>
   $q
@@ -59,20 +46,18 @@ const openTimeBlocksCreation = () =>
     <q-item-label header>Opcions de Filtratge</q-item-label>
 
     <MenuItemToggle
-      :model-value="assignationFilter"
+      v-model="scheduleSettingsStore.toggle.assignationFilter"
       label="Només assignats"
       caption="Amaga els blocs horaris el grup dels quals no estigui assignat a cap estudi (en assignatures compartides)"
       keep-color
-      color="m6"
-      @update:model-value="value => $emit('update:assignation-filter', value)" />
+      color="m6" />
 
     <MenuItemToggle
-      :model-value="studyFilter"
+      v-model="scheduleSettingsStore.toggle.studyFilter"
       :label="`Només ${study.abv}`"
       caption="Amaga els blocs horaris el grup dels quals només estigui assignat a altres estudis (en assignatures compartides)"
       keep-color
-      color="m6"
-      @update:model-value="value => $emit('update:study-filter', value)" />
+      color="m6" />
 
     <q-separator spaced dark />
 
@@ -93,34 +78,30 @@ const openTimeBlocksCreation = () =>
     <q-item-label header>Control de Solapaments</q-item-label>
 
     <MenuItemCheck
-      :model-value="timeBlocksOverlapping"
+      v-model="scheduleSettingsStore.check.timeBlocksOverlapping"
       label="Solapaments de blocs horaris"
-      caption="Indica a l'horari els els solapaments causats per blocs horaris del mateix grup"
-      color="m6"
-      @update:model-value="value => $emit('update:time-blocks-overlapping', value)" />
+      caption="Indica a l'horari els solapaments causats per blocs horaris del mateix grup"
+      color="m6" />
 
     <MenuItemCheck
-      :model-value="labTypesOverlapping"
+      v-model="scheduleSettingsStore.check.labTypesOverlapping"
       label="Solapaments de laboratoris"
-      caption="Indica a l'horari els els solapaments causats per l'excés de tipus laboratoris ocupats alhora"
-      color="m6"
-      @update:model-value="value => $emit('update:lab-types-overlapping', value)" />
+      caption="Indica a l'horari els solapaments causats per l'excés de tipus de laboratoris ocupats alhora"
+      color="m6" />
 
     <MenuItemCheck
-      :model-value="false && professorsOverlapping"
+      v-model="scheduleSettingsStore.check.professorsOverlapping"
       disable
       label="Solapaments de professors"
-      caption="Indica a l'horari els els solapaments causats per la distribució de professors"
-      color="m6"
-      @update:model-value="value => $emit('update:professors-overlapping', value)" />
+      caption="Indica a l'horari els solapaments causats per la distribució de professors"
+      color="m6" />
 
     <MenuItemCheck
-      :model-value="false && roomsOverlapping"
+      v-model="scheduleSettingsStore.check.roomsOverlapping"
       disable
       label="Solapaments d'aules"
-      caption="Indica a l'horari els els solapaments causats per la distribució d'aules"
-      color="m6"
-      @update:model-value="value => $emit('update:rooms-overlapping', value)" />
+      caption="Indica a l'horari els solapaments causats per la distribució d'aules"
+      color="m6" />
   </q-list>
 </template>
 

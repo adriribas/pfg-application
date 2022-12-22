@@ -13,7 +13,7 @@ defineEmits(['press']);
 </script>
 
 <template>
-  <q-item v-ripple.early clickable @click="$emit('press')">
+  <q-item v-ripple.early clickable @click="$emit('press')" class="non-selectable">
     <q-item-section>
       <q-item-label>{{ label }}</q-item-label>
 

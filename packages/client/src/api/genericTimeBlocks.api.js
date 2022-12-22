@@ -1,6 +1,8 @@
 import axios from './axiosConfig';
 import { formatFilter } from './apiUtil.js';
 
+// Ficar-li una g danvat de l'id als responses i treure-li als requests.
+
 export const get = (id, params) => axios.get(`/generic-time-blocks/${id}`, { params });
 
 export const list = ({ params, filterData, associations } = {}) =>

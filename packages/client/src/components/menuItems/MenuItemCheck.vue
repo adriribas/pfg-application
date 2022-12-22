@@ -21,7 +21,7 @@ defineEmits(['update:model-value']);
 </script>
 
 <template>
-  <q-item tag="label" v-ripple.early>
+  <q-item tag="label" v-ripple.early class="non-selectable">
     <q-item-section side top>
       <q-checkbox
         :model-value="modelValue"

@@ -3,7 +3,7 @@ import { ref, computed } from 'vue';
 import { useQuasar } from 'quasar';
 import _ from 'lodash';
 
-import { useTimeBlocksStore, useOverlappingStore } from '@/stores';
+import { useTimeBlocksStore, useOverlappingStore, useScheduleSettingsStore } from '@/stores';
 import { useScheduleDragAndDrop } from '@/composables';
 import { groupsApi, timeBlocksApi, genericTimeBlocksApi } from '@/api';
 import { useConstants, useCalendar, useGeneral } from '@/util';
@@ -25,6 +25,7 @@ const props = defineProps({
 const $q = useQuasar();
 const timeBlocksStore = useTimeBlocksStore();
 const overLappingStore = useOverlappingStore();
+const scheduleSettingsStore = useScheduleSettingsStore();
 const {
   moving,
   dragging,
@@ -41,21 +42,22 @@ const { getEndTime, isGeneric, getStylingGetters } = useCalendar();
 const {} = useGeneral();
 
 const splitterWidth = ref(75);
-const toggleStudyFilter = ref(true);
+
+/* const toggleStudyFilter = ref(true);
 const toggleAssignationFilter = ref(false);
 const showTimeBlocksOverlapping = ref(true);
 const showLabTypesOverlapping = ref(true);
 const showProfessorsOverlapping = ref(true);
-const showRoomsOverlapping = ref(true);
+const showRoomsOverlapping = ref(true); */
 
 const isShared = ({ sharedBy }) => sharedBy.length > 1;
 
 const filters = computed(() => {
   const filters = [];
 
-  toggleAssignationFilter.value &&
+  scheduleSettingsStore.toggle.assignationFilter &&
     filters.push(({ subject, group: { studies } }) => !isShared(subject) || studies.length);
-  toggleStudyFilter.value &&
+  scheduleSettingsStore.toggle.studyFilter &&
     filters.push(
       ({ subject, group: { studies } }) =>
         !isShared(subject) || !studies.length || studies.some(({ abv }) => abv === props.study.abv)
@@ -95,10 +97,12 @@ const timeBlocksOverlappingStripes = computed(() => {
 const overlappingMarkers = computed(() => day => {
   const markers = [];
 
-  showTimeBlocksOverlapping.value && markers.push(...timeBlocksOverlappingStripes.value(day));
-  showLabTypesOverlapping.value && markers.push(...overLappingStore.overlappingStripes(day));
-  showProfessorsOverlapping.value && markers.push(...[]);
-  showRoomsOverlapping.value && markers.push(...[]);
+  scheduleSettingsStore.check.timeBlocksOverlapping &&
+    markers.push(...timeBlocksOverlappingStripes.value(day));
+  scheduleSettingsStore.check.labTypesOverlapping &&
+    markers.push(...overLappingStore.overlappingStripes(day));
+  scheduleSettingsStore.check.professorsOverlapping && markers.push(...[]);
+  scheduleSettingsStore.check.roomsOverlapping && markers.push(...[]);
 
   return markers;
 });
@@ -468,10 +472,6 @@ const openModification = ({ timeBlock, labTypesOverlapping, weekDay, getColor, g
               :="props"
               :day="weekDay"
               enable-resizers
-              :show-time-blocks-overlapping="showTimeBlocksOverlapping"
-              :show-lab-types-overlapping="showLabTypesOverlapping"
-              :show-professors-overlapping="showProfessorsOverlapping"
-              :show-rooms-overlapping="showRoomsOverlapping"
               draggable="true"
               @press="data => openModification({ weekDay, ...data })"
               @resize="resizeData => onResize(weekDay, props.timeBlock.id, resizeData)"
@@ -504,12 +504,6 @@ const openModification = ({ timeBlock, labTypesOverlapping, weekDay, getColor, g
             header-class="text-m2"
             expand-icon-class="text-m2">
             <SettingsSection
-              v-model:assignation-filter="toggleAssignationFilter"
-              v-model:study-filter="toggleStudyFilter"
-              v-model:time-blocks-overlapping="showTimeBlocksOverlapping"
-              v-model:lab-types-overlapping="showLabTypesOverlapping"
-              v-model:professors-overlapping="showProfessorsOverlapping"
-              v-model:rooms-overlapping="showRoomsOverlapping"
               :subjects="subjects"
               :study="study"
               @modify-time-blocks="modifyTimeBlocksSync"

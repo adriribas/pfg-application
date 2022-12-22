@@ -4,8 +4,6 @@ import _ from 'lodash';
 import { subjectsApi } from '@/api';
 import { useCalendar } from '@/util';
 
-const debug = (...msgs) => console.log(`[Overlapping]`, ...msgs);
-
 export const useOverlappingStore = defineStore('overlapping', {
   state: () => ({
     semester: 0,
@@ -144,7 +142,7 @@ export const useOverlappingStore = defineStore('overlapping', {
                   week,
                   labTypes: labTypes.map(({ name }) => name),
                   studies:
-                    subjectStudies.length === 1 /* || !groupStudies.length */
+                    subjectStudies.length === 1
                       ? subjectStudies.map(({ abv, name, StudySubject: { course } }) => ({
                           abv,
                           name,

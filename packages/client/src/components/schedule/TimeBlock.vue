@@ -1,19 +1,19 @@
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import _ from 'lodash';
 
 import { useOverlappingStore } from '@/stores';
-import { useTimeBlockFormatting } from '@/composables';
+import { useOverlapping, useTimeBlockFormatting } from '@/composables';
 import { useConstants, useCalendar, useGeneral } from '@/util';
 
 const props = defineProps({
   timeBlock: Object,
   day: Number,
   enableResizers: Boolean,
-  showTimeBlocksOverlapping: Boolean,
+  /* showTimeBlocksOverlapping: Boolean,
   showLabTypesOverlapping: Boolean,
   showProfessorsOverlapping: Boolean,
-  showRoomsOverlapping: Boolean,
+  showRoomsOverlapping: Boolean, */
   top: Number,
   height: Number,
   left: Number,
@@ -38,9 +38,15 @@ const {
 } = useCalendar();
 const { bg, px, percent, pt } = useGeneral();
 
+const timeBlockRef = ref(null);
 const widthPx = ref(0);
 const calcHeight = ref(props.height);
 
+const { timeBlocksOverlapping, labTypesOverlapping, professorOverlapping, roomOverlapping, isOverlapped } =
+  useOverlapping(
+    computed(() => props.timeBlock),
+    computed(() => props.day)
+  );
 const { sizeLevel, label, subLabel } = useTimeBlockFormatting(
   computed(() => props.timeBlock),
   widthPx,
@@ -51,21 +57,9 @@ const calcTop = ref(props.top);
 const resizing = ref(false);
 
 const endTime = computed(() => getEndTime(props.timeBlock.start, props.timeBlock.duration));
-const labTypesOverlapping = computed(
-  () =>
-    !isGeneric(props.timeBlock) &&
-    props.timeBlock.subject.labTypes.map(({ name }) => ({
-      name,
-      studies: overlappingStore.overlapsWith(
-        props.timeBlock.week || 'general',
-        props.day,
-        props.timeBlock.start,
-        endTime.value,
-        name
-      )
-    }))
+/* const hasTimeBlocksOverlapping = computed(
+  () => props.showTimeBlocksOverlapping && timeBlocksOverlapping.value
 );
-const hasTimeBlocksOverlapping = computed(() => props.showTimeBlocksOverlapping && false);
 const hasLabTypesOverlapping = computed(
   () =>
     props.showLabTypesOverlapping &&
@@ -81,10 +75,11 @@ const isOverlapped = computed(
     hasLabTypesOverlapping.value ||
     hasProfessorsOverlapping.value ||
     hasRoomsOverlapping.value
-);
+); */
 const classes = computed(() => [
-  bg(props.getColor(isOverlapped.value ? 'bgOverlapped' : 'bg')),
-  resizing.value && 'z2 resizing'
+  bg(props.getColor('bg')),
+  resizing.value && 'z2 resizing',
+  isOverlapped.value && 'overlapped-border'
 ]);
 const positionStyles = computed(() => ({
   top: px(calcTop.value),
@@ -166,15 +161,28 @@ watch(
   () => props.height,
   newHeight => (calcHeight.value = newHeight)
 );
+
+onMounted(() => {});
 </script>
 
 <template>
   <div
-    @click="$emit('press', { timeBlock, labTypesOverlapping, getColor, getFontSize })"
+    ref="timeBlockRef"
+    @click="
+      $emit('press', {
+        timeBlock,
+        timeBlocksOverlapping,
+        labTypesOverlapping,
+        professorOverlapping,
+        roomOverlapping,
+        getColor,
+        getFontSize
+      })
+    "
     :class="classes"
     class="absolute border-8 shadow-3 text-center cursor-pointer non-selectable container"
     :style="positionStyles">
-    <div :class="isOverlapped && 'text-negative'" class="column fit flex-center">
+    <div class="column fit flex-center">
       <span :style="{ fontSize: pt(getFontSize('subject')) }">
         {{ label }}
       </span>
@@ -190,7 +198,7 @@ watch(
     <q-badge
       v-if="timeBlock.week"
       :label="timeBlock.week"
-      :class="bg(getColor(isOverlapped ? 'weekBgOverlapped' : 'weekBg'))"
+      :class="bg(getColor('weekBg'))"
       class="absolute border-8 week"
       :style="{
         fontSize: pt(getFontSize('week')),
@@ -227,18 +235,14 @@ watch(
         v-touch-pan.prevent.mouse.vertical="resizeFromTop"
         class="row absolute justify-center cursor-ns-resize resizer-outer"
         :style="{ top: 0 }">
-        <div
-          :class="[bg(getColor(isOverlapped ? 'resizerOverlapped' : 'resizer'))]"
-          class="col-5 top-resizer resizer-inner" />
+        <div :class="[bg(getColor('resizer'))]" class="col-5 top-resizer resizer-inner" />
       </div>
 
       <div
         v-touch-pan.prevent.mouse.vertical="resizeFromBottom"
         class="row absolute justify-center items-end cursor-ns-resize resizer-outer"
         :style="{ bottom: 0 }">
-        <div
-          :class="[bg(getColor(isOverlapped ? 'resizerOverlapped' : 'resizer'))]"
-          class="col-5 bottom-resizer resizer-inner" />
+        <div :class="[bg(getColor('resizer'))]" class="col-5 bottom-resizer resizer-inner" />
       </div>
     </template>
   </div>
@@ -247,6 +251,8 @@ watch(
 <style lang="sass" scoped>
 .container:hover
   filter: brightness(1.25)
+.overlapped-border
+  border: 3px solid $negative
 .week
   top: 0
   left: 0

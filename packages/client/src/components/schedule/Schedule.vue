@@ -1,10 +1,9 @@
 <script setup>
-import { ref, computed, watch, watchEffect } from 'vue';
+import { ref, computed } from 'vue';
 
 import { useConstants, useCalendar } from '@/util';
 import ScheduleWeekSelector from '@/components/schedule/ScheduleWeekSelector.vue';
 import ScheduleColorCaption from '@/components/schedule/ScheduleColorCaption.vue';
-import TimeBlock from '@/components/schedule/TimeBlock.vue';
 import '@/css/calendar-variables.sass';
 
 const props = defineProps({
@@ -39,38 +38,20 @@ const {
 const calendarRef = ref(null);
 const headerWidth = ref(0);
 const week = ref('general');
-const timeBlocks = ref(props.timeBlocks);
-const layoutedTimeBlocks = ref([]);
 
 const denseHeader = computed(() => headerWidth.value < 965);
 
-const increaseUpdatesNumber = () =>
-  timeBlocks.value.forEach(weekDayTimeBlocks =>
-    weekDayTimeBlocks.forEach(timeBlock => {
-      timeBlock.nUpdates ??= 0;
-      timeBlock.nUpdates++;
-    })
-  );
-const updateCalendarLayout = currentWeek => {
-  increaseUpdatesNumber();
-  layoutedTimeBlocks.value = timeBlocks.value.map(weekDayTimeBlocks =>
+const layoutedTimeBlocks = computed(() =>
+  props.timeBlocks.map(dayTimeBlocks =>
     layoutTimeBlocks(
-      currentWeek === 'general'
-        ? weekDayTimeBlocks
-        : weekDayTimeBlocks.filter(timeBlock => !timeBlock.week || timeBlock.week === currentWeek)
+      week.value === 'general'
+        ? dayTimeBlocks
+        : dayTimeBlocks.filter(timeBlock => !timeBlock.week || timeBlock.week === week.value)
     )
-  );
-};
-const updateHeaderWidth = ({ width }) => (headerWidth.value = width);
-
-watch(
-  () => props.timeBlocks,
-  newTimeBlocks => {
-    timeBlocks.value = newTimeBlocks;
-    updateCalendarLayout();
-  }
+  )
 );
-watchEffect(() => updateCalendarLayout(week.value));
+
+const updateHeaderWidth = ({ width }) => (headerWidth.value = width);
 </script>
 
 <template>
@@ -125,7 +106,7 @@ watchEffect(() => updateCalendarLayout(week.value));
           }">
           <template v-for="timeBlockGroup in layoutedTimeBlocks[weekday - 1]">
             <template v-for="(timeBlockColumn, colIndex) in timeBlockGroup">
-              <template v-for="timeBlock in timeBlockColumn" :key="`${timeBlock.id}-${timeBlock.nUpdates}`">
+              <template v-for="timeBlock in timeBlockColumn" :key="timeBlock.id">
                 <slot
                   name="time-block"
                   :week-day="weekday - 1"

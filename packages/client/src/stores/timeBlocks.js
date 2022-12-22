@@ -3,12 +3,9 @@ import _ from 'lodash';
 
 import { useCalendar } from '@/util';
 
-const debug = (...msgs) => console.log('[Time blocks]', ...msgs);
-
 // Els blocs genèrics poden tenir ids repetides amb els normals!!!!!!
 // Possible sol·lució: getter al model del servidor --> `$G{id}`
 // Possible sol·lució: Donar-li id quan es carreguen a front.
-// Requadre vermell solapaments.
 // Error solapament (cursos)
 export const useTimeBlocksStore = defineStore('timeBlocks', {
   state: () => ({
@@ -20,9 +17,15 @@ export const useTimeBlocksStore = defineStore('timeBlocks', {
     all(state) {
       return [...this.allPlaced, ...state.unplaced];
     },
-    dayPlaced: state => day => state.placed[day],
     filteredPlaced: state => filter => state.placed.map(dayTbs => dayTbs.filter(filter)),
+    weekPlaced(state) {
+      return week => (!week ? state.placed : this.filteredPlaced(timeBlock => timeBlock.week === week));
+    },
+    dayPlaced: state => day => state.placed[day],
     filteredUnplaced: state => filter => state.unplaced.filter(filter),
+    weekUnplaced(state) {
+      return week => (!week ? state.unplaced : this.filteredUnplaced(timeBlock => timeBlock.week === week));
+    },
     filteredAll() {
       return filter => this.all.filter(filter);
     },
@@ -85,7 +88,7 @@ export const useTimeBlocksStore = defineStore('timeBlocks', {
       });
     },
     refreshPlaced() {
-      this.placed = [...this.placed];
+      /* this.placed = [...this.placed]; */
     },
     addToPlaced(timeBlock, day, start, week) {
       this.placed[day].push({
