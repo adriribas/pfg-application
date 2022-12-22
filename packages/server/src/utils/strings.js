@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-const excludeList = ['i', 'a', 'per', 'de', 'dels', 'la', 'les', 'el', 'els'];
+const excludeList = ['i', 'a', 'per', 'pel', 'pels', 'al', 'de', 'dels', 'la', 'les', 'el', 'els'];
 
 export const representsANumber = word => /^i+l*$|^l+i*$|\d/i.test(word);
 
@@ -23,7 +23,7 @@ export const abreviate = words => {
         return `${accum} ${word.toUpperCase().replace('L', 'I')}`;
       }
 
-      return `${accum} ${_.capitalize(word.substring(0, words.length > 1 ? 1 : 3))}.`;
+      return `${accum}${_.capitalize(word.substring(0, words.length > 1 ? 1 : 3))}`;
     }, '')
     .trim();
 };
