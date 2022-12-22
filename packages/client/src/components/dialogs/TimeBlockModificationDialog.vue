@@ -218,7 +218,11 @@ const getOverlappingStudies = labTypeName => {
                       </q-item-section>
 
                       <q-item-section v-if="!study.notAssigned" side>
-                        <q-badge :label="courseLabels[study.course]" outline color="white" class="q-py-xs" />
+                        <q-badge
+                          :label="courseLabels[study.course - 1]"
+                          outline
+                          color="white"
+                          class="q-py-xs" />
                       </q-item-section>
                     </q-item>
                   </q-list>

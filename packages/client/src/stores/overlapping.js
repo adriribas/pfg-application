@@ -54,8 +54,8 @@ export const useOverlappingStore = defineStore('overlapping', {
         const stripes = this.labTypeOccupationStripes(week, day, labTypeName).filter(
           stripe => timeElemsCollide(stripe, { start, end }) && stripe.timeBlocks.length > amount
         );
-        const notAssignedAmount = this.overlappedTimeBlocksAmount('', stripes);
-        const studies = _.uniqBy(
+        const notAssignedAmount = this.overlappedTimeBlocksAmount(stripes);
+        const studies = _.uniqWith(
           stripes.reduce(
             (accum, { timeBlocks }) => [
               ...accum,
@@ -63,18 +63,28 @@ export const useOverlappingStore = defineStore('overlapping', {
             ],
             []
           ),
-          'abv'
-        ).map(study => ({
-          ...study,
-          amount: this.overlappedTimeBlocksAmount(study.abv, stripes)
-        }));
+          (s1, s2) => s1.abv === s2.abv && s1.course === s2.course
+        )
+          .map(study => ({
+            ...study,
+            amount: this.overlappedTimeBlocksAmount(stripes, study.abv, study.course)
+          }))
+          .sort((s1, s2) => {
+            if (s1.abv < s2.abv) {
+              return -1;
+            }
+            if (s1.abv > s2.abv) {
+              return 1;
+            }
+            return s1.course - s2.course;
+          });
 
         return notAssignedAmount ? [...studies, { notAssigned: true, amount: notAssignedAmount }] : studies;
       };
     },
-    overlappedTimeBlocksAmount: () => (studyAbv, stripes) => {
+    overlappedTimeBlocksAmount: () => (stripes, studyAbv, studyCourse) => {
       const filter = studyAbv
-        ? ({ studies }) => studies.find(({ abv }) => abv === studyAbv)
+        ? ({ studies }) => studies.find(({ abv, course }) => abv === studyAbv && course === studyCourse)
         : ({ studies }) => !studies.length;
 
       return _.uniqBy(
@@ -161,7 +171,7 @@ export const useOverlappingStore = defineStore('overlapping', {
             })
           )
       );
-
+      console.log('Day', dayByDayTimeBlocks[0]);
       return dayByDayTimeBlocks;
     },
     makeDayStripes(timeBlocks, day) {
