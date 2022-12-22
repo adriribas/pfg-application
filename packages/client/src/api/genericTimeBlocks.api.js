@@ -1,15 +1,61 @@
 import axios from './axiosConfig';
-import { formatFilter } from './apiUtil.js';
+import { formatFilter, idAdapter } from './apiUtil.js';
 
-// Ficar-li una g danvat de l'id als responses i treure-li als requests.
+const transformId = id => `G${id}`;
+const adaptId = idAdapter(id => {
+  if (isNaN(id)) {
+    return +id.substring(1);
+  }
 
-export const get = (id, params) => axios.get(`/generic-time-blocks/${id}`, { params });
+  return id;
+});
 
-export const list = ({ params, filterData, associations } = {}) =>
-  axios.post('/generic-time-blocks/filter', formatFilter(filterData, associations), { params });
+export const get = async (id, params) => {
+  const res = await axios.get(`/generic-time-blocks/${adaptId(id)}`, { params });
 
-export const create = data => axios.post('/generic-time-blocks', data);
+  if (res.data.id) {
+    res.data.id = transformId(res.data.id);
+  }
 
-export const update = (id, data) => axios.patch(`/generic-time-blocks/${id}`, data);
+  return res;
+};
 
-export const remove = id => axios.delete(`/generic-time-blocks/${id}`);
+export const list = async ({ params, filterData, associations } = {}) => {
+  const formattedFilter = formatFilter(filterData, associations);
+
+  if (formattedFilter.data.id) {
+    formattedFilter.data.id = adaptId(formattedFilter.data.id);
+  }
+
+  const res = await axios.post('/generic-time-blocks/filter', formattedFilter, { params });
+
+  res.data.forEach(timeBlock => {
+    if (timeBlock.id) {
+      timeBlock.id = transformId(timeBlock.id);
+    }
+  });
+
+  return res;
+};
+
+export const create = async data => {
+  const res = await axios.post('/generic-time-blocks', data);
+
+  if (res.data.id) {
+    res.data.id = transformId(res.data.id);
+  }
+
+  return res;
+};
+
+export const update = async (id, data) => {
+  const res = await axios.patch(`/generic-time-blocks/${adaptId(id)}`, data);
+
+  if (res.data.id) {
+    res.data.id = transformId(res.data.id);
+  }
+
+  return res;
+};
+
+export const remove = id => axios.delete(`/generic-time-blocks/${adaptId(id)}`);

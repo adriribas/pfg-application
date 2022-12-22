@@ -171,7 +171,7 @@ export const useOverlappingStore = defineStore('overlapping', {
             })
           )
       );
-      console.log('Day', dayByDayTimeBlocks[0]);
+
       return dayByDayTimeBlocks;
     },
     makeDayStripes(timeBlocks, day) {

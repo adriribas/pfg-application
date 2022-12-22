@@ -3,10 +3,16 @@ import _ from 'lodash';
 
 import { useCalendar } from '@/util';
 
-// Els blocs genèrics poden tenir ids repetides amb els normals!!!!!!
-// Possible sol·lució: getter al model del servidor --> `$G{id}`
-// Possible sol·lució: Donar-li id quan es carreguen a front.
-// Error solapament (cursos)
+const transformId = ({ id, ...timeBlock }) => {
+  const { isGeneric } = useCalendar();
+
+  if (isNaN(id)) {
+    return { id, ...timeBlock };
+  }
+
+  return { id: `${isGeneric(timeBlock) ? 'G' : 'T'}${id}`, ...timeBlock };
+};
+
 export const useTimeBlocksStore = defineStore('timeBlocks', {
   state: () => ({
     placed: [[], [], [], [], []],
@@ -71,7 +77,6 @@ export const useTimeBlocksStore = defineStore('timeBlocks', {
       };
     }
   },
-
   actions: {
     resetState() {
       this.placed = [[], [], [], [], []];
@@ -81,9 +86,9 @@ export const useTimeBlocksStore = defineStore('timeBlocks', {
       this.resetState();
       timeBlocks.forEach(({ day, ...timeBlock }) => {
         if (!day && day !== 0) {
-          this.unplaced.push(timeBlock);
+          this.unplaced.push(transformId(timeBlock));
         } else {
-          this.placed[day].push(timeBlock);
+          this.placed[day].push(transformId(timeBlock));
         }
       });
     },

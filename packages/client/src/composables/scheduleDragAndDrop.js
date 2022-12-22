@@ -103,7 +103,7 @@ export default () => {
     }
 
     const action = event.dataTransfer.getData('action');
-    const id = +event.dataTransfer.getData('id');
+    const id = event.dataTransfer.getData('id');
     const weekDay = +event.dataTransfer.getData('weekDay');
     const duration = +event.dataTransfer.getData('duration');
     const isGeneric = +event.dataTransfer.getData('isGeneric');
@@ -149,7 +149,7 @@ export default () => {
       return;
     }
 
-    const id = +event.dataTransfer.getData('id');
+    const id = event.dataTransfer.getData('id');
     const weekDay = +event.dataTransfer.getData('weekDay');
     const isGeneric = +event.dataTransfer.getData('isGeneric');
 
