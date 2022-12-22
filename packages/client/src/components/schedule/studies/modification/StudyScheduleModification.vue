@@ -118,13 +118,11 @@ const onResize = async (weekDay, id, { start, duration }) => {
     timeBlock.start = start;
     updateData.start = start;
   }
-  timeBlocksStore.refreshPlaced();
   try {
     await timeBlocksApi.update(id, updateData);
   } catch (e) {
     timeBlock.start = currentStart;
     timeBlock.duration = currentDuration;
-    timeBlocksStore.refreshPlaced();
   }
 };
 
@@ -210,8 +208,6 @@ const modifyTimeBlocksSync = async (toCreate, toRemove) => {
       }
     } catch ({}) {}
   }
-
-  timeBlocksStore.refreshPlaced();
 };
 
 const createGenericTimeBlocks = toCreateTimeBlocksData =>
@@ -312,14 +308,11 @@ const modifyGenericTimeBlocksSync = async (toCreate, toUpdate, toRemove) => {
       }
     } catch ({}) {}
   }
-
-  timeBlocksStore.refreshPlaced();
 };
 
 const updateWeekDay = (id, currentWeekDay, newWeekDay, start, week) => {
   if (currentWeekDay === newWeekDay) {
     if (currentWeekDay !== -1) {
-      timeBlocksStore.refreshPlaced();
     }
     return;
   }

@@ -87,9 +87,6 @@ export const useTimeBlocksStore = defineStore('timeBlocks', {
         }
       });
     },
-    refreshPlaced() {
-      /* this.placed = [...this.placed]; */
-    },
     addToPlaced(timeBlock, day, start, week) {
       this.placed[day].push({
         ...timeBlock,
@@ -111,13 +108,11 @@ export const useTimeBlocksStore = defineStore('timeBlocks', {
 
       this.removeFromUnplaced(index);
       this.addToPlaced(timeBlock, day, start, week);
-      this.refreshPlaced();
     },
     unplace(id, day) {
       const { index, timeBlock } = this.findPlaced(day, id);
 
       this.removeFromPlaced(day, index);
-      this.refreshPlaced();
       this.addToUnplaced(timeBlock);
 
       return { start: timeBlock.start, week: timeBlock.week };
@@ -127,7 +122,6 @@ export const useTimeBlocksStore = defineStore('timeBlocks', {
 
       this.removeFromPlaced(currentDay, index);
       this.addToPlaced(timeBlock, newDay, start, week);
-      this.refreshPlaced();
 
       return { start: timeBlock.start, week: timeBlock.week };
     }
