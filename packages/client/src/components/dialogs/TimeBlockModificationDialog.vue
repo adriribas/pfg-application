@@ -16,6 +16,7 @@ const props = defineProps({
   subject: Object,
   roomType: Object,
   professor: Object,
+  timeBlocksOverlapping: Boolean,
   labTypesOverlapping: Array,
   getColor: Function,
   getFontSize: Function
@@ -70,7 +71,23 @@ const getOverlappingStudies = labTypeName => {
       </template>
 
       <template #sub-label="{ badgeProps }">
-        <q-badge :="badgeProps" :label="`Grup ${groupTypeLabels[group.type]} ${group.number}`" />
+        <div class="row items-center">
+          <div>
+            <q-badge :="badgeProps" :label="`Grup ${groupTypeLabels[group.type]} ${group.number}`" />
+
+            <template v-if="day !== -1 && timeBlocksOverlapping.length">
+              <q-icon name="join_left" size="sm" color="negative" class="q-ml-md" />
+              <q-tooltip
+                anchor="bottom middle"
+                self="top middle"
+                transition-show="jump-down"
+                transition-hide="jump-up"
+                class="bg-negative">
+                Es solapen {{ timeBlocksOverlapping.length + 1 }} blocs horaris d'aquest mateix grup
+              </q-tooltip>
+            </template>
+          </div>
+        </div>
       </template>
 
       <template #room-type="{ containerProps, iconProps }">

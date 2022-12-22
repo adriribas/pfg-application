@@ -15,7 +15,7 @@ export default (timeBlock, day) => {
       notGeneric &&
       timeBlocksStore
         .dayPlaced(day.value)
-        .some(
+        .filter(
           tb =>
             !isGeneric(tb) &&
             collide(tb, timeBlock.value) &&
@@ -23,7 +23,7 @@ export default (timeBlock, day) => {
             tb.id !== timeBlock.value.id
         )
   );
-  const hasTimeBlocksOverlapping = computed(() => timeBlocksOverlapping.value);
+  const hasTimeBlocksOverlapping = computed(() => !!timeBlocksOverlapping.value.length);
 
   const labTypesOverlapping = computed(
     () =>

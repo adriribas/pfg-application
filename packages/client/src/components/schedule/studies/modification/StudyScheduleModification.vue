@@ -376,7 +376,14 @@ const updateGenericTimeBlock = async (id, weekDay, modData, timeData) => {
   }
 };
 
-const openModification = ({ timeBlock, labTypesOverlapping, weekDay, getColor, getFontSize }) => {
+const openModification = ({
+  timeBlock,
+  timeBlocksOverlapping,
+  labTypesOverlapping,
+  weekDay,
+  getColor,
+  getFontSize
+}) => {
   const { start, duration, week } = timeBlock;
   const commonProps = {
     day: weekDay,
@@ -415,7 +422,15 @@ const openModification = ({ timeBlock, labTypesOverlapping, weekDay, getColor, g
     const { group, subject, roomType, professor } = timeBlock;
     $q.dialog({
       component: TimeBlockModificationDialog,
-      componentProps: { labTypesOverlapping, group, subject, roomType, professor, ...commonProps }
+      componentProps: {
+        timeBlocksOverlapping,
+        labTypesOverlapping,
+        group,
+        subject,
+        roomType,
+        professor,
+        ...commonProps
+      }
     }).onOk(async modData => {
       try {
         await updateTimeBlock(timeBlock.id, weekDay, modData, { start, duration, week });

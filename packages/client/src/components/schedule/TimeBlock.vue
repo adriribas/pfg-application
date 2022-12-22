@@ -10,10 +10,6 @@ const props = defineProps({
   timeBlock: Object,
   day: Number,
   enableResizers: Boolean,
-  /* showTimeBlocksOverlapping: Boolean,
-  showLabTypesOverlapping: Boolean,
-  showProfessorsOverlapping: Boolean,
-  showRoomsOverlapping: Boolean, */
   top: Number,
   height: Number,
   left: Number,
@@ -57,25 +53,6 @@ const calcTop = ref(props.top);
 const resizing = ref(false);
 
 const endTime = computed(() => getEndTime(props.timeBlock.start, props.timeBlock.duration));
-/* const hasTimeBlocksOverlapping = computed(
-  () => props.showTimeBlocksOverlapping && timeBlocksOverlapping.value
-);
-const hasLabTypesOverlapping = computed(
-  () =>
-    props.showLabTypesOverlapping &&
-    !isGeneric(props.timeBlock) &&
-    props.timeBlock.group.type === 'small' &&
-    labTypesOverlapping.value.some(({ studies }) => studies.length)
-);
-const hasProfessorsOverlapping = computed(() => props.showProfessorsOverlapping && false);
-const hasRoomsOverlapping = computed(() => props.showRoomsOverlapping && false);
-const isOverlapped = computed(
-  () =>
-    hasTimeBlocksOverlapping.value ||
-    hasLabTypesOverlapping.value ||
-    hasProfessorsOverlapping.value ||
-    hasRoomsOverlapping.value
-); */
 const classes = computed(() => [
   bg(props.getColor('bg')),
   resizing.value && 'z2 resizing',
