@@ -34,7 +34,7 @@ const loadCoordinadorStudies = async () => {
       courses: getCourses(authStore.study.abv, subjects)
     },
     otherStudiesData: {
-      title: 'Estudis amb els que comparteix assignatures',
+      title: 'Estudis amb els quals comparteix assignatures',
       data: subjects.reduce((accum, { Studies }) => {
         if (Studies.length < 2 || !Studies.some(({ abv }) => abv === authStore.study.abv)) {
           return accum;
