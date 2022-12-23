@@ -1,6 +1,5 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
-import _ from 'lodash';
 
 import { useConstants, useCalendar, useGeneral } from '@/util';
 import TimeBlockDialogContent from '@/components/schedule/TimeBlockDialogContent.vue';
@@ -17,16 +16,16 @@ const props = defineProps({
 });
 const emit = defineEmits(['ok', 'cancel']);
 
+const { workingDaysShort, scheduleDurationMin } = useConstants();
 const {
-  workingDaysShort,
-  scheduleIntervalStart,
-  scheduleIntervalEnd,
-  scheduleIntervalMinutes,
-  scheduleDurationMin,
-  scheduleIntervalMargin
-} = useConstants();
-const { timeToMinutes, minutesToTime, getMinPlaceableTime, getMaxPlaceableTime, clampMinutes } =
-  useCalendar();
+  getHr,
+  getMin,
+  timeToMinutes,
+  minutesToTime,
+  getMinPlaceableTime,
+  getMaxPlaceableTime,
+  clampMinutes
+} = useCalendar();
 const { text } = useGeneral();
 
 const startTimeRef = ref(null);
@@ -38,28 +37,42 @@ const dayMod = ref(props.day || props.day === 0 ? props.day : -1);
 const durationTimeMod = ref(minutesToTime(props.duration));
 const weekMod = ref(props.week || 'general');
 
-const margin = (scheduleIntervalMargin * scheduleIntervalMinutes) / 60;
-const startTimeOptions = (hr, min) => {
-  const minHr = Math.trunc(scheduleIntervalStart + margin);
-  if (hr < minHr) {
+const minPlaceableTime = getMinPlaceableTime();
+const minPlaceableMinutes = timeToMinutes(minPlaceableTime);
+const minPlaceableHr = getHr(minPlaceableTime);
+const minPlaceableMin = getMin(minPlaceableTime);
+
+const maxPlaceableTime = getMaxPlaceableTime();
+const maxPlaceableMinutes = timeToMinutes(maxPlaceableTime);
+const maxPlaceableHr = getHr(maxPlaceableTime);
+const maxPlaceableMin = getMin(maxPlaceableTime);
+
+const durationMinutes = computed(() => timeToMinutes(durationTimeMod.value));
+const startTimeOptions = computed(() => (hr, min) => {
+  if (hr < minPlaceableHr || (hr === minPlaceableHr && min !== null && min < minPlaceableMin)) {
     return false;
   }
 
-  const maxHr = Math.trunc(scheduleIntervalEnd - margin);
-  if (hr >= maxHr || (hr === maxHr - 1 && min !== null && min > 60 - scheduleDurationMin)) {
+  const maxTime = minutesToTime(maxPlaceableMinutes - durationMinutes.value);
+  const maxHr = getHr(maxTime);
+  const maxMin = getMin(maxTime);
+
+  if (hr > maxHr || (hr === maxHr && min !== null && min > maxMin)) {
     return false;
   }
 
   return true;
-};
+});
 const endTimeOptions = (hr, min) => {
-  const minHr = Math.trunc(scheduleIntervalStart + margin);
-  if (hr < minHr || (hr === minHr && min !== null && min < scheduleDurationMin)) {
+  const minTime = minutesToTime(minPlaceableMinutes + durationMinutes.value);
+  const minHr = getHr(minTime);
+  const minMin = getMin(minTime);
+
+  if (hr < minHr || (hr === minHr && min !== null && min < minMin)) {
     return false;
   }
 
-  const maxHr = Math.trunc(scheduleIntervalEnd - margin);
-  if (hr > maxHr || (hr === maxHr && min !== null && min > 0)) {
+  if (hr > maxPlaceableHr || (hr === maxPlaceableHr && min !== null && min > maxPlaceableMin)) {
     return false;
   }
 
@@ -84,7 +97,6 @@ const onDurationChange = newDurationTime => {
   endTimeMod.value = minutesToTime(newEndMinutes);
   startTimeMod.value = minutesToTime(newEndMinutes - newDurationMinutes);
 };
-
 const disableTimeValidation = computed(() => dayMod.value === -1);
 const errors = computed(
   () =>
@@ -183,21 +195,19 @@ watch(dayMod, newDay => {
     </template>
 
     <template #week-day="{ containerProps, iconProps }">
-     
-        <q-icon :="iconProps" />
+      <q-icon :="iconProps" />
 
-        <q-tabs v-model="dayMod" dense :active-bg-color="getColor('day')" indicator-color="transparent">
-          <q-tab v-for="(label, index) in workingDaysShort" :name="index" :label="label" class="border-8" />
-        </q-tabs>
+      <q-tabs v-model="dayMod" dense :active-bg-color="getColor('day')" indicator-color="transparent">
+        <q-tab v-for="(label, index) in workingDaysShort" :name="index" :label="label" class="border-8" />
+      </q-tabs>
 
-        <q-btn
-          icon="close"
-          unelevated
-          :text-color="getColor('headerIcons')"
-          round
-          @click="dayMod = -1"
-          class="q-ml-sm" />
-   
+      <q-btn
+        icon="close"
+        unelevated
+        :text-color="getColor('headerIcons')"
+        round
+        @click="dayMod = -1"
+        class="q-ml-sm" />
     </template>
 
     <template #week>

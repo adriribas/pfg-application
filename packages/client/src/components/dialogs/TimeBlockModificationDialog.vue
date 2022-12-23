@@ -16,7 +16,7 @@ const props = defineProps({
   subject: Object,
   roomType: Object,
   professor: Object,
-  timeBlocksOverlapping: Boolean,
+  timeBlocksOverlapping: Array,
   labTypesOverlapping: Array,
   getColor: Function,
   getFontSize: Function
@@ -44,8 +44,6 @@ const getOverlappingStudies = labTypeName => {
 
   return labType?.studies || [];
 };
-
-// Fer el disable del botó de guardar si hi ha errors de validació.
 </script>
 
 <template>
