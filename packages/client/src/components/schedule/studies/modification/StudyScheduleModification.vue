@@ -472,6 +472,7 @@ const openModification = ({
               :="props"
               :day="weekDay"
               enable-resizers
+              show-overlapping
               draggable="true"
               @press="data => openModification({ weekDay, ...data })"
               @resize="resizeData => onResize(weekDay, props.timeBlock.id, resizeData)"

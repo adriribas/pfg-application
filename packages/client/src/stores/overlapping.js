@@ -50,6 +50,7 @@ export const useOverlappingStore = defineStore('overlapping', {
       const { timeElemsCollide } = useCalendar();
 
       return (week, day, start, end, labTypeName) => {
+        console.log('Obt', labTypeName, 'result', this.labType(labTypeName));
         const { amount } = this.labType(labTypeName);
         const stripes = this.labTypeOccupationStripes(week, day, labTypeName).filter(
           stripe => timeElemsCollide(stripe, { start, end }) && stripe.timeBlocks.length > amount

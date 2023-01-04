@@ -108,9 +108,7 @@ const load = async () => {
       ...subject
     }));
 
-    if (props.editMode) {
-      overLappingStore.initLabTypesOverlapping(props.semester, subjects.value);
-    }
+    overLappingStore.initLabTypesOverlapping(props.semester, subjects.value);
   } catch (e) {
     console.error(e);
     goToStudyChoosing();

@@ -10,6 +10,7 @@ const props = defineProps({
   timeBlock: Object,
   day: Number,
   enableResizers: Boolean,
+  showOverlapping: Boolean,
   top: Number,
   height: Number,
   left: Number,
@@ -56,7 +57,7 @@ const endTime = computed(() => getEndTime(props.timeBlock.start, props.timeBlock
 const classes = computed(() => [
   bg(props.getColor('bg')),
   resizing.value && 'z2 resizing',
-  isOverlapped.value && 'overlapped-border'
+  props.showOverlapping && isOverlapped.value && 'overlapped-border'
 ]);
 const positionStyles = computed(() => ({
   top: px(calcTop.value),
