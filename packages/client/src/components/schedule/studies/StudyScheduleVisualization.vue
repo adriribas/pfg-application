@@ -14,7 +14,6 @@ const props = defineProps({
   course: Number,
   semester: Number
 });
-const emit = defineEmits([]);
 
 const $q = useQuasar();
 const timeBlocksStore = useTimeBlocksStore();

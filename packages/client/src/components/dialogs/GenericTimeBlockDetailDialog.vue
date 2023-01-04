@@ -4,6 +4,7 @@ import { useDialogPluginComponent } from 'quasar';
 import TimeBlockDetailDialogContent from '@/components/schedule/TimeBlockDetailDialogContent.vue';
 
 defineProps({
+  day: Number,
   start: String,
   end: String,
   duration: Number,
@@ -21,6 +22,7 @@ const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent();
 <template>
   <q-dialog ref="dialogRef" transition-show="rotate" transition-hide="rotate" @hide="onDialogHide">
     <TimeBlockDetailDialogContent
+      :day="day"
       :start="start"
       :end="end"
       :duration="duration"
