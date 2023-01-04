@@ -6,7 +6,7 @@ import _ from 'lodash';
 import { useTimeBlocksStore, useOverlappingStore, useScheduleSettingsStore } from '@/stores';
 import { useScheduleDragAndDrop } from '@/composables';
 import { groupsApi, timeBlocksApi, genericTimeBlocksApi } from '@/api';
-import { useConstants, useCalendar, useGeneral } from '@/util';
+import { useConstants, useCalendar } from '@/util';
 import Schedule from '@/components/schedule/Schedule.vue';
 import TimeBlock from '@/components/schedule/TimeBlock.vue';
 import TimeBlocksSection from '@/components/schedule/studies/modification/TimeBlocksSection.vue';
@@ -39,16 +39,8 @@ const {
 } = useScheduleDragAndDrop();
 const { courseLabels, semesterLabels, groupTypeLabels } = useConstants();
 const { getEndTime, isGeneric, getStylingGetters } = useCalendar();
-const {} = useGeneral();
 
 const splitterWidth = ref(75);
-
-/* const toggleStudyFilter = ref(true);
-const toggleAssignationFilter = ref(false);
-const showTimeBlocksOverlapping = ref(true);
-const showLabTypesOverlapping = ref(true);
-const showProfessorsOverlapping = ref(true);
-const showRoomsOverlapping = ref(true); */
 
 const isShared = ({ sharedBy }) => sharedBy.length > 1;
 

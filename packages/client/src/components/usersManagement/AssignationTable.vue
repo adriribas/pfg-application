@@ -135,7 +135,9 @@ loadData();
 
 <template>
   <div class="row justify-center">
-    <q-card dark class="col-xl-7 col-lg-9 col-md-11 col-sm-12 q-px-xl q-py-md overflow-auto bg-b7 container">
+    <q-card
+      dark
+      class="col-xl-7 col-lg-9 col-md-11 col-sm-12 q-px-xl q-py-md overflow-auto border-8 bg-b7 container">
       <q-card-section>
         <q-table
           :columns="tableColumns"

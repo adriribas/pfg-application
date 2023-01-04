@@ -88,7 +88,7 @@ const layoutTimeBlocks = timeBlocks => {
       return getEndMinutes(tb1.start, tb1.duration) - getEndMinutes(tb2.start, tb2.duration);
     })
     .forEach(timeBlock => {
-      if (lastTimeBlockEndMinutes && timeToMinutes(timeBlock.start) > lastTimeBlockEndMinutes) {
+      if (lastTimeBlockEndMinutes && timeToMinutes(timeBlock.start) >= lastTimeBlockEndMinutes) {
         groups.push(columns);
         columns = [];
         lastTimeBlockEndMinutes = 0;

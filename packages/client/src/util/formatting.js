@@ -6,18 +6,18 @@ const timeTranslations = {
   days: ['Diumenge', 'Dilluns', 'Dimarts', 'Dimecres', 'Dijous', 'Divendres', 'Dissabte'],
   daysShort: ['Dg.', 'Dl.', 'Dt.', 'Dc.', 'Dj.', 'Dv', 'Ds'],
   months: [
-    'gener',
-    'febrer',
-    'març',
+    'de gener',
+    'de febrer',
+    'de març',
     "d'abril",
-    'maig',
-    'juny',
-    'juliol',
+    'de maig',
+    'de juny',
+    'de juliol',
     "d'agost",
-    'setembre',
+    'de setembre',
     "d'octubre",
-    'novembre',
-    'desembre'
+    'de novembre',
+    'de desembre'
   ],
   monthsShort: ['GN', 'FB', 'MÇ', 'AB', 'MG', 'JN', 'JL', 'AG', 'ST', 'OC', 'NV', 'DS']
 };

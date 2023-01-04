@@ -50,6 +50,7 @@ export default () => {
     event.dataTransfer.setData('id', timeBlock.id);
     event.dataTransfer.setData('weekDay', weekDay);
     event.dataTransfer.setData('duration', timeBlock.duration);
+    event.dataTransfer.setData('week', timeBlock.week || 'general');
     event.dataTransfer.setData('isGeneric', +isGeneric);
 
     setTimeout(async () => {
@@ -106,6 +107,7 @@ export default () => {
     const id = event.dataTransfer.getData('id');
     const weekDay = +event.dataTransfer.getData('weekDay');
     const duration = +event.dataTransfer.getData('duration');
+    const week = event.dataTransfer.getData('week');
     const isGeneric = +event.dataTransfer.getData('isGeneric');
 
     const maxPlaceableMinutes = timeToMinutes(getMaxPlaceableTime());
@@ -119,16 +121,16 @@ export default () => {
         timeBlocksStore.place(id, newWeekDay - 1, newStart, newWeek);
 
         try {
-          await doUpdateApiCall(isGeneric, id, { day: newWeekDay - 1, start: newStart, week: newWeek });
+          await doUpdateApiCall(isGeneric, id, { day: newWeekDay - 1, start: newStart, week });
         } catch (e) {
           timeBlocksStore.unplace(id, newWeekDay - 1);
           throw e;
         }
       } else {
-        const oldData = timeBlocksStore.move(id, weekDay, newWeekDay - 1, newStart, newWeek);
+        const oldData = timeBlocksStore.move(id, weekDay, newWeekDay - 1, newStart, week);
 
         try {
-          await doUpdateApiCall(isGeneric, id, { day: newWeekDay - 1, start: newStart, week: newWeek });
+          await doUpdateApiCall(isGeneric, id, { day: newWeekDay - 1, start: newStart, week });
         } catch (e) {
           timeBlocksStore.move(id, newWeekDay - 1, weekDay, oldData.start, oldData.duration);
           throw e;

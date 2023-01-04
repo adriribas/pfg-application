@@ -81,7 +81,7 @@ watch(department, newDepartment => {
             <template #no-option="{ itemProps }">
               <q-item :="itemProps" dark>
                 <q-item-section>
-                  <q-item-label caption>No queden àrees per seleccionar d'aquest department.</q-item-label>
+                  <q-item-label caption>No queden àrees per seleccionar d'aquest departament.</q-item-label>
                 </q-item-section>
               </q-item>
             </template>

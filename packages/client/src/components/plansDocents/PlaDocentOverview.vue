@@ -15,7 +15,7 @@ const splitter = computed(() => ($q.screen.lt[breakpoint.value] ? 70 : 147));
 const tabs = [
   { label: 'Estudis', icon: 'school', component: StudiesDataTable },
   { label: 'Departaments', icon: 'domain', component: DepartmentsDataTable },
-  { label: "Tipus d'aula", icon: 'room', component: RoomTypesDataTable }
+  { label: 'Tipus de lab', icon: 'science', component: RoomTypesDataTable }
 ];
 </script>
 

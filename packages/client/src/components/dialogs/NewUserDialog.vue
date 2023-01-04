@@ -68,6 +68,7 @@ const createUser = async () => {
             label="Nom"
             lazy-rules
             :rules="[val => !!val]"
+            no-error-icon
             error-message="Aquest camp és obligatori"
             filled
             dark
@@ -78,6 +79,7 @@ const createUser = async () => {
             label="Cognoms"
             lazy-rules
             :rules="[val => !!val]"
+            no-error-icon
             error-message="Aquest camp és obligatori"
             filled
             dark
@@ -88,6 +90,7 @@ const createUser = async () => {
             label="Correu electrònic"
             lazy-rules
             :rules="[val => !!val]"
+            no-error-icon
             error-message="Aquest camp és obligatori"
             filled
             dark

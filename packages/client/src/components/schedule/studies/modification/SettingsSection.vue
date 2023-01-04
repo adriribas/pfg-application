@@ -43,7 +43,7 @@ const openTimeBlocksCreation = () =>
 
 <template>
   <q-list dark>
-    <q-item-label header>Opcions de Filtratge</q-item-label>
+    <q-item-label header>Opcions de filtratge</q-item-label>
 
     <MenuItemToggle
       v-model="scheduleSettingsStore.toggle.assignationFilter"
@@ -61,7 +61,7 @@ const openTimeBlocksCreation = () =>
 
     <q-separator spaced dark />
 
-    <q-item-label header>Gestió de Blocs Horaris</q-item-label>
+    <q-item-label header>Gestió de blocs horaris</q-item-label>
 
     <MenuItemAction
       label="Blocs lectius"
@@ -75,7 +75,7 @@ const openTimeBlocksCreation = () =>
 
     <q-separator spaced dark />
 
-    <q-item-label header>Control de Solapaments</q-item-label>
+    <q-item-label header>Control de solapaments</q-item-label>
 
     <MenuItemCheck
       v-model="scheduleSettingsStore.check.timeBlocksOverlapping"
@@ -86,7 +86,7 @@ const openTimeBlocksCreation = () =>
     <MenuItemCheck
       v-model="scheduleSettingsStore.check.labTypesOverlapping"
       label="Solapaments de laboratoris"
-      caption="Indica a l'horari els solapaments causats per l'excés de tipus de laboratoris ocupats alhora"
+      caption="Indica a l'horari els solapaments causats per l'excés d'aules d'un tipus de laboratori ocupades alhora"
       color="m6" />
 
     <MenuItemCheck
