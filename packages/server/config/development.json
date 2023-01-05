@@ -19,7 +19,7 @@
       "emailConfirmation": "emailConfirmation"
     }
   },
-  "clientHost": ["http://localhost:3000", "http://localhost:3001", "http://192.168.1.34:3000"],
+  "clientHost": ["http://localhost:3000"],
   "jwt": {
     "auth": {
       "fields": ["id", "role"],
