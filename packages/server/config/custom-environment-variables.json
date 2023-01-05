@@ -11,7 +11,7 @@
     }
   },
   "db": {
-    "user": "pfgs_user",
+    "user": "pfgs_dbUser",
     "secret": "pfgs_dbSecret"
   },
   "email": {

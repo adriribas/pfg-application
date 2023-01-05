@@ -5,11 +5,11 @@ import createDebugger from 'debug';
 
 const debug = createDebugger('pfgs:email');
 
-const transporter = nodemailer.createTransport({
+/* const transporter = nodemailer.createTransport({
   ...config.get('email.server'),
   secure: false,
   auth: config.get('email.auth')
-});
+}); */
 
 const mapParams = (msg, params) =>
   Object.entries(params).reduce((accum, [key, value]) => accum.replaceAll(`%${key}%`, value), msg);

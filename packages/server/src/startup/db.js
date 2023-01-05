@@ -8,9 +8,12 @@ import { generateTestData } from '.';
 
 const debug = createDebugger('pfgs:db');
 
-//const sequelize = new Sequelize(config.get('db.schema'), config.get('db.user'), config.get('db.secret'), config.get('connection'));
-
-const sequelize = new Sequelize(config.get('db.schema'), 'root', 'pfg', config.get('db.connection'));
+const sequelize = new Sequelize(
+  config.get('db.schema'),
+  config.get('db.user'),
+  config.get('db.secret'),
+  config.get('db.connection')
+);
 
 const sqlLogger = winston.createLogger({
   level: 'info',
