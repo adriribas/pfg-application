@@ -1,21 +1,16 @@
 const updateGroups = async (subject, currentGroups, type, newAmount, transaction) => {
   const groups = currentGroups.filter(group => group.type === type);
 
-  for (let i = groups.length + 1; i <= newAmount; i++) {
-    const groupData = { type, number: i };
-    await subject.createGroup(groupData, { transaction });
-  }
-
-  /* OLD: if (groups.length < newAmount) {
+  if (groups.length < newAmount) {
     for (let i = groups.length + 1; i <= newAmount; i++) {
       const groupData = { type, number: i };
       await subject.createGroup(groupData, { transaction });
     }
-  }  else if (groups.length > newAmount) {
+  } else if (groups.length > newAmount) {
     for (let i = groups.length - 1; i >= newAmount; i--) {
       await groups[i].destroy({ transaction });
     }
-  } */
+  }
 };
 
 export const syncSubjectGroups = async (subject, transaction) => {
