@@ -196,12 +196,14 @@ router.beforeEach(async to => {
   await authStore.refreshing;
 
   if (authStore.isLoggedIn) {
-    if (
-      authStore.hasAccessTo(to.name) ||
-      to.matched.some(({ children }) => children.some(({ name }) => name === to.name))
-    ) {
-      return;
-    }
+    try {
+      if (
+        (to.name && (await authStore.hasAccessTo(to.name))) ||
+        to.matched.some(({ children }) => children.some(({ name }) => name === to.name))
+      ) {
+        return;
+      }
+    } catch (_e) {}
     return { name: authStore.defaultView };
   }
 

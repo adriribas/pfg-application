@@ -27,7 +27,7 @@ export const useAuthStore = defineStore('auth', {
         );
     },
     hasAccessTo() {
-      return viewName => !!this.tabs.find(({ routeName }) => routeName === viewName);
+      return viewName => authApi.assertAccess(viewName);
     }
   },
   actions: {
