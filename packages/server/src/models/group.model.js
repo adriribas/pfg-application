@@ -17,7 +17,7 @@ const Group = sequelize.define(
     }
   },
   {
-    indexes: [{ fields: ['id', 'type', 'number'], unique: true }],
+    indexes: [{ fields: ['subject', 'type', 'number'], unique: true }],
     hooks: {
       afterCreate: async (group, { transaction }) => {
         if (await group.countTimeBlocks({ transaction })) {

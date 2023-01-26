@@ -15,7 +15,7 @@ export const abreviate = words => {
 
   return words
     .reduce((accum, word) => {
-      if (excludeList.includes(word.toLowerCase())) {
+      if (excludeList.includes(word)) {
         return accum;
       }
 

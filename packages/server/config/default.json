@@ -22,7 +22,7 @@
     },
     {
       "role": "Coordinador",
-      "views": ["horarisGraus", "horarisProfessors", "horarisAules"]
+      "views": ["horarisGraus", "studyScheduleChoosing", "studySchedule", "horarisProfessors", "horarisAules"]
     },
     {
       "role": "Director de departament",

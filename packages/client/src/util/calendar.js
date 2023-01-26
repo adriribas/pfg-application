@@ -73,10 +73,10 @@ const collide = ({ start: s1, duration: d1 }, { start: s2, duration: d2 }) =>
   timeElemsCollide({ start: s1, end: getEndTime(s1, d1) }, { start: s2, end: getEndTime(s2, d2) });
 
 const layoutTimeBlocks = timeBlocks => {
-  const groups = [];
-  let columns = [];
-  let lastTimeBlockEndMinutes = 0;
-
+  const groups = []; // Grups
+  let columns = []; // Conjunt de columnes que forma un grup
+  let lastTimeBlockEndMinutes = 0; // Hora (en minuts) de fi del bloc que
+  // acaba més tard del grup que s'està formant
   timeBlocks
     .sort((tb1, tb2) => {
       const startDiff = timeToMinutes(tb1.start) - timeToMinutes(tb2.start);
@@ -86,27 +86,35 @@ const layoutTimeBlocks = timeBlocks => {
       }
 
       return getEndMinutes(tb1.start, tb1.duration) - getEndMinutes(tb2.start, tb2.duration);
-    })
+    }) // Ordenació de més aviat a més tard
     .forEach(timeBlock => {
       if (lastTimeBlockEndMinutes && timeToMinutes(timeBlock.start) >= lastTimeBlockEndMinutes) {
+        // L'hora de fi del bloc que acaba més tard del grup és més petita
+        // que la d'inici del següent bloc a processar: el grup ja està
+        // complet i se'n crea un de nou
         groups.push(columns);
         columns = [];
         lastTimeBlockEndMinutes = 0;
       }
-
+      // Busca una columna l'últim bloc de la qual no col·lisioni amb el
+      // que s'està processant
       const col = columns.find(col => !collide(col.at(-1), timeBlock));
       if (col) {
+        // Si es troba, significa que el bloc que s'està processant no
+        // col·lisiona amb cap dels d'aquella columna (per l'ordenació)
         col.push(timeBlock);
       } else {
+        // Si no es troba, significa que sí que col·lisiona amb els blocs
+        // de la columna i, per tant, ha de pertànyer a una de nova
         columns.push([timeBlock]);
       }
-
       const endMinutes = getEndMinutes(timeBlock.start, timeBlock.duration);
       if (lastTimeBlockEndMinutes <= endMinutes) {
+        // El bloc que s'estava processant acaba més tard que l'últim del grup
         lastTimeBlockEndMinutes = endMinutes;
       }
     });
-
+  // Concatena la llista de grups amb l'últim grup calculat
   return [...groups, columns];
 };
 
@@ -135,10 +143,17 @@ const sortTimeBlocks = timeBlocks =>
 const sortTimeBlocksByStart = timeBlocks =>
   timeBlocks.sort(({ start: s1 }, { start: s2 }) => timeToMinutes(s1) - timeToMinutes(s2));
 
-const getTimeBlockColSpan = (timeBlock, colIndex, cols) => {
-  let colSpan = 1;
+const getTimeBlockColSpan = (timeBlock, colIndex, group) => {
+  let colSpan = 1; // Multiplicador de l'amplada relativa del
+  // bloc
 
-  for (const col of cols.slice(colIndex + 1)) {
+  // A partir de la següent columna, es busca si el bloc
+  // col·lisiona amb alguna de les restants. Mentre no
+  // ho faci, significa que el bloc pot pot ocupar-ne
+  // l'espai corresponent i s'incrementa el multiplicador.
+  // En canvi, quan es detecta una col·lisió, significa
+  // que ja té l'amplada màxima que pot tenir
+  for (const col of group.slice(colIndex + 1)) {
     if (col.some(timeBlock2 => collide(timeBlock, timeBlock2))) {
       break;
     }
@@ -157,8 +172,8 @@ const getTimeBlockWidth = (timeBlock, colIndex, timeBlockGroup) =>
 
 const getStylingGetters = (groupType = 'generic') => ({
   getColor: el => {
-    const { timeBlockColorNames: colorNames, timeBlockColorTones: colorSizes } = useConstants();
-    return `${colorNames[groupType]}-${colorSizes[el]}`;
+    const { timeBlockColorNames: colorNames, timeBlockColorTones: colorTones } = useConstants();
+    return `${colorNames[groupType]}-${colorTones[el]}`;
   },
   getFontSize: el => {
     const { timeBlockFontSizes: fontSizes } = useConstants();
