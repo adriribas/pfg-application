@@ -18,6 +18,7 @@ export default (timeBlock, day) => {
         .filter(
           tb =>
             !isGeneric(tb) &&
+            (!tb.week || !timeBlock.value.week || tb.week === timeBlock.value.week) &&
             collide(tb, timeBlock.value) &&
             tb.group.id === timeBlock.value.group.id &&
             tb.id !== timeBlock.value.id
