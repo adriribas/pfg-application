@@ -20,7 +20,7 @@ const repeatPassword = ref('');
 
 const getErrorMsg = ({ code: axiosCode, response }) => {
   if (axiosCode === 'ERR_NETWORK') {
-    return 'Error de connexió amb el servidor.';
+    return 'Error de connexió amb el servidor';
   }
 
   const {
@@ -30,9 +30,9 @@ const getErrorMsg = ({ code: axiosCode, response }) => {
 
   return status === 400
     ? code === 'ERR_MATCH'
-      ? 'Les contrasenyes no coincideixen.'
+      ? 'Les contrasenyes no coincideixen'
       : message
-    : 'Error desconegut. Prova-ho més tard.';
+    : 'Error desconegut. Prova-ho més tard';
 };
 
 const changePassword = async () => {

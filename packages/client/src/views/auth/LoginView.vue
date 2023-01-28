@@ -17,7 +17,7 @@ const password = ref('');
 
 const getErrorMsg = ({ code: axiosCode, response }) => {
   if (axiosCode === 'ERR_NETWORK') {
-    return 'Error de connexió amb el servidor.';
+    return 'Error de connexió amb el servidor';
   }
 
   const {
@@ -27,9 +27,9 @@ const getErrorMsg = ({ code: axiosCode, response }) => {
 
   return status === 400
     ? code === 'ERR_INVALID_DATA'
-      ? 'El format de les dades no és correcte.'
+      ? 'El format de les dades no és correcte'
       : message
-    : 'Error desconegut. Prova-ho més tard.';
+    : 'Error desconegut. Prova-ho més tard';
 };
 
 const logIn = async () => {

@@ -13,7 +13,7 @@ const sent = ref(false);
 
 const getErrorMsg = ({ code: axiosCode, response }) => {
   if (axiosCode === 'ERR_NETWORK') {
-    return 'Error de connexió amb el servidor.';
+    return 'Error de connexió amb el servidor';
   }
 
   const {
@@ -21,7 +21,7 @@ const getErrorMsg = ({ code: axiosCode, response }) => {
     data: { message }
   } = response;
 
-  return status === 400 ? message : 'Error desconegut. Prova-ho més tard.';
+  return status === 400 ? message : 'Error desconegut. Prova-ho més tard';
 };
 
 const resetPassword = async () => {
@@ -31,7 +31,7 @@ const resetPassword = async () => {
   } catch (e) {
     $q.notify({
       type: 'error',
-      message: 'Error en la sol·licitud del restabliment.',
+      message: 'Error en la sol·licitud del restabliment',
       caption: getErrorMsg(e)
     });
   }
