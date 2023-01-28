@@ -34,7 +34,7 @@ watch(uploading, newUploading => {
 </script>
 
 <template>
-  <div v-auto-animate class="bg-b7 q-pa-xl shadow-5 container">
+  <div class="bg-b7 q-pa-xl shadow-5 container">
     <div class="text-h5 q-mb-sm">Pujar un pla docent i inicialitzar el curs acadèmic</div>
 
     <div class="row justify-center q-mb-lg">

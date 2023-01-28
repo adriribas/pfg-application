@@ -297,7 +297,7 @@ const reduceSubjectName = name =>
                     -
                   </span>
 
-                  <div v-else v-auto-animate="{ duration: 700 }">
+                  <div v-else>
                     <AreaDepartmentInline
                       v-for="{ abv, name, Department } in props.row.areas"
                       :area="{ abv, name }"
@@ -311,7 +311,7 @@ const reduceSubjectName = name =>
                     -
                   </span>
 
-                  <div v-else v-auto-animate="{ duration: 700 }">
+                  <div v-else>
                     <div
                       v-for="{ name } in props.row.labTypes"
                       :class="[props.row.labTypes.length > 1 && 'q-my-sm']">
