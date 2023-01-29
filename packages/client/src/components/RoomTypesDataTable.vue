@@ -26,7 +26,7 @@ const openLabTypeMod = labType =>
 
         $q.notify({
           type: 'success',
-          message: "Tipus d'aula modificat correctament",
+          message: 'Tipus de laboratori modificat correctament',
           caption: newLabType.name
         });
 
@@ -37,7 +37,7 @@ const openLabTypeMod = labType =>
       } catch (e) {
         $q.notify({
           type: 'error',
-          message: "Error en la modificació del tipus d'aula",
+          message: 'Error en la modificació del tipus de laboratori',
           caption: e.message
         });
       }
@@ -70,8 +70,8 @@ const openLabTypeMod = labType =>
     dark
     card-class="bg-b7">
     <template #top>
-      <q-icon name="room" size="xl" color="m13" />
-      <span class="text-h4 q-ml-md">Tipus d'aula</span>
+      <q-icon name="science" size="xl" color="m13" />
+      <span class="text-h4 q-ml-md">Tipus de laboratori</span>
     </template>
 
     <template #header="props">
@@ -90,10 +90,10 @@ const openLabTypeMod = labType =>
         <span>
           {{
             loading
-              ? "Carregant les dades dels tipus d'aula..."
+              ? 'Carregant les dades dels tipus de laboratori...'
               : error
-              ? "La informació sobre els tipus d'aula no s'ha pogut carregar correctament."
-              : "No hi ha dades sobre els tipus d'aula."
+              ? "La informació sobre els tipus de laboratori no s'ha pogut carregar correctament."
+              : 'No hi ha dades sobre els tipus de laboratori.'
           }}
         </span>
       </div>
