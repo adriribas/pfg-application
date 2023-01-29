@@ -50,13 +50,13 @@ const logout = () =>
     <q-icon name="person" size="sm" />
 
     <span :class="tabClasses" class="text-center text-bold">
-      {{ authStore.fullName }}
+      {{ authStore.fullName || '' }}
     </span>
 
     <q-icon name="circle" size="5pt" color="m8" />
 
     <span :class="tabClasses" class="text-center fs-11 text-m8">
-      {{ authStore.role }}
+      {{ authStore.role || '' }}
     </span>
 
     <div class="logout-btn-container">

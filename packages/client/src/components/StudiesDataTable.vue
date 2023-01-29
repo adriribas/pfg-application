@@ -48,7 +48,7 @@ const error = ref(false);
 const departmentsData = ref([]);
 const labTypesData = ref([]);
 
-const openSubjectMod = subject =>
+const openSubjectMod = (subject, studyAbv) =>
   $q
     .dialog({
       component: SubjectModificationDialog,
@@ -66,25 +66,13 @@ const openSubjectMod = subject =>
           caption: newSubject.name
         });
 
-        let updated = false;
-        const studies = data.value;
-        let i = 0;
-        while (!updated && i < studies.length) {
-          const studyCourses = studies[i].subjects;
-          let j = 0;
-          while (!updated && j < studyCourses.length) {
-            const subjects = studyCourses[j];
-            let k = 0;
-            while (!updated && k < subjects.length) {
-              if (subjects[k].code === code) {
-                subjects[k] = { areas, labTypes, ...newSubject };
-                updated = true;
-              }
-              k++;
-            }
-            j++;
+        const study = data.value.find(({ abv }) => abv === studyAbv);
+        if (study) {
+          const studySubjects = study.subjects[study.selectedCourse];
+          const subjectIndex = studySubjects.findIndex(({ code }) => code === subject.code);
+          if (subjectIndex) {
+            studySubjects[subjectIndex] = { areas, labTypes, ...newSubject };
           }
-          i++;
         }
       } catch (e) {
         $q.notify({
@@ -227,34 +215,34 @@ const reduceSubjectName = name =>
       </div>
     </template>
 
-    <template #body="props">
-      <q-tr :props="props">
+    <template #body="studyProps">
+      <q-tr :props="studyProps">
         <q-td auto-width>
           <q-btn
-            :icon="`expand_${props.expand ? 'less' : 'more'}`"
-            @click="props.expand = !props.expand"
+            :icon="`expand_${studyProps.expand ? 'less' : 'more'}`"
+            @click="studyProps.expand = !studyProps.expand"
             round
             dense
             size="sm"
             color="m8" />
         </q-td>
 
-        <q-td v-for="col in props.cols" :key="col.name" :props="props">
+        <q-td v-for="col in studyProps.cols" :key="col.name" :props="studyProps">
           {{ col.value }}
         </q-td>
       </q-tr>
 
-      <q-tr v-if="props.expand" :props="props">
+      <q-tr v-if="studyProps.expand" :props="studyProps">
         <q-td colspan="100%" no-hover>
-          <q-tabs v-model="props.row.selectedCourse" active-color="m5" class="q-mt-xs q-mb-md">
-            <q-tab v-for="(, index) in props.row.subjects" :label="courseNames[index]" :name="index" />
+          <q-tabs v-model="studyProps.row.selectedCourse" active-color="m5" class="q-mt-xs q-mb-md">
+            <q-tab v-for="(, index) in studyProps.row.subjects" :label="courseNames[index]" :name="index" />
           </q-tabs>
 
           <q-table
             :columns="subjectColumns"
-            :rows="props.row.subjects[props.row.selectedCourse]"
+            :rows="studyProps.row.subjects[studyProps.row.selectedCourse]"
             row-key="code"
-            :no-data-label="`No hi ha dades sobre les assignatures del ${props.row.name} (${props.row.abv}).`"
+            :no-data-label="`No hi ha dades sobre les assignatures del ${studyProps.row.name} (${studyProps.row.abv}).`"
             :pagination="{ rowsPerPage: 0 }"
             hide-pagination
             flat
@@ -333,7 +321,11 @@ const reduceSubjectName = name =>
                 </q-td>
 
                 <q-td auto-width>
-                  <q-btn icon="edit" size="sm" color="m8" @click="openSubjectMod(props.row)" />
+                  <q-btn
+                    icon="edit"
+                    size="sm"
+                    color="m8"
+                    @click="openSubjectMod(props.row, studyProps.row.abv)" />
                 </q-td>
               </q-tr>
             </template>

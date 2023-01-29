@@ -25,8 +25,8 @@ const clamp = value => _.clamp(value, props.min, props.max);
       dense
       dark
       input-class="text-center"
-      @update:model-value="value => emit('update:model-value', +value)"
-      @focus="input => input?.target?.select()"
+      @update:model-value="value => $emit('update:model-value', +value)"
+      @focus="input => input?.target?.select && input.target.select()"
       @blur="!modelValue && $emit('update:model-value', 0)">
       <template #prepend>
         <q-btn
