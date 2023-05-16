@@ -54,3 +54,9 @@ The developed software has to be a **full-stack** web application which main goa
 ### Overlaping info
 
 <img alt="Overlaping info screenshot" src="./readme-resources/screenshots/scheduleOverlap.png" style="border-radius: 8px;">
+
+---
+ 
+<p align="center">
+  <img src="/assets/logos/EPS_centrat_pad.png" alt="Escola Politècnica Superior - Universitat de Girona" width="225"/>
+</p>
