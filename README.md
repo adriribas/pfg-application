@@ -58,5 +58,5 @@ The developed software has to be a **full-stack** web application which main goa
 ---
  
 <p align="center">
-  <img src="/assets/logos/EPS_centrat_pad.png" alt="Escola Politècnica Superior - Universitat de Girona" width="225"/>
+  <img src="./readme-resources/EPS_centrat_pad.png" alt="Escola Politècnica Superior - Universitat de Girona" width="225"/>
 </p>
