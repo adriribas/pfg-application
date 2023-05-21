@@ -5,14 +5,14 @@
 
 ## Goal
 
-The purpose of this project is to provide a useful tool to maintain the schedules of all the degrees, professors and classrooms of my university. It must be customized and must perfectly fit the university's use cases.
+The purpose of this project was to provide a useful tool to manage the schedules of all the degrees, professors and classrooms of my university. It must be perfectly customized to fit the university's use cases.
 
-The developed software has to be a **full-stack** web application which main goals and features are:
+The developed software had to be a **full-stack** web application. Its main goals and features were:
 
 - Attractive, comfortable, intuitive and efficient user interfaces
-- View and modify the schedules of each degree, as well as of each professor and classroom
+- View and modification of the schedules of each degree, as well as each professor and classroom
 - Automatic detection of time overlaps and incompatibilities
-- Role-based users system
+- Role-based user system
 
 ## Used technologies
 
