@@ -51,7 +51,7 @@ The developed software had to be a **full-stack** web application. Its main goal
 
 <img alt="Schedule modification screenshot" src="./readme-resources/screenshots/scheduleMod.png" style="border-radius: 8px;">
 
-### Overlaping info
+### Overlapping info
 
 <img alt="Overlaping info screenshot" src="./readme-resources/screenshots/scheduleOverlap.png" style="border-radius: 8px;">
 
