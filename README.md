@@ -1,4 +1,4 @@
-# Schedule management application
+# Schedule Management Application
 
 > Bachelor thesis - Computer Engineering  
 > [Full documentation](https://github.com/adriribas/pfg-documentation/raw/main/documentation.pdf)
